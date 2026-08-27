@@ -190,6 +190,19 @@ fun KakaoMapScreen(
             }
         }
     }
+
+    var hasCenteredOnUser by remember { mutableStateOf(false) }
+
+    LaunchedEffect(kakaoMap, userLocation) {
+        val map = kakaoMap
+        val loc = userLocation
+        if (map != null && loc != null && !hasCenteredOnUser) {
+            map.moveCamera(
+                CameraUpdateFactory.newCenterPosition(loc, 14)
+            )
+            hasCenteredOnUser = true
+        }
+    }
     
     // Lifecycle management
     DisposableEffect(lifecycleOwner) {

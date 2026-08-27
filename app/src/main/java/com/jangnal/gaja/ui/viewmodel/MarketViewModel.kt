@@ -211,6 +211,17 @@ class MarketViewModel(
     fun clearSearchResults() {
         _searchResults.value = emptyList()
     }
+
+    fun reportMarketAmenity(marketId: Long, amenityType: String, hasIt: Boolean) {
+        viewModelScope.launch {
+            val value = if (hasIt) "Y" else "N"
+            if (amenityType == "toilet") {
+                repository.updateMarketToilet(marketId, value)
+            } else if (amenityType == "parking") {
+                repository.updateMarketParking(marketId, value)
+            }
+        }
+    }
 }
 
 class MarketViewModelFactory(private val repository: MarketRepository) : ViewModelProvider.Factory {

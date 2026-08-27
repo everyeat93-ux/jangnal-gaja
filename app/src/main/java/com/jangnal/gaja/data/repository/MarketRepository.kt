@@ -6,6 +6,7 @@ import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.data.local.entity.Shop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -316,17 +317,48 @@ class MarketRepository(private val marketDao: MarketDao) {
     }
 
     // --- Shop / Wait Times Operations ---
-    fun getShopsForMarketFlow(marketId: Long): Flow<List<Shop>> = marketDao.getShopsForMarketFlow(marketId)
+    fun getShopsForMarketFlow(marketId: Long): Flow<List<Shop>> {
+        return marketDao.getShopsForMarketFlow(marketId).map { shops ->
+            val hasRealShops = shops.any { !it.isMock }
+            if (hasRealShops) {
+                shops.filter { !it.isMock }
+            } else {
+                shops
+            }
+        }
+    }
 
     suspend fun getShopsForMarketWithPrepopulate(marketId: Long, marketName: String, latitude: Double, longitude: Double): List<Shop> {
         return withContext(Dispatchers.IO) {
             val existingShops = marketDao.getShopsForMarketList(marketId)
             if (existingShops.isEmpty()) {
-                val mockShops = listOf(
-                    Shop(marketId = marketId, shopName = "${marketName} 소문난 호떡", category = "먹거리", latitude = latitude + 0.0003, longitude = longitude + 0.0003),
-                    Shop(marketId = marketId, shopName = "${marketName} 원조 칼국수", category = "식당", latitude = latitude - 0.0002, longitude = longitude + 0.0004),
-                    Shop(marketId = marketId, shopName = "${marketName} 가마솥 순대국", category = "식당", latitude = latitude + 0.0001, longitude = longitude - 0.0003)
-                )
+                val mockShops = when {
+                    marketName.contains("광장") -> listOf(
+                        Shop(marketId = marketId, shopName = "순희네 빈대떡", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude + 0.0001, isMock = true),
+                        Shop(marketId = marketId, shopName = "창신육회", category = "식당", latitude = latitude - 0.0001, longitude = longitude + 0.0002, isMock = true),
+                        Shop(marketId = marketId, shopName = "모녀 마약김밥", category = "먹거리", latitude = latitude + 0.0002, longitude = longitude - 0.0001, isMock = true)
+                    )
+                    marketName.contains("속초관광") || marketName.contains("속초중앙") -> listOf(
+                        Shop(marketId = marketId, shopName = "만석닭강정 중앙시장점", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude + 0.0002, isMock = true),
+                        Shop(marketId = marketId, shopName = "남포동씨앗호떡", category = "먹거리", latitude = latitude - 0.0002, longitude = longitude + 0.0001, isMock = true),
+                        Shop(marketId = marketId, shopName = "88생선구이", category = "식당", latitude = latitude + 0.0003, longitude = longitude - 0.0001, isMock = true)
+                    )
+                    marketName.contains("망원") -> listOf(
+                        Shop(marketId = marketId, shopName = "훈훈호떡", category = "먹거리", latitude = latitude + 0.0002, longitude = longitude + 0.0001, isMock = true),
+                        Shop(marketId = marketId, shopName = "망원수제고로케", category = "먹거리", latitude = latitude - 0.0001, longitude = longitude + 0.0003, isMock = true),
+                        Shop(marketId = marketId, shopName = "큐스 닭강정", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude - 0.0002, isMock = true)
+                    )
+                    marketName.contains("신포") -> listOf(
+                        Shop(marketId = marketId, shopName = "원조신포닭강정", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude + 0.0001, isMock = true),
+                        Shop(marketId = marketId, shopName = "산동만두", category = "먹거리", latitude = latitude - 0.0001, longitude = longitude + 0.0002, isMock = true),
+                        Shop(marketId = marketId, shopName = "신포우리만두 본점", category = "식당", latitude = latitude + 0.0002, longitude = longitude - 0.0001, isMock = true)
+                    )
+                    else -> listOf(
+                        Shop(marketId = marketId, shopName = "${marketName} 소문난 호떡", category = "먹거리", latitude = latitude + 0.0003, longitude = longitude + 0.0003, isMock = true),
+                        Shop(marketId = marketId, shopName = "${marketName} 원조 칼국수", category = "식당", latitude = latitude - 0.0002, longitude = longitude + 0.0004, isMock = true),
+                        Shop(marketId = marketId, shopName = "${marketName} 가마솥 순대국", category = "식당", latitude = latitude + 0.0001, longitude = longitude - 0.0003, isMock = true)
+                    )
+                }
                 marketDao.insertShops(mockShops)
                 marketDao.getShopsForMarketList(marketId)
             } else {
@@ -344,6 +376,18 @@ class MarketRepository(private val marketDao: MarketDao) {
     suspend fun updateShopQueue(shopId: Long, status: Int, isVerified: Boolean) {
         withContext(Dispatchers.IO) {
             marketDao.updateShopQueueStatus(shopId, status, System.currentTimeMillis(), isVerified)
+        }
+    }
+
+    suspend fun updateMarketToilet(marketId: Long, value: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.updateMarketToilet(marketId, value)
+        }
+    }
+
+    suspend fun updateMarketParking(marketId: Long, value: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.updateMarketParking(marketId, value)
         }
     }
 

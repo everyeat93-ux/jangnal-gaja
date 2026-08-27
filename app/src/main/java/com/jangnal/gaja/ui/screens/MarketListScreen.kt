@@ -114,7 +114,7 @@ fun MarketListScreen(
     val dateFormat = remember { SimpleDateFormat("M월 d일 (E)", Locale.KOREA) }
     val formattedDate = dateFormat.format(Date(todayDate))
 
-    val tabs = listOf("지도", "오늘의 시장", "전체 목록/검색")
+    val tabs = listOf("지도", "시장 목록")
     val pagerState = rememberPagerState(
         initialPage = 0, // 지도 탭을 기본으로
         pageCount = { tabs.size }
@@ -163,6 +163,11 @@ fun MarketListScreen(
             },
             onClearSearchShops = {
                 viewModel.clearSearchResults()
+            },
+            onReportAmenity = { amenityType, hasIt ->
+                selectedMarket?.let { market ->
+                    viewModel.reportMarketAmenity(market.id, amenityType, hasIt)
+                }
             },
             onDismissRequest = { selectedMarket = null }
         )
@@ -247,20 +252,11 @@ fun MarketListScreen(
                         if (mapMarkets.isEmpty()) {
                             EmptyState("지도에 표시할 시장이 없습니다.")
                         } else {
-                            // Map does not need MarketList's sorting UI yet, but user asked for search nearest logic in Map.
-                            // That is handled in KakaoMapScreen separately.
                             KakaoMapScreen(markets = mapMarkets, onMarketClick = { selectedMarket = it })
                         }
                     }
-                    1 -> { // Today Open Markets
-                        if (todayMarkets.isEmpty()) {
-                            EmptyState("오늘 ($formattedDate) 열리는 전통시장 및 5일장이 없습니다.")
-                        } else {
-                            MarketList(markets = todayMarkets, dateLabel = formattedDate, userLocation = userLocation, onMarketClick = { selectedMarket = it })
-                        }
-                    }
-                    2 -> { // All List
-                        MarketList(markets = allMarkets, dateLabel = "전체 목록", userLocation = userLocation, onMarketClick = { selectedMarket = it })
+                    1 -> { // All List + Today Filter
+                        MarketList(markets = allMarkets, dateLabel = formattedDate, userLocation = userLocation, onMarketClick = { selectedMarket = it })
                     }
                 }
             }
@@ -282,13 +278,19 @@ fun MarketList(
         var searchQuery by remember { mutableStateOf("") }
         // 0: 가나다순, 1: 거리순
         var sortType by remember { mutableIntStateOf(0) }
+        var filterOpenToday by remember { mutableStateOf(false) }
         
-        val filteredMarkets = remember(markets, searchQuery, sortType, userLocation) {
-            val filtered = if (searchQuery.isBlank()) markets
+        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, userLocation) {
+            var filtered = if (searchQuery.isBlank()) markets
             else markets.filter { 
                 it.marketName.contains(searchQuery, ignoreCase = true) ||
                 it.addressRoad.contains(searchQuery, ignoreCase = true) ||
                 it.addressJibun.contains(searchQuery, ignoreCase = true)
+            }
+            
+            if (filterOpenToday) {
+                val todayMillis = System.currentTimeMillis()
+                filtered = filtered.filter { it.isPermanent() || it.isOpenOn(todayMillis) }
             }
             
             when (sortType) {
@@ -338,7 +340,7 @@ fun MarketList(
                 )
             )
             
-            // 정렬 옵션
+            // 정렬 및 필터 옵션
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -363,6 +365,15 @@ fun MarketList(
                         selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
                     ),
                     enabled = userLocation != null
+                )
+                FilterChip(
+                    selected = filterOpenToday,
+                    onClick = { filterOpenToday = !filterOpenToday },
+                    label = { Text("오늘 개장") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    )
                 )
             }
             

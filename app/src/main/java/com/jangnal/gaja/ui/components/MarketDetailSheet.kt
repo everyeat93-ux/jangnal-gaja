@@ -74,6 +74,7 @@ fun MarketDetailSheet(
     onAddShop: (String, String) -> Unit = { _, _ -> },
     onSearchShops: (String) -> Unit = {},
     onClearSearchShops: () -> Unit = {},
+    onReportAmenity: (String, Boolean) -> Unit = { _, _ -> },
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -177,6 +178,8 @@ fun MarketDetailSheet(
             )
             Spacer(modifier = Modifier.height(16.dp))
             
+            var activeAmenityReport by remember { mutableStateOf<Pair<String, String>?>(null) } // amenityType to Label
+            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -185,13 +188,65 @@ fun MarketDetailSheet(
                     label = "공중화장실",
                     icon = "🚻",
                     hasAmenity = market.hasToilet == "Y",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            activeAmenityReport = Pair("toilet", "공중화장실")
+                        }
                 )
                 AmenityCard(
                     label = "주차 공간",
                     icon = "🅿️",
                     hasAmenity = market.hasParking == "Y",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            activeAmenityReport = Pair("parking", "주차 공간")
+                        }
+                )
+            }
+
+            if (activeAmenityReport != null) {
+                val (amenityType, label) = activeAmenityReport!!
+                AlertDialog(
+                    onDismissRequest = { activeAmenityReport = null },
+                    title = { Text("$label 정보 제보", fontWeight = FontWeight.Bold) },
+                    text = {
+                        Text("이 시장에 ${label}이(가) 실제로 존재하고 이용 가능한가요? 현장 기여를 통해 실시간으로 편의시설 정보를 업데이트할 수 있습니다.")
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    onReportAmenity(amenityType, true)
+                                    activeAmenityReport = null
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("있음 / 이용 가능 🟢")
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    onReportAmenity(amenityType, false)
+                                    activeAmenityReport = null
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("없음 / 정보 없음 ⚪")
+                            }
+                            TextButton(
+                                onClick = { activeAmenityReport = null },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("취소")
+                            }
+                        }
+                    }
                 )
             }
             

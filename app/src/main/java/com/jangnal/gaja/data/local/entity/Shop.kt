@@ -26,5 +26,6 @@ data class Shop(
     // 대기 상태 (0: 한산, 1: 보통, 2: 혼잡, -1: 정보 없음)
     val queueStatus: Int = -1,
     val lastReportTime: Long = 0,
-    val isVerifiedReport: Boolean = false
+    val isVerifiedReport: Boolean = false,
+    val isMock: Boolean = false
 )
