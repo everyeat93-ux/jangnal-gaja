@@ -221,6 +221,12 @@ class MarketRepository(private val marketDao: MarketDao) {
         }
     }
 
+    suspend fun updateVoteCounts(marketId: Long, open: Int, closed: Int, date: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.updateVoteCounts(marketId, open, closed, date)
+        }
+    }
+
     /**
      * Sync market data from GitHub Gist JSON URL, preserving existing favorites
      */

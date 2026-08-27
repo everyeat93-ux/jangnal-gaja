@@ -18,11 +18,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Calendar
 
 class MarketViewModel(
     private val repository: MarketRepository
 ) : ViewModel() {
+
+    private var shopsListenerRegistration: ListenerRegistration? = null
+    private var votesListenerRegistration: ListenerRegistration? = null
+    private var amenitiesListenerRegistration: ListenerRegistration? = null
 
     // 오늘 날짜 (Timestamp)
     private val _today = MutableStateFlow(System.currentTimeMillis())
@@ -83,6 +93,18 @@ class MarketViewModel(
         viewModelScope.launch {
             val todayStr = getTodayDateString()
             repository.submitVote(marketId, isOpenToday, todayStr)
+            
+            // Push to Firestore with increment
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("market_votes").document(marketId.toString()).set(mapOf(
+                    "voteOpenTodayCount" to FieldValue.increment(if (isOpenToday) 1L else 0L),
+                    "voteClosedTodayCount" to FieldValue.increment(if (!isOpenToday) 1L else 0L),
+                    "lastVoteDate" to todayStr
+                ), SetOptions.merge())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -149,6 +171,11 @@ class MarketViewModel(
 
     fun loadShopsForMarket(market: Market) {
         shopsCollectJob?.cancel()
+        
+        shopsListenerRegistration?.remove()
+        votesListenerRegistration?.remove()
+        amenitiesListenerRegistration?.remove()
+        
         shopsCollectJob = viewModelScope.launch {
             // 1. Prepopulate default mock shops if empty
             repository.getShopsForMarketWithPrepopulate(
@@ -157,9 +184,85 @@ class MarketViewModel(
                 market.latitude,
                 market.longitude
             )
-            // 2. Observe changes in real time
-            repository.getShopsForMarketFlow(market.id).collect {
-                _activeMarketShops.value = it
+            // 2. Observe changes in real time (local Room DB)
+            launch {
+                repository.getShopsForMarketFlow(market.id).collect {
+                    _activeMarketShops.value = it
+                }
+            }
+
+            // 3. Firebase Firestore Real-time Sync
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                val marketDocId = market.id.toString()
+                
+                // Firestore shops listener
+                shopsListenerRegistration = firestore.collection("markets").document(marketDocId)
+                    .collection("shops").addSnapshotListener { snapshot, error ->
+                        if (error != null || snapshot == null) return@addSnapshotListener
+                        
+                        val firestoreShops = snapshot.documents.mapNotNull { doc ->
+                            val name = doc.getString("shopName") ?: return@mapNotNull null
+                            Shop(
+                                marketId = market.id,
+                                shopName = name,
+                                category = doc.getString("category") ?: "기타",
+                                latitude = doc.getDouble("latitude") ?: market.latitude,
+                                longitude = doc.getDouble("longitude") ?: market.longitude,
+                                queueStatus = doc.getLong("queueStatus")?.toInt() ?: -1,
+                                lastReportTime = doc.getLong("lastReportTime") ?: 0L,
+                                isVerifiedReport = doc.getBoolean("isVerifiedReport") ?: false,
+                                isMock = doc.getBoolean("isMock") ?: false
+                            )
+                        }
+                        
+                        if (firestoreShops.isNotEmpty()) {
+                            viewModelScope.launch(Dispatchers.IO) {
+                                val localList = _activeMarketShops.value
+                                firestoreShops.forEach { fShop ->
+                                    val matchedLocal = localList.find { it.shopName == fShop.shopName }
+                                    if (matchedLocal != null) {
+                                        if (matchedLocal.queueStatus != fShop.queueStatus || 
+                                            matchedLocal.lastReportTime != fShop.lastReportTime ||
+                                            matchedLocal.isVerifiedReport != fShop.isVerifiedReport
+                                        ) {
+                                            repository.insertShop(fShop.copy(id = matchedLocal.id))
+                                        }
+                                    } else {
+                                        repository.insertShop(fShop)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                // Firestore votes listener
+                votesListenerRegistration = firestore.collection("market_votes").document(marketDocId)
+                    .addSnapshotListener { doc, _ ->
+                        if (doc != null && doc.exists()) {
+                            val open = doc.getLong("voteOpenTodayCount")?.toInt() ?: 0
+                            val closed = doc.getLong("voteClosedTodayCount")?.toInt() ?: 0
+                            val date = doc.getString("lastVoteDate") ?: ""
+                            viewModelScope.launch(Dispatchers.IO) {
+                                repository.updateVoteCounts(market.id, open, closed, date)
+                            }
+                        }
+                    }
+
+                // Firestore amenities listener
+                amenitiesListenerRegistration = firestore.collection("market_amenities").document(marketDocId)
+                    .addSnapshotListener { doc, _ ->
+                        if (doc != null && doc.exists()) {
+                            val toilet = doc.getString("hasToilet") ?: "N"
+                            val parking = doc.getString("hasParking") ?: "N"
+                            viewModelScope.launch(Dispatchers.IO) {
+                                repository.updateMarketToilet(market.id, toilet)
+                                repository.updateMarketParking(market.id, parking)
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -171,9 +274,30 @@ class MarketViewModel(
                 shopName = name,
                 category = category,
                 latitude = lat,
-                longitude = lon
+                longitude = lon,
+                isMock = false
             )
             repository.insertShop(newShop)
+
+            // Push to Firestore
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                val shopMap = hashMapOf(
+                    "marketId" to marketId,
+                    "shopName" to name,
+                    "category" to category,
+                    "latitude" to lat,
+                    "longitude" to lon,
+                    "queueStatus" to -1,
+                    "lastReportTime" to 0L,
+                    "isVerifiedReport" to false,
+                    "isMock" to false
+                )
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("shops").document(name).set(shopMap)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -189,7 +313,23 @@ class MarketViewModel(
                 )
                 isVerified = results[0] <= 100f // Verified if user is within 100m of the market center
             }
+            
+            val shop = _activeMarketShops.value.find { it.id == shopId } ?: return@launch
+            val reportTime = System.currentTimeMillis()
             repository.updateShopQueue(shopId, status, isVerified)
+
+            // Update in Firestore
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("markets").document(shop.marketId.toString())
+                    .collection("shops").document(shop.shopName).update(mapOf(
+                        "queueStatus" to status,
+                        "lastReportTime" to reportTime,
+                        "isVerifiedReport" to isVerified
+                    ))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -220,7 +360,24 @@ class MarketViewModel(
             } else if (amenityType == "parking") {
                 repository.updateMarketParking(marketId, value)
             }
+
+            // Push to Firestore
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("market_amenities").document(marketId.toString()).set(mapOf(
+                    if (amenityType == "toilet") "hasToilet" to value else "hasParking" to value
+                ), SetOptions.merge())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        shopsListenerRegistration?.remove()
+        votesListenerRegistration?.remove()
+        amenitiesListenerRegistration?.remove()
     }
 }
 

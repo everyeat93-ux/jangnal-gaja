@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "842057551023",
+    "project_id": "jangnal-gaja",
+    "storage_bucket": "jangnal-gaja.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842057551023:android:6467d5679ef8cce16a585a",
+        "android_client_info": {
+          "package_name": "com.jangnal.gaja"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfSOpffCzL9wylVcQuG4kH31FBVhBNWF0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
