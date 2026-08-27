@@ -131,6 +131,9 @@ interface MarketDao {
     @Query("SELECT * FROM markets WHERE isFavorite = 1 ORDER BY marketName ASC")
     fun getFavoriteMarkets(): Flow<List<Market>>
 
+    @Query("SELECT * FROM markets WHERE isFavorite = 1 ORDER BY marketName ASC")
+    suspend fun getFavoriteMarketsList(): List<Market>
+
     /**
      * Update today's vote counts for a market
      */

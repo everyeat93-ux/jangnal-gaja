@@ -137,12 +137,14 @@ fun MarketListScreen(
     if (selectedMarket != null) {
         val activeShops by viewModel.activeMarketShops.collectAsState()
         val searchResults by viewModel.searchResults.collectAsState()
+        val activeReviews by viewModel.activeShopReviews.collectAsState()
         val kakaoApiKey = context.getString(com.jangnal.gaja.R.string.kakao_rest_api_key)
 
         com.jangnal.gaja.ui.components.MarketDetailSheet(
             market = selectedMarket!!,
             shops = activeShops,
             searchResults = searchResults,
+            reviews = activeReviews,
             userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
             onVoteClick = { marketId, isOpen -> viewModel.voteMarketStatus(marketId, isOpen) },
@@ -167,6 +169,11 @@ fun MarketListScreen(
             onReportAmenity = { amenityType, hasIt ->
                 selectedMarket?.let { market ->
                     viewModel.reportMarketAmenity(market.id, amenityType, hasIt)
+                }
+            },
+            onSubmitReview = { shopName, rating, content, imageUri ->
+                selectedMarket?.let { market ->
+                    viewModel.submitShopReview(context, market.id, shopName, rating, content, imageUri)
                 }
             },
             onDismissRequest = { selectedMarket = null }

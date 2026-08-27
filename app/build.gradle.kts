@@ -100,4 +100,8 @@ dependencies {
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Image Loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
 }

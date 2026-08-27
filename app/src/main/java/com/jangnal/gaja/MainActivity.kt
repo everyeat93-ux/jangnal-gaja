@@ -27,6 +27,17 @@ class MainActivity : ComponentActivity() {
         appUpdateManager = com.google.android.play.core.appupdate.AppUpdateManagerFactory.create(this)
         checkAppUpdate()
 
+        // Schedule daily morning notifications
+        com.jangnal.gaja.notification.BootReceiver.scheduleDailyAlarm(this)
+
+        // Request notifications permission for Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val permission = android.Manifest.permission.POST_NOTIFICATIONS
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                androidx.core.app.ActivityCompat.requestPermissions(this, arrayOf(permission), 2003)
+            }
+        }
+
         // 애플리케이션 클래스에서 의존성 가져오기
         val app = application as MarketApplication
         val repository = app.repository

@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.net.Uri
+import kotlinx.coroutines.tasks.await
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.FieldValue
@@ -33,6 +35,10 @@ class MarketViewModel(
     private var shopsListenerRegistration: ListenerRegistration? = null
     private var votesListenerRegistration: ListenerRegistration? = null
     private var amenitiesListenerRegistration: ListenerRegistration? = null
+    private var reviewsListenerRegistration: ListenerRegistration? = null
+
+    private val _activeShopReviews = MutableStateFlow<Map<String, List<ShopReview>>>(emptyMap())
+    val activeShopReviews: StateFlow<Map<String, List<ShopReview>>> = _activeShopReviews.asStateFlow()
 
     // 오늘 날짜 (Timestamp)
     private val _today = MutableStateFlow(System.currentTimeMillis())
@@ -175,6 +181,7 @@ class MarketViewModel(
         shopsListenerRegistration?.remove()
         votesListenerRegistration?.remove()
         amenitiesListenerRegistration?.remove()
+        reviewsListenerRegistration?.remove()
         
         shopsCollectJob = viewModelScope.launch {
             // 1. Prepopulate default mock shops if empty
@@ -260,6 +267,26 @@ class MarketViewModel(
                                 repository.updateMarketParking(market.id, parking)
                             }
                         }
+                    }
+
+                // Firestore reviews listener
+                reviewsListenerRegistration = firestore.collection("market_reviews").document(marketDocId)
+                    .collection("reviews").addSnapshotListener { snapshot, error ->
+                        if (error != null || snapshot == null) return@addSnapshotListener
+                        
+                        val map = mutableMapOf<String, MutableList<ShopReview>>()
+                        snapshot.documents.forEach { doc ->
+                            val shopName = doc.getString("shopName") ?: return@forEach
+                            val review = ShopReview(
+                                rating = doc.getDouble("rating")?.toFloat() ?: 0f,
+                                content = doc.getString("content") ?: "",
+                                photoUrl = doc.getString("photoUrl") ?: "",
+                                reporter = doc.getString("reporter") ?: "현장방문자",
+                                timestamp = doc.getLong("timestamp") ?: 0L
+                            )
+                            map.getOrPut(shopName) { mutableListOf() }.add(review)
+                        }
+                        _activeShopReviews.value = map
                     }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -373,13 +400,58 @@ class MarketViewModel(
         }
     }
 
+    fun submitShopReview(context: Context, marketId: Long, shopName: String, rating: Float, content: String, imageUri: Uri?) {
+        viewModelScope.launch {
+            try {
+                var downloadUrl = ""
+                if (imageUri != null) {
+                    val bytes = com.jangnal.gaja.util.ImageCompressionHelper.compressImage(context, imageUri)
+                    if (bytes != null) {
+                        val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
+                            .child("images/reviews/$marketId/${shopName}_${System.currentTimeMillis()}.jpg")
+                        
+                        storageRef.putBytes(bytes).await()
+                        downloadUrl = storageRef.downloadUrl.await().toString()
+                    }
+                }
+                
+                val firestore = FirebaseFirestore.getInstance()
+                val reviewMap = hashMapOf(
+                    "shopName" to shopName,
+                    "rating" to rating.toDouble(),
+                    "content" to content,
+                    "photoUrl" to downloadUrl,
+                    "reporter" to "현장방문자",
+                    "timestamp" to System.currentTimeMillis()
+                )
+                
+                firestore.collection("market_reviews").document(marketId.toString())
+                    .collection("reviews").add(reviewMap).await()
+                    
+                Toast.makeText(context, "한줄평이 성공적으로 등록되었습니다! 📸", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "리뷰 등록 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         shopsListenerRegistration?.remove()
         votesListenerRegistration?.remove()
         amenitiesListenerRegistration?.remove()
+        reviewsListenerRegistration?.remove()
     }
 }
+
+data class ShopReview(
+    val rating: Float = 0f,
+    val content: String = "",
+    val photoUrl: String = "",
+    val reporter: String = "현장방문자",
+    val timestamp: Long = 0L
+)
 
 class MarketViewModelFactory(private val repository: MarketRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
