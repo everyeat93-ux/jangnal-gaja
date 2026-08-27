@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -65,11 +66,14 @@ import androidx.compose.material3.InputChip
 fun MarketDetailSheet(
     market: Market,
     shops: List<Shop> = emptyList(),
+    searchResults: List<Shop> = emptyList(),
     userLocation: android.location.Location? = null,
     onFavoriteToggle: (Market) -> Unit = {},
     onVoteClick: (Long, Boolean) -> Unit = { _, _ -> },
     onReportQueue: (Long, Int) -> Unit = { _, _ -> },
     onAddShop: (String, String) -> Unit = { _, _ -> },
+    onSearchShops: (String) -> Unit = {},
+    onClearSearchShops: () -> Unit = {},
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -299,9 +303,12 @@ fun MarketDetailSheet(
             ShopQueueSection(
                 market = market,
                 shops = shops,
+                searchResults = searchResults,
                 userLocation = userLocation,
                 onReportQueue = onReportQueue,
-                onAddShop = onAddShop
+                onAddShop = onAddShop,
+                onSearchShops = onSearchShops,
+                onClearSearchShops = onClearSearchShops
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -580,9 +587,12 @@ private fun shareMarket(context: Context, market: Market) {
 fun ShopQueueSection(
     market: Market,
     shops: List<Shop>,
+    searchResults: List<Shop>,
     userLocation: android.location.Location?,
     onReportQueue: (Long, Int) -> Unit,
-    onAddShop: (String, String) -> Unit
+    onAddShop: (String, String) -> Unit,
+    onSearchShops: (String) -> Unit,
+    onClearSearchShops: () -> Unit
 ) {
     var showAddShopDialog by remember { mutableStateOf(false) }
     var activeVotingShop by remember { mutableStateOf<Shop?>(null) }
@@ -744,53 +754,125 @@ fun ShopQueueSection(
 
     // --- Dialogs ---
     if (showAddShopDialog) {
-        var shopName by remember { mutableStateOf("") }
-        var selectedCategory by remember { mutableStateOf("먹거리") }
-        val categories = listOf("먹거리", "식당", "카페", "농축수산", "기타")
+        var searchQuery by remember { mutableStateOf("") }
+        val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
 
         AlertDialog(
-            onDismissRequest = { showAddShopDialog = false },
-            title = { Text("시장 상점/맛집 추가", fontWeight = FontWeight.Bold) },
+            onDismissRequest = { 
+                showAddShopDialog = false 
+                onClearSearchShops()
+            },
+            title = { Text("주변 상점/맛집 검색 등록", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = shopName,
-                        onValueChange = { shopName = it },
-                        label = { Text("상점 이름 (예: 원조 닭강정)") },
-                        modifier = Modifier.fillMaxWidth()
+                    Text(
+                        text = "📍 시장 반경 500m 이내 실제 상점을 카카오 지도에서 검색합니다.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
-                    Text("카테고리 선택", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        categories.forEach { cat ->
-                            val isSelected = selectedCategory == cat
-                            InputChip(
-                                selected = isSelected,
-                                onClick = { selectedCategory = cat },
-                                label = { Text(cat) }
-                            )
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("예: 닭강정, 호떡, 분식") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        Button(
+                            onClick = { 
+                                focusManager.clearFocus()
+                                onSearchShops(searchQuery)
+                            },
+                            contentPadding = PaddingValues(horizontal = 12.dp),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("검색")
+                        }
+                    }
+                    
+                    Divider()
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+                        if (searchResults.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "검색 결과가 없습니다.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            androidx.compose.foundation.lazy.LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                items(searchResults.size) { idx ->
+                                    val shop = searchResults[idx]
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                onAddShop(shop.shopName, shop.category)
+                                                showAddShopDialog = false
+                                                onClearSearchShops()
+                                            },
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = shop.shopName,
+                                                    fontWeight = FontWeight.Bold,
+                                                    style = MaterialTheme.typography.bodyMedium
+                                                )
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(
+                                                    text = "[${shop.category}]",
+                                                    fontSize = 11.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                            Text(
+                                                text = "추가 ➕",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             },
-            confirmButton = {
+            confirmButton = {},
+            dismissButton = {
                 TextButton(
-                    onClick = {
-                        if (shopName.isNotBlank()) {
-                            onAddShop(shopName, selectedCategory)
-                            showAddShopDialog = false
-                        }
+                    onClick = { 
+                        showAddShopDialog = false 
+                        onClearSearchShops()
                     }
                 ) {
-                    Text("등록")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddShopDialog = false }) {
-                    Text("취소")
+                    Text("닫기")
                 }
             }
         )

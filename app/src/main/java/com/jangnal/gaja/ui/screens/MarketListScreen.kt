@@ -128,6 +128,7 @@ fun MarketListScreen(
     var showAbout by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedMarket) {
+        viewModel.clearSearchResults()
         selectedMarket?.let { market ->
             viewModel.loadShopsForMarket(market)
         }
@@ -135,9 +136,13 @@ fun MarketListScreen(
 
     if (selectedMarket != null) {
         val activeShops by viewModel.activeMarketShops.collectAsState()
+        val searchResults by viewModel.searchResults.collectAsState()
+        val kakaoApiKey = context.getString(com.jangnal.gaja.R.string.kakao_rest_api_key)
+
         com.jangnal.gaja.ui.components.MarketDetailSheet(
             market = selectedMarket!!,
             shops = activeShops,
+            searchResults = searchResults,
             userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
             onVoteClick = { marketId, isOpen -> viewModel.voteMarketStatus(marketId, isOpen) },
@@ -150,6 +155,14 @@ fun MarketListScreen(
                 selectedMarket?.let { market ->
                     viewModel.addShopToMarket(market.id, name, category, market.latitude, market.longitude)
                 }
+            },
+            onSearchShops = { query ->
+                selectedMarket?.let { market ->
+                    viewModel.searchShopsNearby(query, market.latitude, market.longitude, kakaoApiKey, market.id)
+                }
+            },
+            onClearSearchShops = {
+                viewModel.clearSearchResults()
             },
             onDismissRequest = { selectedMarket = null }
         )

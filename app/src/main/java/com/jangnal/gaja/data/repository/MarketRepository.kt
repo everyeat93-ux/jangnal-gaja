@@ -8,11 +8,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import java.nio.charset.Charset
 
 /**
@@ -342,6 +344,73 @@ class MarketRepository(private val marketDao: MarketDao) {
     suspend fun updateShopQueue(shopId: Long, status: Int, isVerified: Boolean) {
         withContext(Dispatchers.IO) {
             marketDao.updateShopQueueStatus(shopId, status, System.currentTimeMillis(), isVerified)
+        }
+    }
+
+    suspend fun searchKakaoPlaces(
+        query: String,
+        lat: Double,
+        lon: Double,
+        apiKey: String,
+        marketId: Long
+    ): List<Shop> {
+        return withContext(Dispatchers.IO) {
+            val results = mutableListOf<Shop>()
+            if (apiKey.isBlank() || apiKey == "YOUR_KAKAO_REST_API_KEY") {
+                return@withContext results
+            }
+            
+            try {
+                val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                // Search within 500m radius of the market center, sorted by distance
+                val urlString = "https://dapi.kakao.com/v2/local/search/keyword.json?query=$encodedQuery&x=$lon&y=$lat&radius=500&sort=distance"
+                val url = URL(urlString)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Authorization", "KakaoAK $apiKey")
+                
+                if (connection.responseCode == 200) {
+                    val jsonString = connection.inputStream.bufferedReader().use { it.readText() }
+                    val jsonObject = JSONObject(jsonString)
+                    val documents = jsonObject.optJSONArray("documents")
+                    
+                    if (documents != null) {
+                        for (i in 0 until documents.length()) {
+                            val doc = documents.getJSONObject(i)
+                            val placeName = doc.optString("place_name", "")
+                            val categoryName = doc.optString("category_name", "")
+                            val placeLat = doc.optDouble("y", 0.0)
+                            val placeLon = doc.optDouble("x", 0.0)
+                            
+                            val category = when {
+                                categoryName.contains("카페") || categoryName.contains("커피") -> "카페"
+                                categoryName.contains("음식점") || categoryName.contains("한식") || categoryName.contains("중식") || categoryName.contains("일식") -> "식당"
+                                categoryName.contains("제과") || categoryName.contains("빵") || categoryName.contains("떡") -> "먹거리"
+                                categoryName.contains("시장") || categoryName.contains("상점") || categoryName.contains("마트") -> "기타"
+                                else -> "기타"
+                            }
+                            
+                            results.add(
+                                Shop(
+                                    marketId = marketId,
+                                    shopName = placeName,
+                                    category = category,
+                                    latitude = placeLat,
+                                    longitude = placeLon
+                                )
+                            )
+                        }
+                    }
+                } else {
+                    android.util.Log.e("KakaoPlaceSearch", "Search failed: response code ${connection.responseCode}")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("KakaoPlaceSearch", "Search failed with exception", e)
+                e.printStackTrace()
+            }
+            results
         }
     }
 }

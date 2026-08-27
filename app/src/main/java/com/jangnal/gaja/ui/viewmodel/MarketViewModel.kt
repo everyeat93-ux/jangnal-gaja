@@ -192,6 +192,25 @@ class MarketViewModel(
             repository.updateShopQueue(shopId, status, isVerified)
         }
     }
+
+    // --- Kakao Places Search State and Actions ---
+    private val _searchResults = MutableStateFlow<List<Shop>>(emptyList())
+    val searchResults: StateFlow<List<Shop>> = _searchResults.asStateFlow()
+
+    fun searchShopsNearby(query: String, lat: Double, lon: Double, apiKey: String, marketId: Long) {
+        viewModelScope.launch {
+            if (query.isBlank()) {
+                _searchResults.value = emptyList()
+                return@launch
+            }
+            val results = repository.searchKakaoPlaces(query, lat, lon, apiKey, marketId)
+            _searchResults.value = results
+        }
+    }
+
+    fun clearSearchResults() {
+        _searchResults.value = emptyList()
+    }
 }
 
 class MarketViewModelFactory(private val repository: MarketRepository) : ViewModelProvider.Factory {
