@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.jangnal.gaja.data.local.entity.Market
+import com.jangnal.gaja.data.local.entity.Shop
 import com.jangnal.gaja.data.repository.MarketRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -137,6 +138,58 @@ class MarketViewModel(
                 )
             )
              repository.insertAll(sampleMarkets)
+        }
+    }
+
+    // --- Shop / Wait Times State and Actions ---
+    private val _activeMarketShops = MutableStateFlow<List<Shop>>(emptyList())
+    val activeMarketShops: StateFlow<List<Shop>> = _activeMarketShops.asStateFlow()
+
+    private var shopsCollectJob: kotlinx.coroutines.Job? = null
+
+    fun loadShopsForMarket(market: Market) {
+        shopsCollectJob?.cancel()
+        shopsCollectJob = viewModelScope.launch {
+            // 1. Prepopulate default mock shops if empty
+            repository.getShopsForMarketWithPrepopulate(
+                market.id,
+                market.marketName,
+                market.latitude,
+                market.longitude
+            )
+            // 2. Observe changes in real time
+            repository.getShopsForMarketFlow(market.id).collect {
+                _activeMarketShops.value = it
+            }
+        }
+    }
+
+    fun addShopToMarket(marketId: Long, name: String, category: String, lat: Double, lon: Double) {
+        viewModelScope.launch {
+            val newShop = Shop(
+                marketId = marketId,
+                shopName = name,
+                category = category,
+                latitude = lat,
+                longitude = lon
+            )
+            repository.insertShop(newShop)
+        }
+    }
+
+    fun reportShopQueue(shopId: Long, status: Int, marketLat: Double, marketLon: Double, userLocation: android.location.Location?) {
+        viewModelScope.launch {
+            var isVerified = false
+            if (userLocation != null) {
+                val results = FloatArray(1)
+                android.location.Location.distanceBetween(
+                    userLocation.latitude, userLocation.longitude,
+                    marketLat, marketLon,
+                    results
+                )
+                isVerified = results[0] <= 100f // Verified if user is within 100m of the market center
+            }
+            repository.updateShopQueue(shopId, status, isVerified)
         }
     }
 }

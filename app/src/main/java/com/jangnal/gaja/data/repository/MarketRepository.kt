@@ -3,6 +3,7 @@ package com.jangnal.gaja.data.repository
 import android.content.Context
 import com.jangnal.gaja.data.local.dao.MarketDao
 import com.jangnal.gaja.data.local.entity.Market
+import com.jangnal.gaja.data.local.entity.Shop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -309,6 +310,38 @@ class MarketRepository(private val marketDao: MarketDao) {
                 e.printStackTrace()
                 false
             }
+        }
+    }
+
+    // --- Shop / Wait Times Operations ---
+    fun getShopsForMarketFlow(marketId: Long): Flow<List<Shop>> = marketDao.getShopsForMarketFlow(marketId)
+
+    suspend fun getShopsForMarketWithPrepopulate(marketId: Long, marketName: String, latitude: Double, longitude: Double): List<Shop> {
+        return withContext(Dispatchers.IO) {
+            val existingShops = marketDao.getShopsForMarketList(marketId)
+            if (existingShops.isEmpty()) {
+                val mockShops = listOf(
+                    Shop(marketId = marketId, shopName = "${marketName} 소문난 호떡", category = "먹거리", latitude = latitude + 0.0003, longitude = longitude + 0.0003),
+                    Shop(marketId = marketId, shopName = "${marketName} 원조 칼국수", category = "식당", latitude = latitude - 0.0002, longitude = longitude + 0.0004),
+                    Shop(marketId = marketId, shopName = "${marketName} 가마솥 순대국", category = "식당", latitude = latitude + 0.0001, longitude = longitude - 0.0003)
+                )
+                marketDao.insertShops(mockShops)
+                marketDao.getShopsForMarketList(marketId)
+            } else {
+                existingShops
+            }
+        }
+    }
+
+    suspend fun insertShop(shop: Shop) {
+        withContext(Dispatchers.IO) {
+            marketDao.insertShop(shop)
+        }
+    }
+
+    suspend fun updateShopQueue(shopId: Long, status: Int, isVerified: Boolean) {
+        withContext(Dispatchers.IO) {
+            marketDao.updateShopQueueStatus(shopId, status, System.currentTimeMillis(), isVerified)
         }
     }
 }

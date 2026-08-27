@@ -127,11 +127,30 @@ fun MarketListScreen(
     // State for About Screen
     var showAbout by remember { mutableStateOf(false) }
 
+    LaunchedEffect(selectedMarket) {
+        selectedMarket?.let { market ->
+            viewModel.loadShopsForMarket(market)
+        }
+    }
+
     if (selectedMarket != null) {
+        val activeShops by viewModel.activeMarketShops.collectAsState()
         com.jangnal.gaja.ui.components.MarketDetailSheet(
             market = selectedMarket!!,
+            shops = activeShops,
+            userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
             onVoteClick = { marketId, isOpen -> viewModel.voteMarketStatus(marketId, isOpen) },
+            onReportQueue = { shopId, status ->
+                selectedMarket?.let { market ->
+                    viewModel.reportShopQueue(shopId, status, market.latitude, market.longitude, userLocation)
+                }
+            },
+            onAddShop = { name, category ->
+                selectedMarket?.let { market ->
+                    viewModel.addShopToMarket(market.id, name, category, market.latitude, market.longitude)
+                }
+            },
             onDismissRequest = { selectedMarket = null }
         )
     }

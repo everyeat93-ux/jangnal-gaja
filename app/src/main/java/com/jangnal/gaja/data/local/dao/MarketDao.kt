@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.jangnal.gaja.data.local.entity.Market
+import com.jangnal.gaja.data.local.entity.Shop
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -135,4 +136,23 @@ interface MarketDao {
      */
     @Query("UPDATE markets SET voteOpenTodayCount = :openCount, voteClosedTodayCount = :closedCount, lastVoteDate = :voteDate WHERE id = :marketId")
     suspend fun updateVoteCounts(marketId: Long, openCount: Int, closedCount: Int, voteDate: String)
+
+    // --- Shop / Wait Times Operations ---
+    @Query("SELECT * FROM shops WHERE marketId = :marketId ORDER BY id ASC")
+    fun getShopsForMarketFlow(marketId: Long): Flow<List<Shop>>
+
+    @Query("SELECT * FROM shops WHERE marketId = :marketId ORDER BY id ASC")
+    suspend fun getShopsForMarketList(marketId: Long): List<Shop>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertShop(shop: Shop): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertShops(shops: List<Shop>)
+
+    @Update
+    suspend fun updateShop(shop: Shop)
+
+    @Query("UPDATE shops SET queueStatus = :status, lastReportTime = :reportTime, isVerifiedReport = :isVerified WHERE id = :shopId")
+    suspend fun updateShopQueueStatus(shopId: Long, status: Int, reportTime: Long, isVerified: Boolean)
 }

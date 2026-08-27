@@ -38,7 +38,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,14 +51,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.jangnal.gaja.data.local.entity.Market
+import com.jangnal.gaja.data.local.entity.Shop
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import java.util.Calendar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.InputChip
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun MarketDetailSheet(
     market: Market,
+    shops: List<Shop> = emptyList(),
+    userLocation: android.location.Location? = null,
     onFavoriteToggle: (Market) -> Unit = {},
     onVoteClick: (Long, Boolean) -> Unit = { _, _ -> },
+    onReportQueue: (Long, Int) -> Unit = { _, _ -> },
+    onAddShop: (String, String) -> Unit = { _, _ -> },
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -282,6 +294,19 @@ fun MarketDetailSheet(
             } else {
                 Spacer(modifier = Modifier.height(8.dp))
             }
+
+            // 대기줄 정보 섹션
+            ShopQueueSection(
+                market = market,
+                shops = shops,
+                userLocation = userLocation,
+                onReportQueue = onReportQueue,
+                onAddShop = onAddShop
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Divider()
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Action Buttons
             Row(
@@ -547,5 +572,299 @@ private fun shareMarket(context: Context, market: Market) {
         context.startActivity(chooser)
     } catch (_: Exception) {
         // Ignore
+    }
+}
+
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun ShopQueueSection(
+    market: Market,
+    shops: List<Shop>,
+    userLocation: android.location.Location?,
+    onReportQueue: (Long, Int) -> Unit,
+    onAddShop: (String, String) -> Unit
+) {
+    var showAddShopDialog by remember { mutableStateOf(false) }
+    var activeVotingShop by remember { mutableStateOf<Shop?>(null) }
+    
+    // Calculate distance
+    val distance = remember(userLocation, market) {
+        if (userLocation != null) {
+            val results = FloatArray(1)
+            android.location.Location.distanceBetween(
+                userLocation.latitude, userLocation.longitude,
+                market.latitude, market.longitude,
+                results
+            )
+            results[0]
+        } else {
+            Float.MAX_VALUE
+        }
+    }
+    val isNear = distance <= 100f
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "🔥 인기 상점 실시간 대기줄",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            
+            TextButton(
+                onClick = { showAddShopDialog = true }
+            ) {
+                Text("+ 상점 추가", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (shops.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "등록된 상점이 없습니다. 직접 상점을 제보해 보세요!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            shops.forEach { shop ->
+                val hasRecentReport = shop.lastReportTime > 0 && 
+                        (System.currentTimeMillis() - shop.lastReportTime) < 40 * 60 * 1000 // 40 minutes
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = shop.shopName,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "[${shop.category}]",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                // Status display
+                                val statusText = if (hasRecentReport) {
+                                    when (shop.queueStatus) {
+                                        0 -> "한산함 (대기 적음) 🟢"
+                                        1 -> "보통 (10~25분) 🟡"
+                                        2 -> "혼잡함 (30분 이상) 🔴"
+                                        else -> "제보 없음 ⚪"
+                                    }
+                                } else {
+                                    "제보 정보가 없습니다. ⚪"
+                                }
+                                val statusColor = if (hasRecentReport) {
+                                    when (shop.queueStatus) {
+                                        0 -> Color(0xFF2E7D32)
+                                        1 -> Color(0xFFE65100)
+                                        2 -> Color(0xFFC62828)
+                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                                
+                                Text(
+                                    text = statusText,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = statusColor
+                                )
+                                
+                                if (hasRecentReport) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    val mins = ((System.currentTimeMillis() - shop.lastReportTime) / 60000).toInt()
+                                    Text(
+                                        text = "${mins}분 전",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    
+                                    if (shop.isVerifiedReport) {
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "현장인증됨",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF2E7D32),
+                                            modifier = Modifier
+                                                .background(Color(0xFFE8F5E9), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        
+                        OutlinedButton(
+                            onClick = { activeVotingShop = shop },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text("제보", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // --- Dialogs ---
+    if (showAddShopDialog) {
+        var shopName by remember { mutableStateOf("") }
+        var selectedCategory by remember { mutableStateOf("먹거리") }
+        val categories = listOf("먹거리", "식당", "카페", "농축수산", "기타")
+
+        AlertDialog(
+            onDismissRequest = { showAddShopDialog = false },
+            title = { Text("시장 상점/맛집 추가", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = shopName,
+                        onValueChange = { shopName = it },
+                        label = { Text("상점 이름 (예: 원조 닭강정)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    Text("카테고리 선택", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        categories.forEach { cat ->
+                            val isSelected = selectedCategory == cat
+                            InputChip(
+                                selected = isSelected,
+                                onClick = { selectedCategory = cat },
+                                label = { Text(cat) }
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (shopName.isNotBlank()) {
+                            onAddShop(shopName, selectedCategory)
+                            showAddShopDialog = false
+                        }
+                    }
+                ) {
+                    Text("등록")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddShopDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    if (activeVotingShop != null) {
+        val shop = activeVotingShop!!
+        AlertDialog(
+            onDismissRequest = { activeVotingShop = null },
+            title = { Text("${shop.shopName} 대기줄 제보", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (isNear) {
+                        Text(
+                            text = "🟢 시장 내부 현장 제보 (현장인증 적용됨)",
+                            color = Color(0xFF2E7D32),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        val distanceText = if (distance == Float.MAX_VALUE) "알 수 없음" else "${distance.toInt()}m"
+                        Text(
+                            text = "⚠️ 시장 외부 제보 (현장인증 불가: 약 $distanceText 이격)",
+                            color = Color(0xFFE65100),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Text("현재 맛집의 대기줄/대기 강도는 어떤가요?")
+                }
+            },
+            confirmButton = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            onReportQueue(shop.id, 0)
+                            activeVotingShop = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("한산함 (대기 적음) 🟢")
+                    }
+                    Button(
+                        onClick = {
+                            onReportQueue(shop.id, 1)
+                            activeVotingShop = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("보통 (대기 10~25분) 🟡")
+                    }
+                    Button(
+                        onClick = {
+                            onReportQueue(shop.id, 2)
+                            activeVotingShop = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("혼잡함 (대기 30분 이상) 🔴")
+                    }
+                    OutlinedButton(
+                        onClick = { activeVotingShop = null },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("취소")
+                    }
+                }
+            }
+        )
     }
 }
