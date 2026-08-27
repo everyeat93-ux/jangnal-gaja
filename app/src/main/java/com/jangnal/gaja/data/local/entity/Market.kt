@@ -119,7 +119,7 @@ data class Market(
     
     // 시장 유형 이름 (3일장, 4일장, 5일장 등)
     fun getMarketTypeName(): String {
-        if (isPermanent()) return "상설시장"
+        if (isPermanent()) return "전통시장"
         
         val (cycle, _) = parseCyclePublic()
         return when (cycle) {
@@ -148,7 +148,7 @@ data class Market(
 
     // 목록 화면용 간단 표기 (예: "5일장 (1일부터)")
     fun getSimpleTypeText(): String {
-        if (isPermanent()) return "상설시장"
+        if (isPermanent()) return "전통시장"
         return "${getMarketTypeName()} (${getStartDayText()})"
     }
     

@@ -73,14 +73,36 @@ fun MarketItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // 시장 이름
-                Text(
-                    text = market.marketName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                // 시장 이름 + 구분 배지
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = market.marketName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    val isPerm = market.isPermanent()
+                    val badgeColor = if (isPerm) Color(0xFF2E7D32) else Color(0xFFE65100)
+                    val badgeBg = if (isPerm) Color(0xFFE8F5E9) else Color(0xFFFFF3E0)
+                    
+                    Text(
+                        text = if (isPerm) "전통시장" else "5일장",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = badgeColor,
+                        modifier = Modifier
+                            .background(badgeBg, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 

@@ -34,11 +34,11 @@ class MarketViewModel(
             initialValue = emptyList()
         )
 
-    // 오늘 열리는 5일장 (상설 제외)
+    // 오늘 열리는 시장 (5일장 + 전통시장 통합)
     val todayMarkets: StateFlow<List<Market>> = combine(allMarkets, _today) { markets, dateMillis ->
         markets.filter { market ->
             if (market.isPermanent()) {
-                false // 상설시장은 별도 탭으로
+                true // 전통시장(상설)은 오늘 항상 열림!
             } else {
                 // 오늘 열리는 날짜인지 확인
                 val cal = Calendar.getInstance()

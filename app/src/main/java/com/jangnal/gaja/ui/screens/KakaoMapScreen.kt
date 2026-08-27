@@ -86,10 +86,10 @@ fun KakaoMapScreen(
     
     // Detailed Filter States
     var selectedRegions by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var selectedMarketDays by remember { mutableStateOf<Set<String>>(emptySet()) } // "1일", "2일"... "주말", "상설"
+    var selectedMarketDays by remember { mutableStateOf<Set<String>>(emptySet()) } // "1일", "2일"... "주말", "전통시장"
 
     val regions = listOf("서울", "인천,경기", "강원", "대전,충남", "충북", "대구,경북", "부산,경남", "광주,전남", "전북", "제주")
-    val marketDayOptions = (1..10).map { "${it}일" } + listOf("주말", "상설")
+    val marketDayOptions = (1..10).map { "${it}일" } + listOf("주말", "전통시장")
 
     // Filter Logic Calculation
     val filteredMarkets = remember(markets, filterShowPermanent, filterShowPeriodic, selectedDateMillis, searchQuery, selectedRegions, selectedMarketDays) {
@@ -118,11 +118,11 @@ fun KakaoMapScreen(
                 if (!matchesRegion) return@filter false
             }
 
-            // 3. 장날 유형 필터 (1-10일, 주말, 상설)
+            // 3. 장날 유형 필터 (1-10일, 주말, 전통시장)
             if (selectedMarketDays.isNotEmpty()) {
                 val matchesDay = selectedMarketDays.any { opt ->
                     when (opt) {
-                        "상설" -> market.isPermanent()
+                        "전통시장" -> market.isPermanent()
                         "주말" -> {
                             val cal = java.util.Calendar.getInstance()
                             cal.timeInMillis = selectedDateMillis
@@ -415,7 +415,7 @@ fun KakaoMapScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     LegendItem(color = android.graphics.Color.parseColor("#FF6B35"), label = "장날 (선택일)")
-                    LegendItem(color = android.graphics.Color.parseColor("#4CAF50"), label = "상설 시장")
+                    LegendItem(color = android.graphics.Color.parseColor("#4CAF50"), label = "전통시장")
                     LegendItem(color = android.graphics.Color.parseColor("#AAAAAA"), label = "쉬는 날")
                 }
             }

@@ -107,7 +107,6 @@ fun MarketListScreen(
     }
 
     val todayMarkets by viewModel.todayMarkets.collectAsState()
-    val permanentMarkets by viewModel.permanentMarkets.collectAsState()
     val allMarkets by viewModel.allMarkets.collectAsState()
     val todayDate by viewModel.today.collectAsState()
     
@@ -115,7 +114,7 @@ fun MarketListScreen(
     val dateFormat = remember { SimpleDateFormat("M월 d일 (E)", Locale.KOREA) }
     val formattedDate = dateFormat.format(Date(todayDate))
 
-    val tabs = listOf("지도", "오늘 장 ($formattedDate)", "상설 시장", "전체 목록/검색")
+    val tabs = listOf("지도", "오늘의 시장", "전체 목록/검색")
     val pagerState = rememberPagerState(
         initialPage = 0, // 지도 탭을 기본으로
         pageCount = { tabs.size }
@@ -221,21 +220,14 @@ fun MarketListScreen(
                             KakaoMapScreen(markets = mapMarkets, onMarketClick = { selectedMarket = it })
                         }
                     }
-                    1 -> { // Today 5-day Markets
+                    1 -> { // Today Open Markets
                         if (todayMarkets.isEmpty()) {
-                            EmptyState("오늘 ($formattedDate) 열리는 5일장이 없습니다.")
+                            EmptyState("오늘 ($formattedDate) 열리는 전통시장 및 5일장이 없습니다.")
                         } else {
                             MarketList(markets = todayMarkets, dateLabel = formattedDate, userLocation = userLocation, onMarketClick = { selectedMarket = it })
                         }
                     }
-                    2 -> { // Permanent Markets
-                        if (permanentMarkets.isEmpty()) {
-                            EmptyState("등록된 상설시장이 없습니다.")
-                        } else {
-                             MarketList(markets = permanentMarkets, dateLabel = "상설시장 (매일)", userLocation = userLocation, onMarketClick = { selectedMarket = it })
-                        }
-                    }
-                    3 -> { // All List
+                    2 -> { // All List
                         MarketList(markets = allMarkets, dateLabel = "전체 목록", userLocation = userLocation, onMarketClick = { selectedMarket = it })
                     }
                 }
