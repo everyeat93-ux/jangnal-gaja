@@ -104,7 +104,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 Text(
-                    text = "버전 1.1.6 | 만든이: 콜코(COLLCO)",
+                    text = "버전 1.1.7 | 만든이: 콜코(COLLCO)",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     modifier = Modifier.align(Alignment.CenterHorizontally)

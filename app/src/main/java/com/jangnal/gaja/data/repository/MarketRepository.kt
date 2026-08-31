@@ -336,40 +336,7 @@ class MarketRepository(private val marketDao: MarketDao) {
 
     suspend fun getShopsForMarketWithPrepopulate(marketId: Long, marketName: String, latitude: Double, longitude: Double): List<Shop> {
         return withContext(Dispatchers.IO) {
-            val existingShops = marketDao.getShopsForMarketList(marketId)
-            if (existingShops.isEmpty()) {
-                val mockShops = when {
-                    marketName.contains("광장") -> listOf(
-                        Shop(marketId = marketId, shopName = "순희네 빈대떡", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude + 0.0001, isMock = true),
-                        Shop(marketId = marketId, shopName = "창신육회", category = "식당", latitude = latitude - 0.0001, longitude = longitude + 0.0002, isMock = true),
-                        Shop(marketId = marketId, shopName = "모녀 마약김밥", category = "먹거리", latitude = latitude + 0.0002, longitude = longitude - 0.0001, isMock = true)
-                    )
-                    marketName.contains("속초관광") || marketName.contains("속초중앙") -> listOf(
-                        Shop(marketId = marketId, shopName = "만석닭강정 중앙시장점", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude + 0.0002, isMock = true),
-                        Shop(marketId = marketId, shopName = "남포동씨앗호떡", category = "먹거리", latitude = latitude - 0.0002, longitude = longitude + 0.0001, isMock = true),
-                        Shop(marketId = marketId, shopName = "88생선구이", category = "식당", latitude = latitude + 0.0003, longitude = longitude - 0.0001, isMock = true)
-                    )
-                    marketName.contains("망원") -> listOf(
-                        Shop(marketId = marketId, shopName = "훈훈호떡", category = "먹거리", latitude = latitude + 0.0002, longitude = longitude + 0.0001, isMock = true),
-                        Shop(marketId = marketId, shopName = "망원수제고로케", category = "먹거리", latitude = latitude - 0.0001, longitude = longitude + 0.0003, isMock = true),
-                        Shop(marketId = marketId, shopName = "큐스 닭강정", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude - 0.0002, isMock = true)
-                    )
-                    marketName.contains("신포") -> listOf(
-                        Shop(marketId = marketId, shopName = "원조신포닭강정", category = "먹거리", latitude = latitude + 0.0001, longitude = longitude + 0.0001, isMock = true),
-                        Shop(marketId = marketId, shopName = "산동만두", category = "먹거리", latitude = latitude - 0.0001, longitude = longitude + 0.0002, isMock = true),
-                        Shop(marketId = marketId, shopName = "신포우리만두 본점", category = "식당", latitude = latitude + 0.0002, longitude = longitude - 0.0001, isMock = true)
-                    )
-                    else -> listOf(
-                        Shop(marketId = marketId, shopName = "${marketName} 소문난 호떡", category = "먹거리", latitude = latitude + 0.0003, longitude = longitude + 0.0003, isMock = true),
-                        Shop(marketId = marketId, shopName = "${marketName} 원조 칼국수", category = "식당", latitude = latitude - 0.0002, longitude = longitude + 0.0004, isMock = true),
-                        Shop(marketId = marketId, shopName = "${marketName} 가마솥 순대국", category = "식당", latitude = latitude + 0.0001, longitude = longitude - 0.0003, isMock = true)
-                    )
-                }
-                marketDao.insertShops(mockShops)
-                marketDao.getShopsForMarketList(marketId)
-            } else {
-                existingShops
-            }
+            marketDao.getShopsForMarketList(marketId)
         }
     }
 

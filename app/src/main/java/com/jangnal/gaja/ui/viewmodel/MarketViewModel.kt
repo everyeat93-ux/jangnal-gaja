@@ -107,9 +107,9 @@ class MarketViewModel(
                     "voteOpenTodayCount" to FieldValue.increment(if (isOpenToday) 1L else 0L),
                     "voteClosedTodayCount" to FieldValue.increment(if (!isOpenToday) 1L else 0L),
                     "lastVoteDate" to todayStr
-                ), SetOptions.merge())
+                ), SetOptions.merge()).await()
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("FirebaseSync", "Vote push to Firestore failed for market $marketId: ", e)
             }
         }
     }
@@ -206,7 +206,11 @@ class MarketViewModel(
                 // Firestore shops listener
                 shopsListenerRegistration = firestore.collection("markets").document(marketDocId)
                     .collection("shops").addSnapshotListener { snapshot, error ->
-                        if (error != null || snapshot == null) return@addSnapshotListener
+                        if (error != null) {
+                            android.util.Log.e("FirebaseSync", "Shops snapshot listener failed for market $marketDocId: ", error)
+                            return@addSnapshotListener
+                        }
+                        if (snapshot == null) return@addSnapshotListener
                         
                         val firestoreShops = snapshot.documents.mapNotNull { doc ->
                             val name = doc.getString("shopName") ?: return@mapNotNull null
@@ -225,7 +229,7 @@ class MarketViewModel(
                         
                         if (firestoreShops.isNotEmpty()) {
                             viewModelScope.launch(Dispatchers.IO) {
-                                val localList = _activeMarketShops.value
+                                val localList = repository.getShopsForMarketWithPrepopulate(market.id, market.marketName, market.latitude, market.longitude)
                                 firestoreShops.forEach { fShop ->
                                     val matchedLocal = localList.find { it.shopName == fShop.shopName }
                                     if (matchedLocal != null) {
@@ -245,7 +249,11 @@ class MarketViewModel(
 
                 // Firestore votes listener
                 votesListenerRegistration = firestore.collection("market_votes").document(marketDocId)
-                    .addSnapshotListener { doc, _ ->
+                    .addSnapshotListener { doc, error ->
+                        if (error != null) {
+                            android.util.Log.e("FirebaseSync", "Votes listener failed for market $marketDocId: ", error)
+                            return@addSnapshotListener
+                        }
                         if (doc != null && doc.exists()) {
                             val open = doc.getLong("voteOpenTodayCount")?.toInt() ?: 0
                             val closed = doc.getLong("voteClosedTodayCount")?.toInt() ?: 0
@@ -258,7 +266,11 @@ class MarketViewModel(
 
                 // Firestore amenities listener
                 amenitiesListenerRegistration = firestore.collection("market_amenities").document(marketDocId)
-                    .addSnapshotListener { doc, _ ->
+                    .addSnapshotListener { doc, error ->
+                        if (error != null) {
+                            android.util.Log.e("FirebaseSync", "Amenities listener failed for market $marketDocId: ", error)
+                            return@addSnapshotListener
+                        }
                         if (doc != null && doc.exists()) {
                             val toilet = doc.getString("hasToilet") ?: "N"
                             val parking = doc.getString("hasParking") ?: "N"
@@ -272,7 +284,11 @@ class MarketViewModel(
                 // Firestore reviews listener
                 reviewsListenerRegistration = firestore.collection("market_reviews").document(marketDocId)
                     .collection("reviews").addSnapshotListener { snapshot, error ->
-                        if (error != null || snapshot == null) return@addSnapshotListener
+                        if (error != null) {
+                            android.util.Log.e("FirebaseSync", "Reviews listener failed for market $marketDocId: ", error)
+                            return@addSnapshotListener
+                        }
+                        if (snapshot == null) return@addSnapshotListener
                         
                         val map = mutableMapOf<String, MutableList<ShopReview>>()
                         snapshot.documents.forEach { doc ->
@@ -321,9 +337,9 @@ class MarketViewModel(
                     "isMock" to false
                 )
                 firestore.collection("markets").document(marketId.toString())
-                    .collection("shops").document(name).set(shopMap)
+                    .collection("shops").document(name).set(shopMap).await()
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("FirebaseSync", "Add shop to Firestore failed: ", e)
             }
         }
     }
@@ -353,9 +369,9 @@ class MarketViewModel(
                         "queueStatus" to status,
                         "lastReportTime" to reportTime,
                         "isVerifiedReport" to isVerified
-                    ))
+                    )).await()
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("FirebaseSync", "Report queue to Firestore failed: ", e)
             }
         }
     }
@@ -393,9 +409,9 @@ class MarketViewModel(
                 val firestore = FirebaseFirestore.getInstance()
                 firestore.collection("market_amenities").document(marketId.toString()).set(mapOf(
                     if (amenityType == "toilet") "hasToilet" to value else "hasParking" to value
-                ), SetOptions.merge())
+                ), SetOptions.merge()).await()
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("FirebaseSync", "Report amenity to Firestore failed: ", e)
             }
         }
     }
