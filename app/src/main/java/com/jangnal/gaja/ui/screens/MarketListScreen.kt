@@ -289,8 +289,9 @@ fun MarketList(
         var sortType by remember { mutableIntStateOf(0) }
         var filterOpenToday by remember { mutableStateOf(false) }
         var filterOpenWeekend by remember { mutableStateOf(false) }
+        var filterGangwon by remember { mutableStateOf(false) }
         
-        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, userLocation) {
+        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, filterGangwon, userLocation) {
             var filtered = if (searchQuery.isBlank()) markets
             else markets.filter { 
                 it.marketName.contains(searchQuery, ignoreCase = true) ||
@@ -304,6 +305,9 @@ fun MarketList(
             }
             if (filterOpenWeekend) {
                 filtered = filtered.filter { it.isOpenThisWeekend() }
+            }
+            if (filterGangwon) {
+                filtered = filtered.filter { it.addressRoad.contains("강원") || it.addressJibun.contains("강원") }
             }
             
             when (sortType) {
@@ -399,6 +403,15 @@ fun MarketList(
                         if (filterOpenWeekend) filterOpenToday = false
                     },
                     label = { Text(if (filterOpenWeekend) "이번 주말 개장 🚗 ✓" else "이번 주말 개장 🚗") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    )
+                )
+                FilterChip(
+                    selected = filterGangwon,
+                    onClick = { filterGangwon = !filterGangwon },
+                    label = { Text(if (filterGangwon) "🌊 강원 로컬 5일장 ✓" else "🌊 강원 로컬 5일장") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
                         selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown

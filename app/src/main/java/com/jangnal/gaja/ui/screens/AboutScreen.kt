@@ -1,5 +1,8 @@
 package com.jangnal.gaja.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +30,7 @@ fun AboutScreen(
     currentScale: Float,
     onScaleChange: (Float) -> Unit
 ) {
+    val context = LocalContext.current
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false) // 전체 화면 사용
@@ -91,6 +96,44 @@ fun AboutScreen(
                             "• 각 가게들의 '대기줄 현황 제보'는 40분 뒤 자동 만료되어 가장 생생한 찐정보만 제공합니다."
                 )
 
+                // 4. 스마트상점 & 상인 입점 파트너십
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "🏪 전통시장 상인 전용: 스마트상점 국비 지원 안내",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "소상공인시장진흥공단 '스마트상점 기술보급사업'을 통해 '장날가자 스마트 웨이팅/오더 시스템' 도입 시 최대 70%(최대 700만 원)를 국비로 보조받으실 수 있습니다.\n\n" +
+                                    "• 대상: 전국 5일장 및 전통시장 등록 점포\n" +
+                                    "• 혜택: 카카오톡 웨이팅 알림톡, 모바일 포장 주문, 디지털 온누리 가맹 검증 대시보드 무상 연동",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Button(
+                            onClick = {
+                                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                    data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 전통시장 상인 스마트상점 도입 문의"))
+                                }
+                                try { context.startActivity(emailIntent) } catch (_: Exception) {}
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("스마트상점 도입 & 상점 입점 문의 📝", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
                 // 4. 개인정보처리방침
                 InfoCard(
                     title = "🔒 개인정보 처리방침",
@@ -107,7 +150,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 Text(
-                    text = "버전 1.1.8 | 만든이: 콜코(COLLCO)",
+                    text = "버전 1.1.9 | 만든이: 콜코(COLLCO)",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
