@@ -64,53 +64,130 @@ fun AboutScreen(
                 // 0. 글자 크기 설정
                 TextSizeSettingCard(currentScale, onScaleChange)
 
-                // 1. 5일장이란?
+                // 1. 서비스 소개 & 핵심 기능 가이드
                 InfoCard(
-                    title = "🍎 5일장이란 무엇인가요?",
-                    content = "5일장은 조선시대부터 이어져 온 우리의 전통 시장입니다. \n\n" +
-                            "5일 간격으로 장이 열린다는 뜻으로, 예를 들어 '1, 6일장'이라면 매달 날짜의 끝자리가 1일과 6인 날에 열립니다.\n\n" +
-                            "예) 1일, 6일, 11일, 16일, 21일, 26일, 31일"
+                    title = "🏪 '장날가자' v1.1.9 주요 기능 안내",
+                    content = "복잡한 장날 계산과 전통시장 방문 정보, 이제 '장날가자' 하나로 스마트하게 해결하세요!\n\n" +
+                            "☀️ 오늘 개장 & 🚗 주말 개장 5일장 모아보기\n" +
+                            "• '오늘 개장' 및 '이번 주말 개장' 칩으로 오늘/주말에 열리는 5일장을 터치 한 번으로 쉽게 찾을 수 있습니다.\n\n" +
+                            "🎫 온누리상품권 · 💳 카드결제 상호검증 뱃지\n" +
+                            "• 상점별 온누리/카드 결제 가능 여부를 확인하고, 리뷰를 통해 직접 결제 태그를 제보할 수 있습니다.\n\n" +
+                            "🤖 실시간 대기줄 & AI 예상 대기시간 안내\n" +
+                            "• 현장 방문객의 제보와 시간대별 AI 가중치를 분석하여 예상 대기시간을 제공합니다.\n\n" +
+                            "🅿️ 공영주차장 내비게이션 길안내 연동\n" +
+                            "• 시장 상세페이지에서 주변 공영주차장을 네이버/카카오/티맵으로 즉시 길안내받을 수 있습니다.\n\n" +
+                            "📦 특산물 산지직송 / 온라인 택배 주문\n" +
+                            "• 시장 대표 특산물을 현장 방문 없이도 온라인으로 손쉽게 찾아보고 주문할 수 있습니다.\n\n" +
+                            "🌊 강원 로컬 5일장 특화 큐레이션\n" +
+                            "• 속초, 강릉, 양양, 정선 등 강원 지역의 매력적인 5일장만 한눈에 모아볼 수 있습니다."
                 )
 
-                // 2. 서비스 소개
+                // 2. 알뜰 사용 팁
                 InfoCard(
-                    title = "📱 '장날가자' 서비스 소개",
-                    content = "복잡한 장날 계산과 시장 장보기 정보, 이제 '장날가자'가 편리하게 안내합니다!\n\n" +
-                            "'장날가자'는 전국 방방곡곡의 5일장과 전통시장 정보를 쉽고 즐겁게 탐색할 수 있는 전통시장 지도 및 라이프 플랫폼 서비스입니다.\n\n" +
-                            "✅ 시장별 실시간 맛집 대기줄 확인 및 혼잡도 제보\n" +
-                            "✅ 사진 및 하트 평점이 결합된 생생한 맛집 한줄평 갤러리\n" +
-                            "✅ 국산 3대 내비게이션(네이버, 카카오, 티맵) 즉시 연동 및 길찾기\n" +
-                            "✅ 단골 등록 시장 장날 아침 개장 알람 자동 수신\n" +
-                            "✅ 화장실, 주차장 등 편의시설 유무 직접 제보\n" +
-                            "✅ '오늘 개장' 필터를 통한 직관적인 오늘 장날 탐색"
+                    title = "💡 200% 알뜰 활용 팁",
+                    content = "• [지도] 탭에서 위치 권한을 켜면 내 위치 중심의 가까운 시장들로 바로 자동 이동합니다.\n" +
+                            "• 마음에 드는 시장의 ❤️ 하트를 눌러 단골로 등록해 두시면 편리합니다.\n" +
+                            "• 상점 우측의 [한줄평 💬]을 누르면 사진과 평점, 결제 태그를 남길 수 있으며, 사진 용량 최적화 필터가 작동하여 데이터 걱정 없이 가볍게 공유됩니다.\n" +
+                            "• 각 가게들의 '대기줄 현황 제보'는 40분 뒤 자동 만료되어 가장 최신의 생생한 현장 정보만 유지됩니다."
                 )
 
-                // 3. 사용 팁
-                InfoCard(
-                    title = "💡 알뜰 사용 팁",
-                    content = "• [시장 목록] 탭에서 상단 '오늘 개장' 칩을 켜면 오늘 여는 시장만 선별하여 볼 수 있습니다.\n" +
-                            "• [지도] 탭은 위치 정보를 켜면 내 위치 중심의 시장들로 바로 자동 포커싱됩니다.\n" +
-                            "• 가게 우측의 [한줄평 💬]을 누르면 사진과 하트 평점을 남겨 제보할 수 있으며, 용량 최적화 필터가 작동하여 데이터 걱정 없이 가볍게 공유됩니다.\n" +
-                            "• [길찾기] 버튼을 누르면 스마트폰에 설치된 지도 앱(네이버, 카카오, 티맵)으로 즉시 길안내를 연결해 줍니다.\n" +
-                            "• 시장 상세페이지 내의 편의시설 카드를 직접 탭하여 실제 존재 유무를 제보할 수 있습니다.\n" +
-                            "• 각 가게들의 '대기줄 현황 제보'는 40분 뒤 자동 만료되어 가장 생생한 찐정보만 제공합니다."
-                )
+                // 3. 개발자 문의 및 제보 센터 (1:1 소통)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 2.dp,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "문의",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "💌 개발자 문의 및 제보 센터",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "'장날가자'는 사용자 여러분의 소중한 제보와 피드백으로 매주 발전하고 있습니다. 기능 개선 요청이나 새로운 5일장 제보, 버그 신고를 언제든 편하게 보내주세요!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // 제보 버튼 3종 세트
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 기능 개선 / 건의사항 제안"))
+                                    }
+                                    try { context.startActivity(emailIntent) } catch (_: Exception) {}
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(vertical = 8.dp)
+                            ) {
+                                Text("💡 기능 제안", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 새로운 5일장 / 시장 정보 제보"))
+                                    }
+                                    try { context.startActivity(emailIntent) } catch (_: Exception) {}
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(vertical = 8.dp)
+                            ) {
+                                Text("🏪 시장 제보", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 버그 및 오류 신고"))
+                                    }
+                                    try { context.startActivity(emailIntent) } catch (_: Exception) {}
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(vertical = 8.dp)
+                            ) {
+                                Text("🐞 버그 신고", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
 
                 // 4. 스마트상점 & 상인 입점 파트너십
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Text(
                             text = "🏪 전통시장 상인 전용: 스마트상점 국비 지원 안내",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "소상공인시장진흥공단 '스마트상점 기술보급사업'을 통해 '장날가자 스마트 웨이팅/오더 시스템' 도입 시 최대 70%(최대 700만 원)를 국비로 보조받으실 수 있습니다.\n\n" +
                                     "• 대상: 전국 5일장 및 전통시장 등록 점포\n" +
@@ -118,11 +195,11 @@ fun AboutScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = {
                                 val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                    data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 전통시장 상인 스마트상점 도입 문의"))
+                                    data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 전통시장 상인 스마트상점 도입 및 입점 문의"))
                                 }
                                 try { context.startActivity(emailIntent) } catch (_: Exception) {}
                             },
@@ -134,7 +211,15 @@ fun AboutScreen(
                     }
                 }
 
-                // 4. 개인정보처리방침
+                // 5. 5일장이란?
+                InfoCard(
+                    title = "🍎 5일장이란 무엇인가요?",
+                    content = "5일장은 조선시대부터 이어져 온 우리의 전통 시장입니다.\n\n" +
+                            "5일 간격으로 장이 열린다는 뜻으로, 예를 들어 '1, 6일장'이라면 매달 날짜의 끝자리가 1일과 6인 날에 열립니다.\n\n" +
+                            "예) 1일, 6일, 11일, 16일, 21일, 26일, 31일"
+                )
+
+                // 6. 개인정보처리방침
                 InfoCard(
                     title = "🔒 개인정보 처리방침",
                     content = "1. 개인정보의 처리 목적\n" +
@@ -147,14 +232,24 @@ fun AboutScreen(
                             "본 앱은 사용자의 프라이버시를 최우선으로 보호합니다."
                 )
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 
-                Text(
-                    text = "버전 1.1.9 | 만든이: 콜코(COLLCO)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "버전 1.1.9 | 만든이: 콜코(COLLCO)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "문의 및 제휴: support@collco.co.kr",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }

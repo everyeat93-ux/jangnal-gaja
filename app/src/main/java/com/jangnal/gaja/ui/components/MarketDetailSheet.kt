@@ -459,10 +459,28 @@ fun MarketDetailSheet(
                 ) {
                     DetailRow(Icons.Default.Phone, market.phoneNumber)
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-            } else {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] ${market.marketName} 시장 정보 수정/오류 제보"))
+                        }
+                        try { context.startActivity(emailIntent) } catch (_: Exception) {}
+                    }
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🚨 시장 정보가 다르거나 변경되었나요? (오류/수정 제보)",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
 
             // 대기줄 정보 섹션
             ShopQueueSection(
