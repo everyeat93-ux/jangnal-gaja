@@ -183,6 +183,35 @@ fun MarketDetailSheet(
             
             Spacer(modifier = Modifier.height(16.dp))
             
+            // B2G Onnuri & Card Verification Rate Calculation
+            val totalShopsCount = shops.size
+            val paymentVerifiedCount = shops.count { shop ->
+                val shopRevs = reviews[shop.shopName] ?: emptyList()
+                shopRevs.any { it.content.contains("온누리") || it.content.contains("카드") || it.content.contains("간편결제") }
+            }
+            val hasShops = totalShopsCount > 0
+            val dynamicPercent = if (hasShops) {
+                if (paymentVerifiedCount > 0) {
+                    ((paymentVerifiedCount.toFloat() / totalShopsCount.toFloat()) * 100).toInt().coerceIn(0, 100)
+                } else {
+                    50 // 점포 등록되었으나 아직 리뷰 검증 전
+                }
+            } else 0
+            
+            val isStandardMet = dynamicPercent >= 70
+            val rateDescText = if (hasShops) {
+                if (isStandardMet) "$dynamicPercent% (지자체 인증 표준 충족 🟢)" else "$dynamicPercent% (검증 진행 중 🟡)"
+            } else {
+                "데이터 수집 중 ⚪"
+            }
+            val progressVal = if (hasShops) (dynamicPercent / 100f).coerceIn(0f, 1f) else 0.0f
+            val infoExplainText = if (hasShops) {
+                if (isStandardMet) "💡 현장 방문객 제보 검증을 통해 지자체 디지털 전통시장 가맹 기준(70% 이상)을 달성한 시장입니다."
+                else "💡 현재 ${paymentVerifiedCount}개 점포의 결제 수단이 검증되었습니다. (목표 기준 70%)"
+            } else {
+                "💡 등록된 상점이 없습니다. 상점 등록 후 결제 태그를 남겨주시면 지자체 표준 가맹률이 실시간 산출됩니다."
+            }
+
             // B2G Onnuri & Card Verification Rate Card
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -197,21 +226,21 @@ fun MarketDetailSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("📊 온누리·카드 가맹 검증률", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text("85% (지자체 인증 표준 충족 🟢)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                        Text(rateDescText, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isStandardMet) Color(0xFF2E7D32) else if (hasShops) Color(0xFFE65100) else Color.Gray)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     androidx.compose.material3.LinearProgressIndicator(
-                        progress = 0.85f,
+                        progress = progressVal,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp)),
-                        color = Color(0xFF2E7D32),
+                        color = if (isStandardMet) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "💡 현장 방문객 상호검증을 통해 지자체 디지털 전통시장 가맹 기준(70% 이상)을 초과 달성한 공인 시장입니다.",
+                        text = infoExplainText,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -383,8 +412,10 @@ fun MarketDetailSheet(
             Spacer(modifier = Modifier.height(6.dp))
             OutlinedButton(
                 onClick = {
-                    val query = "${market.marketName} $displaySpecialty"
-                    val shoppingUrl = "https://search.shopping.naver.com/search/all?query=${Uri.encode(query)}"
+                    val cleanSpecialty = displaySpecialty.split(",").firstOrNull()?.trim() ?: ""
+                    val cleanMarketName = market.marketName.replace("전통시장", "").replace("시장", "").trim()
+                    val query = if (cleanSpecialty.isNotEmpty()) "$cleanMarketName $cleanSpecialty" else market.marketName
+                    val shoppingUrl = "https://search.shopping.naver.com/search/all?query=" + Uri.encode(query)
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(shoppingUrl))
                     try { context.startActivity(intent) } catch (_: Exception) {}
                 },
@@ -928,18 +959,22 @@ fun ShopQueueSection(
                                     }
                                 }
                                 
-                                Spacer(modifier = Modifier.height(4.dp))
-                                
+                                val currentCal = Calendar.getInstance()
+                                val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
+                                val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
+                                val isMarketOpenToday = market.isPermanent() || market.isOpenOn(System.currentTimeMillis())
+
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     val statusText = if (hasRecentReport) {
                                         when (shop.queueStatus) {
-                                            0 -> "한산함 🟢 (AI 예상 대기: 5분 미만)"
-                                            1 -> "보통 🟡 (AI 예상 대기: 10~25분)"
-                                            2 -> "혼잡함 🔴 (AI 예상 대기: 30분 이상)"
+                                            0 -> if (isPeakHour) "한산함 🟢 (AI 피크: 5~10분)" else "한산함 🟢 (AI 예상: 즉시 입장)"
+                                            1 -> if (isPeakHour) "보통 🟡 (AI 피크: 20~30분)" else "보통 🟡 (AI 예상: 10~15분)"
+                                            2 -> if (isPeakHour) "혼잡함 🔴 (AI 피크: 40분 이상)" else "혼잡함 🔴 (AI 예상: 25~35분)"
                                             else -> "제보 없음 ⚪ (AI 평시 분석)"
                                         }
                                     } else {
-                                        "제보 없음 ⚪ (AI 통상 5~15분 예상)"
+                                        if (isMarketOpenToday && isPeakHour) "제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
+                                        else "제보 없음 ⚪ (AI 평시: 5~10분 예상)"
                                     }
                                     val statusColor = if (hasRecentReport) {
                                         when (shop.queueStatus) {
