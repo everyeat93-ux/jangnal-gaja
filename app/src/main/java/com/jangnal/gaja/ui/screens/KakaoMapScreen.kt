@@ -123,14 +123,7 @@ fun KakaoMapScreen(
                 val matchesDay = selectedMarketDays.any { opt ->
                     when (opt) {
                         "전통시장" -> market.isPermanent()
-                        "주말" -> {
-                            val cal = java.util.Calendar.getInstance()
-                            cal.timeInMillis = selectedDateMillis
-                            val dayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK)
-                            val isWeekend = (dayOfWeek == java.util.Calendar.SATURDAY || dayOfWeek == java.util.Calendar.SUNDAY)
-                            // 선택된 날짜가 주말이고, 그날 열리는 시장인 경우
-                            isWeekend && (market.isPermanent() || market.isOpenOn(selectedDateMillis))
-                        }
+                        "주말" -> market.isOpenThisWeekend()
                         else -> {
                             val digitStr = opt.replace("일", "")
                             val digit = digitStr.toIntOrNull()?.let { it % 10 } ?: -1

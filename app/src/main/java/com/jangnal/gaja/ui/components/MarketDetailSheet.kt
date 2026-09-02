@@ -38,6 +38,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
@@ -252,6 +254,18 @@ fun MarketDetailSheet(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text("없음 / 정보 없음 ⚪")
+                            }
+                            if (amenityType == "parking") {
+                                OutlinedButton(
+                                    onClick = {
+                                        launchNavigationToParking(context, market)
+                                        activeAmenityReport = null
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                                ) {
+                                    Text("🅿️ 주변 공영주차장 길안내 검색 🚗", fontWeight = FontWeight.Bold)
+                                }
                             }
                             TextButton(
                                 onClick = { activeAmenityReport = null },
@@ -661,6 +675,46 @@ private fun openMap(context: Context, market: Market) {
     }
 }
 
+private fun launchNavigationToParking(context: Context, market: Market) {
+    val parkingQuery = "${market.marketName} 공영주차장"
+    val naverUri = "nmap://search?query=${Uri.encode(parkingQuery)}&appname=com.jangnal.gaja".toUri()
+    val kakaoUri = "kakaomap://search?q=${Uri.encode(parkingQuery)}".toUri()
+    val tmapUri = "tmap://search?name=${Uri.encode(parkingQuery)}".toUri()
+    val webFallbackUri = "https://map.kakao.com/link/search/${Uri.encode(parkingQuery)}".toUri()
+
+    // 1. Try Naver App
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, naverUri)
+        context.startActivity(intent)
+        return
+    } catch (_: Exception) {}
+
+    // 2. Try KakaoMap App
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, kakaoUri)
+        context.startActivity(intent)
+        return
+    } catch (_: Exception) {}
+
+    // 3. Try Tmap App
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, tmapUri)
+        context.startActivity(intent)
+        return
+    } catch (_: Exception) {}
+
+    // 4. Fallback to KakaoMap Web
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, webFallbackUri)
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        val geoUri = "geo:${market.latitude},${market.longitude}?q=${Uri.encode(parkingQuery)}".toUri()
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, geoUri))
+        } catch (_: Exception) {}
+    }
+}
+
 private fun shareMarket(context: Context, market: Market) {
     val shareText = buildString {
         appendLine("[장날가자] ${market.marketName}")
@@ -794,6 +848,33 @@ fun ShopQueueSection(
                                         fontSize = 11.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
+                                    
+                                    val hasOnnuri = shopReviews.any { it.content.contains("온누리") }
+                                    val hasCard = shopReviews.any { it.content.contains("카드") }
+                                    if (hasOnnuri) {
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "🎫온누리",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF1565C0),
+                                            modifier = Modifier
+                                                .background(Color(0xFFE3F2FD), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        )
+                                    }
+                                    if (hasCard) {
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "💳카드",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF2E7D32),
+                                            modifier = Modifier
+                                                .background(Color(0xFFE8F5E9), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        )
+                                    }
                                 }
                                 
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -997,6 +1078,8 @@ fun ShopQueueSection(
                 var ratingVal by remember { mutableStateOf(5f) }
                 var textContent by remember { mutableStateOf("") }
                 var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+                var selectedPaymentTags by remember { mutableStateOf(setOf<String>()) }
+                val paymentOptions = listOf("온누리", "카드", "간편결제", "현금")
                 
                 val galleryLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.GetContent()
@@ -1034,11 +1117,50 @@ fun ShopQueueSection(
                                 }
                                 Text(" ${ratingVal.toInt()}점", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
+
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text("결제 수단 태그 (선택)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    paymentOptions.forEach { opt ->
+                                        val isChecked = selectedPaymentTags.contains(opt)
+                                        val icon = when(opt) {
+                                            "온누리" -> "🎫"
+                                            "카드" -> "💳"
+                                            "간편결제" -> "📱"
+                                            else -> "💵"
+                                        }
+                                        FilterChip(
+                                            selected = isChecked,
+                                            onClick = {
+                                                selectedPaymentTags = if (isChecked) selectedPaymentTags - opt else selectedPaymentTags + opt
+                                            },
+                                            label = { Text("$icon $opt", fontSize = 11.sp) },
+                                            shape = RoundedCornerShape(6.dp)
+                                        )
+                                    }
+                                }
+                            }
                             
                             OutlinedTextField(
                                 value = textContent,
-                                onValueChange = { textContent = it },
+                                onValueChange = { 
+                                    if (it.length <= 150) textContent = it 
+                                },
                                 placeholder = { Text("호떡 피가 엄청 쫄깃하고 맛있어요! 추천합니다.") },
+                                supportingText = {
+                                    Text(
+                                        text = "${textContent.length}/150자",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.End,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 3
                             )
@@ -1076,11 +1198,17 @@ fun ShopQueueSection(
                         }
                     },
                     confirmButton = {
+                        val canSubmit = textContent.trim().isNotEmpty() || selectedImageUri != null || selectedPaymentTags.isNotEmpty()
                         Button(
                             onClick = {
-                                onSubmitReview(targetShop.shopName, ratingVal, textContent, selectedImageUri)
+                                val tagPrefix = if (selectedPaymentTags.isNotEmpty()) {
+                                    "[" + selectedPaymentTags.joinToString("/") + "] "
+                                } else ""
+                                val finalContent = (tagPrefix + textContent).trim()
+                                onSubmitReview(targetShop.shopName, ratingVal, finalContent, selectedImageUri)
                                 activeReviewShop = null
                             },
+                            enabled = canSubmit,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("제보 등록 🟢")
@@ -1151,15 +1279,32 @@ fun ShopQueueSection(
                             .height(200.dp)
                     ) {
                         if (searchResults.isEmpty()) {
-                            Box(
+                            Column(
                                 modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "검색 결과가 없습니다.",
+                                    text = if (searchQuery.isBlank()) "상점명이나 메뉴를 검색해 보세요." else "검색 결과가 없습니다.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                if (searchQuery.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    OutlinedButton(
+                                        onClick = {
+                                            val customName = searchQuery.trim().take(30)
+                                            if (customName.isNotEmpty()) {
+                                                onAddShop(customName, "노점/먹거리")
+                                                showAddShopDialog = false
+                                                onClearSearchShops()
+                                            }
+                                        },
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text("'+ $searchQuery' 직접 등록하기 ➕", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
                             }
                         } else {
                             androidx.compose.foundation.lazy.LazyColumn(

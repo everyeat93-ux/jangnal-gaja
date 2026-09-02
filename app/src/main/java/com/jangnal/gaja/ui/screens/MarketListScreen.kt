@@ -39,6 +39,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -286,8 +288,9 @@ fun MarketList(
         // 0: 가나다순, 1: 거리순
         var sortType by remember { mutableIntStateOf(0) }
         var filterOpenToday by remember { mutableStateOf(false) }
+        var filterOpenWeekend by remember { mutableStateOf(false) }
         
-        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, userLocation) {
+        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, userLocation) {
             var filtered = if (searchQuery.isBlank()) markets
             else markets.filter { 
                 it.marketName.contains(searchQuery, ignoreCase = true) ||
@@ -298,6 +301,9 @@ fun MarketList(
             if (filterOpenToday) {
                 val todayMillis = System.currentTimeMillis()
                 filtered = filtered.filter { it.isPermanent() || it.isOpenOn(todayMillis) }
+            }
+            if (filterOpenWeekend) {
+                filtered = filtered.filter { it.isOpenThisWeekend() }
             }
             
             when (sortType) {
@@ -351,7 +357,8 @@ fun MarketList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
@@ -375,8 +382,23 @@ fun MarketList(
                 )
                 FilterChip(
                     selected = filterOpenToday,
-                    onClick = { filterOpenToday = !filterOpenToday },
-                    label = { Text("오늘 개장") },
+                    onClick = { 
+                        filterOpenToday = !filterOpenToday 
+                        if (filterOpenToday) filterOpenWeekend = false
+                    },
+                    label = { Text(if (filterOpenToday) "오늘 개장 ☀️ ✓" else "오늘 개장 ☀️") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    )
+                )
+                FilterChip(
+                    selected = filterOpenWeekend,
+                    onClick = { 
+                        filterOpenWeekend = !filterOpenWeekend 
+                        if (filterOpenWeekend) filterOpenToday = false
+                    },
+                    label = { Text(if (filterOpenWeekend) "이번 주말 개장 🚗 ✓" else "이번 주말 개장 🚗") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
                         selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown

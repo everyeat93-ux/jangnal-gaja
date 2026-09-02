@@ -311,11 +311,15 @@ class MarketViewModel(
     }
 
     fun addShopToMarket(marketId: Long, name: String, category: String, lat: Double, lon: Double) {
+        val sanitizedName = name.trim().take(30)
+        if (sanitizedName.isEmpty()) return
+        val sanitizedCategory = if (category.trim().isEmpty()) "기타" else category.trim().take(15)
+
         viewModelScope.launch {
             val newShop = Shop(
                 marketId = marketId,
-                shopName = name,
-                category = category,
+                shopName = sanitizedName,
+                category = sanitizedCategory,
                 latitude = lat,
                 longitude = lon,
                 isMock = false
@@ -327,8 +331,8 @@ class MarketViewModel(
                 val firestore = FirebaseFirestore.getInstance()
                 val shopMap = hashMapOf(
                     "marketId" to marketId,
-                    "shopName" to name,
-                    "category" to category,
+                    "shopName" to sanitizedName,
+                    "category" to sanitizedCategory,
                     "latitude" to lat,
                     "longitude" to lon,
                     "queueStatus" to -1,
@@ -337,7 +341,7 @@ class MarketViewModel(
                     "isMock" to false
                 )
                 firestore.collection("markets").document(marketId.toString())
-                    .collection("shops").document(name).set(shopMap).await()
+                    .collection("shops").document(sanitizedName).set(shopMap).await()
             } catch (e: Exception) {
                 android.util.Log.e("FirebaseSync", "Add shop to Firestore failed: ", e)
             }
@@ -345,6 +349,7 @@ class MarketViewModel(
     }
 
     fun reportShopQueue(shopId: Long, status: Int, marketLat: Double, marketLon: Double, userLocation: android.location.Location?) {
+        val sanitizedStatus = status.coerceIn(0, 2)
         viewModelScope.launch {
             var isVerified = false
             if (userLocation != null) {
@@ -359,14 +364,14 @@ class MarketViewModel(
             
             val shop = _activeMarketShops.value.find { it.id == shopId } ?: return@launch
             val reportTime = System.currentTimeMillis()
-            repository.updateShopQueue(shopId, status, isVerified)
+            repository.updateShopQueue(shopId, sanitizedStatus, isVerified)
 
             // Update in Firestore
             try {
                 val firestore = FirebaseFirestore.getInstance()
                 firestore.collection("markets").document(shop.marketId.toString())
                     .collection("shops").document(shop.shopName).update(mapOf(
-                        "queueStatus" to status,
+                        "queueStatus" to sanitizedStatus,
                         "lastReportTime" to reportTime,
                         "isVerifiedReport" to isVerified
                     )).await()
@@ -417,6 +422,16 @@ class MarketViewModel(
     }
 
     fun submitShopReview(context: Context, marketId: Long, shopName: String, rating: Float, content: String, imageUri: Uri?) {
+        val sanitizedShopName = shopName.trim().take(30)
+        if (sanitizedShopName.isEmpty()) return
+        val sanitizedContent = content.trim().take(200)
+        val sanitizedRating = rating.coerceIn(1f, 5f)
+
+        if (sanitizedContent.isEmpty() && imageUri == null) {
+            Toast.makeText(context, "한줄평 내용 또는 사진을 첨부해 주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         viewModelScope.launch {
             try {
                 var downloadUrl = ""
@@ -424,7 +439,7 @@ class MarketViewModel(
                     val bytes = com.jangnal.gaja.util.ImageCompressionHelper.compressImage(context, imageUri)
                     if (bytes != null) {
                         val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
-                            .child("images/reviews/$marketId/${shopName}_${System.currentTimeMillis()}.jpg")
+                            .child("images/reviews/$marketId/${sanitizedShopName}_${System.currentTimeMillis()}.jpg")
                         
                         storageRef.putBytes(bytes).await()
                         downloadUrl = storageRef.downloadUrl.await().toString()
@@ -433,9 +448,9 @@ class MarketViewModel(
                 
                 val firestore = FirebaseFirestore.getInstance()
                 val reviewMap = hashMapOf(
-                    "shopName" to shopName,
-                    "rating" to rating.toDouble(),
-                    "content" to content,
+                    "shopName" to sanitizedShopName,
+                    "rating" to sanitizedRating.toDouble(),
+                    "content" to sanitizedContent,
                     "photoUrl" to downloadUrl,
                     "reporter" to "현장방문자",
                     "timestamp" to System.currentTimeMillis()
@@ -446,8 +461,8 @@ class MarketViewModel(
                     
                 Toast.makeText(context, "한줄평이 성공적으로 등록되었습니다! 📸", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(context, "리뷰 등록 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("FirebaseSync", "Submit review failed: ", e)
+                Toast.makeText(context, "리뷰 등록 중 네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }

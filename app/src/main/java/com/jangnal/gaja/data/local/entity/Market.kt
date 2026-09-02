@@ -259,14 +259,30 @@ data class Market(
         val calendar = java.util.Calendar.getInstance()
         calendar.timeInMillis = dateInMillis
 
-        // 상설시장은 무조건 true? 날짜 필터링 시 '오늘'이 아니어도 열려있으므로 true.
-        // 하지만 사용자가 '상설시장 제외'를 선택하면 화면단에서 isPermanent() 로 필터링됨.
-        // 여기서는 '날짜상' 열렸는지 여부만.
         if (isPermanent()) return true
         
         val maxDay = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
         val targetDay = calendar.get(java.util.Calendar.DAY_OF_MONTH)
         
         return getMarketDaysInMonth(maxDay).contains(targetDay)
+    }
+
+    fun isOpenThisWeekend(nowMillis: Long = System.currentTimeMillis()): Boolean {
+        if (isPermanent()) return true
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val currentDayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK)
+        
+        val satCal = java.util.Calendar.getInstance().apply {
+            timeInMillis = nowMillis
+            val daysToSat = (java.util.Calendar.SATURDAY - currentDayOfWeek + 7) % 7
+            add(java.util.Calendar.DAY_OF_YEAR, daysToSat)
+        }
+        val sunCal = java.util.Calendar.getInstance().apply {
+            timeInMillis = nowMillis
+            val daysToSun = if (currentDayOfWeek == java.util.Calendar.SUNDAY) 0 else (java.util.Calendar.SUNDAY - currentDayOfWeek + 7) % 7
+            add(java.util.Calendar.DAY_OF_YEAR, daysToSun)
+        }
+        
+        return isOpenOn(satCal.timeInMillis) || isOpenOn(sunCal.timeInMillis)
     }
 }
