@@ -131,7 +131,7 @@ fun AboutScreen(
                             OutlinedButton(
                                 onClick = {
                                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                        data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 기능 개선 / 건의사항 제안"))
+                                        data = Uri.parse("mailto:collcokorea@gmail.com?subject=" + Uri.encode("[장날가자] 기능 개선 / 건의사항 제안"))
                                     }
                                     try { context.startActivity(emailIntent) } catch (_: Exception) {}
                                 },
@@ -145,7 +145,7 @@ fun AboutScreen(
                             OutlinedButton(
                                 onClick = {
                                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                        data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 새로운 5일장 / 시장 정보 제보"))
+                                        data = Uri.parse("mailto:collcokorea@gmail.com?subject=" + Uri.encode("[장날가자] 새로운 5일장 / 시장 정보 제보"))
                                     }
                                     try { context.startActivity(emailIntent) } catch (_: Exception) {}
                                 },
@@ -159,7 +159,7 @@ fun AboutScreen(
                             OutlinedButton(
                                 onClick = {
                                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                        data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 버그 및 오류 신고"))
+                                        data = Uri.parse("mailto:collcokorea@gmail.com?subject=" + Uri.encode("[장날가자] 버그 및 오류 신고"))
                                     }
                                     try { context.startActivity(emailIntent) } catch (_: Exception) {}
                                 },
@@ -199,7 +199,7 @@ fun AboutScreen(
                         Button(
                             onClick = {
                                 val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                    data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] 전통시장 상인 스마트상점 도입 및 입점 문의"))
+                                    data = Uri.parse("mailto:collcokorea@gmail.com?subject=" + Uri.encode("[장날가자] 전통시장 상인 스마트상점 도입 및 입점 문의"))
                                 }
                                 try { context.startActivity(emailIntent) } catch (_: Exception) {}
                             },
@@ -245,7 +245,7 @@ fun AboutScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "문의 및 제휴: support@collco.co.kr",
+                        text = "문의 및 제휴: collcokorea@gmail.com",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )

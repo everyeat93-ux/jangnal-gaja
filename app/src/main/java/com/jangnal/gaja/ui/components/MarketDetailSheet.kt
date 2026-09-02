@@ -466,7 +466,7 @@ fun MarketDetailSheet(
                     .fillMaxWidth()
                     .clickable {
                         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:support@collco.co.kr?subject=" + Uri.encode("[장날가자] ${market.marketName} 시장 정보 수정/오류 제보"))
+                            data = Uri.parse("mailto:collcokorea@gmail.com?subject=" + Uri.encode("[장날가자] ${market.marketName} 시장 정보 수정/오류 제보"))
                         }
                         try { context.startActivity(emailIntent) } catch (_: Exception) {}
                     }
