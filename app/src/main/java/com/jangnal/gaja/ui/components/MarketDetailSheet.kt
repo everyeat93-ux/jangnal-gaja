@@ -118,7 +118,7 @@ fun MarketDetailSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = market.marketName,
+                    text = market.getDisplayName(),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
@@ -202,14 +202,14 @@ fun MarketDetailSheet(
             val rateDescText = if (hasShops) {
                 if (isStandardMet) "$dynamicPercent% (지자체 인증 표준 충족 🟢)" else "$dynamicPercent% (검증 진행 중 🟡)"
             } else {
-                "데이터 수집 중 ⚪"
+                "결제 정보 수집 중 💬"
             }
             val progressVal = if (hasShops) (dynamicPercent / 100f).coerceIn(0f, 1f) else 0.0f
             val infoExplainText = if (hasShops) {
-                if (isStandardMet) "💡 현장 방문객 제보 검증을 통해 지자체 디지털 전통시장 가맹 기준(70% 이상)을 달성한 시장입니다."
+                if (isStandardMet) "💡 현장 방문객 제보 검증을 통해 온누리/카드 가맹 기준(70% 이상)을 충족한 시장입니다."
                 else "💡 현재 ${paymentVerifiedCount}개 점포의 결제 수단이 검증되었습니다. (목표 기준 70%)"
             } else {
-                "💡 등록된 상점이 없습니다. 상점 등록 후 결제 태그를 남겨주시면 지자체 표준 가맹률이 실시간 산출됩니다."
+                "💡 아직 등록된 결제 정보가 없어요. 상점을 등록하고 온누리/카드 리뷰를 남겨 첫 번째 제보자가 되어보세요!"
             }
 
             // B2G Onnuri & Card Verification Rate Card
@@ -589,9 +589,10 @@ fun MarketCalendarView(market: Market) {
         // 날짜 렌더링
         var dayCounter = 1
         val rowsCount = (maxDay + startDayOfWeek + 6) / 7
+        val isPermanent = market.isPermanent()
         
         for (r in 0 until rowsCount) {
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
                 for (c in 0..6) {
                     val cellIdx = r * 7 + c
                     if (cellIdx < startDayOfWeek || dayCounter > maxDay) {
@@ -600,44 +601,82 @@ fun MarketCalendarView(market: Market) {
                         val day = dayCounter
                         val isMarketDay = marketDays.contains(day)
                         val isToday = day == currentDay
-                        val isPermanent = market.isPermanent()
-                        val isOpened = isMarketDay || isPermanent
                         
                         val cellBg = when {
-                            isToday && isOpened -> MaterialTheme.colorScheme.primary
-                            isOpened -> MaterialTheme.colorScheme.primaryContainer
-                            isToday -> MaterialTheme.colorScheme.surfaceVariant
+                            isToday -> MaterialTheme.colorScheme.primary
+                            isMarketDay && !isPermanent -> Color(0xFFFFF3E0)
                             else -> Color.Transparent
                         }
                         
                         val cellTextCol = when {
-                            isToday && isOpened -> MaterialTheme.colorScheme.onPrimary
-                            isOpened -> MaterialTheme.colorScheme.onPrimaryContainer
-                            isToday -> MaterialTheme.colorScheme.onSurfaceVariant
+                            isToday -> MaterialTheme.colorScheme.onPrimary
+                            isMarketDay && !isPermanent -> Color(0xFFE65100)
+                            c == 0 -> Color.Red.copy(alpha = 0.8f)
+                            c == 6 -> Color.Blue.copy(alpha = 0.8f)
                             else -> MaterialTheme.colorScheme.onSurface
                         }
                         
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .size(32.dp)
+                                .height(38.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(cellBg)
-                                .padding(4.dp),
+                                .then(
+                                    if (isMarketDay && !isPermanent && !isToday) 
+                                        Modifier.border(1.dp, Color(0xFFFFB74D), RoundedCornerShape(8.dp))
+                                    else Modifier
+                                )
+                                .padding(2.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = day.toString(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = if (isToday || isOpened) FontWeight.Bold else FontWeight.Normal,
-                                color = cellTextCol,
-                                textAlign = TextAlign.Center
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = day.toString(),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isToday || (isMarketDay && !isPermanent)) FontWeight.Bold else FontWeight.Normal,
+                                    color = cellTextCol,
+                                    textAlign = TextAlign.Center
+                                )
+                                if (isMarketDay && !isPermanent && !isToday) {
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .size(4.dp)
+                                            .background(Color(0xFFE65100), androidx.compose.foundation.shape.CircleShape)
+                                    )
+                                }
+                            }
                         }
                         dayCounter++
                     }
                 }
             }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+        
+        // 범례 (Legend)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (!isPermanent) {
+                Box(modifier = Modifier.size(8.dp).background(Color(0xFFE65100), androidx.compose.foundation.shape.CircleShape))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("장날", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(modifier = Modifier.width(16.dp))
+            } else {
+                Text("🏪 상설시장 (매일 개장)", fontSize = 11.sp, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.width(16.dp))
+            }
+            Box(modifier = Modifier.size(8.dp).background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape))
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("오늘", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -1224,11 +1263,10 @@ fun ShopQueueSection(
 
                             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text("결제 수단 태그 (선택)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .horizontalScroll(rememberScrollState()),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     paymentOptions.forEach { opt ->
                                         val isChecked = selectedPaymentTags.contains(opt)
@@ -1489,9 +1527,15 @@ fun ShopQueueSection(
                             fontWeight = FontWeight.Bold
                         )
                     } else {
-                        val distanceText = if (distance == Float.MAX_VALUE) "알 수 없음" else "${distance.toInt()}m"
+                        val distanceText = if (distance == Float.MAX_VALUE) {
+                            "위치 확인 불가"
+                        } else if (distance >= 1000) {
+                            String.format(java.util.Locale.KOREA, "%.1fkm", distance / 1000f)
+                        } else {
+                            "${distance.toInt()}m"
+                        }
                         Text(
-                            text = "⚠️ 시장 외부 제보 (현장인증 불가: 약 $distanceText 이격)",
+                            text = if (distance == Float.MAX_VALUE) "⚠️ 시장 외부 제보 (위치 확인 불가, 현장인증 제외)" else "⚠️ 시장 외부 제보 (현장인증 불가: 약 $distanceText 떨어져 있음)",
                             color = Color(0xFFE65100),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

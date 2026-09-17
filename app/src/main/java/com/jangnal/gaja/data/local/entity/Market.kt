@@ -49,6 +49,22 @@ data class Market(
     
     val lastVoteDate: String = ""
 ) {
+    fun getDisplayName(): String {
+        return marketName
+            .replace(Regex("^\\s*\\(유\\)"), "")
+            .replace(Regex("^\\s*\\(주\\)"), "")
+            .replace(Regex("^\\s*\\(사\\)"), "")
+            .replace(Regex("^\\s*\\(재\\)"), "")
+            .replace(Regex("^\\s*\\(합\\)"), "")
+            .replace(Regex("^\\s*\\(합자\\)"), "")
+            .replace(Regex("^\\s*\\(합명\\)"), "")
+            .replace(Regex("^\\s*주식회사"), "")
+            .replace(Regex("^\\s*유한회사"), "")
+            .replace(Regex("^\\s*사단법인"), "")
+            .replace(Regex("^\\s*재단법인"), "")
+            .trim()
+    }
+
     fun getCleanSpecialty(): String {
         return specialty.replace("+", ", ")
     }

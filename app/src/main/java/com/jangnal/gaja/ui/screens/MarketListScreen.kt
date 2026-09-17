@@ -285,8 +285,8 @@ fun MarketList(
          EmptyState("데이터가 없습니다.")
     } else {
         var searchQuery by remember { mutableStateOf("") }
-        // 0: 가나다순, 1: 거리순
-        var sortType by remember { mutableIntStateOf(0) }
+        // 0: 가나다순, 1: 거리순 (위치 정보가 있으면 거리순 기본)
+        var sortType by remember(userLocation != null) { mutableIntStateOf(if (userLocation != null) 1 else 0) }
         var filterOpenToday by remember { mutableStateOf(false) }
         var filterOpenWeekend by remember { mutableStateOf(false) }
         var filterGangwon by remember { mutableStateOf(false) }
@@ -295,6 +295,7 @@ fun MarketList(
             var filtered = if (searchQuery.isBlank()) markets
             else markets.filter { 
                 it.marketName.contains(searchQuery, ignoreCase = true) ||
+                it.getDisplayName().contains(searchQuery, ignoreCase = true) ||
                 it.addressRoad.contains(searchQuery, ignoreCase = true) ||
                 it.addressJibun.contains(searchQuery, ignoreCase = true)
             }
@@ -323,10 +324,10 @@ fun MarketList(
                              results[0]
                          }
                     } else {
-                        filtered.sortedBy { it.marketName }
+                        filtered.sortedBy { it.getDisplayName() }
                     }
                 }
-                else -> filtered.sortedBy { it.marketName } // 가나다순
+                else -> filtered.sortedBy { it.getDisplayName() } // 가나다순
             }
         }
 

@@ -79,7 +79,7 @@ fun MarketItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = market.marketName,
+                        text = market.getDisplayName(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,

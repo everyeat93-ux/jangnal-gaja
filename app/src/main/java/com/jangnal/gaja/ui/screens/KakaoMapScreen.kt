@@ -5,8 +5,12 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MyLocation
@@ -18,9 +22,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -372,7 +378,7 @@ fun KakaoMapScreen(
             }
         }
         
-        // 하단 정보 카드 (범례 포함)
+        // 하단 정보 카드 (범례 및 추천 시장 탐색)
         Card(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -380,49 +386,145 @@ fun KakaoMapScreen(
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f)
-            )
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // 상단: 제목 및 통계
+                // 상단: 제목, 통계 및 범례 요약
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        val dateFormat = java.text.SimpleDateFormat("M월 d일 (E)", java.util.Locale.KOREA)
-                        val dateText = if (android.text.format.DateUtils.isToday(selectedDateMillis)) "오늘" else dateFormat.format(java.util.Date(selectedDateMillis))
-                        
+                    val dateFormat = java.text.SimpleDateFormat("M월 d일 (E)", java.util.Locale.KOREA)
+                    val dateText = if (android.text.format.DateUtils.isToday(selectedDateMillis)) "오늘" else dateFormat.format(java.util.Date(selectedDateMillis))
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             text = "시장 지도 ($dateText)",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${filteredMarkets.size}개 시장 표시 중",
+                            text = "${filteredMarkets.size}개",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
                         )
+                    }
+
+                    // 범례 요약
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        LegendItem(color = android.graphics.Color.parseColor("#FF6B35"), label = "장날")
+                        LegendItem(color = android.graphics.Color.parseColor("#4CAF50"), label = "전통시장")
+                        LegendItem(color = android.graphics.Color.parseColor("#AAAAAA"), label = "휴장")
                     }
                 }
                 
                 // 구분선
-                Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 
-                // 하단: 범례 (Legend)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    LegendItem(color = android.graphics.Color.parseColor("#FF6B35"), label = "장날 (선택일)")
-                    LegendItem(color = android.graphics.Color.parseColor("#4CAF50"), label = "전통시장")
-                    LegendItem(color = android.graphics.Color.parseColor("#AAAAAA"), label = "쉬는 날")
+                // 추천/탐색 시장 가로 스크롤 리스트 (LazyRow)
+                val currentLoc = userLocation
+                val displayMarkets = remember(filteredMarkets, currentLoc) {
+                    if (currentLoc != null) {
+                        filteredMarkets.sortedBy { m ->
+                            val results = FloatArray(1)
+                            android.location.Location.distanceBetween(
+                                currentLoc.latitude, currentLoc.longitude,
+                                m.latitude, m.longitude,
+                                results
+                            )
+                            results[0]
+                        }.take(20)
+                    } else {
+                        filteredMarkets.take(20)
+                    }
+                }
+
+                if (displayMarkets.isNotEmpty()) {
+                    Text(
+                        text = "📍 주변 추천 시장 탐색 (터치하여 상세 보기)",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(displayMarkets.size) { idx ->
+                            val market = displayMarkets[idx]
+                            val isOpened = market.isPermanent() || market.isOpenOn(selectedDateMillis)
+                            
+                            val distanceText = if (currentLoc != null) {
+                                val results = FloatArray(1)
+                                android.location.Location.distanceBetween(
+                                    currentLoc.latitude, currentLoc.longitude,
+                                    market.latitude, market.longitude,
+                                    results
+                                )
+                                val dist = results[0]
+                                if (dist >= 1000) String.format(java.util.Locale.KOREA, "%.1fkm", dist / 1000f) else "${dist.toInt()}m"
+                            } else null
+
+                            Surface(
+                                modifier = Modifier
+                                    .width(170.dp)
+                                    .clickable { onMarketClick(market) },
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                                border = BorderStroke(1.dp, if (isOpened) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Text(
+                                        text = market.getDisplayName(),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = if (isOpened) "개장중 ☀️" else "휴장 ⚪",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isOpened) Color(0xFF2E7D32) else Color.Gray
+                                        )
+                                        if (distanceText != null) {
+                                            Text(
+                                                text = "• $distanceText",
+                                                fontSize = 11.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                    val cleanSpec = market.getCleanSpecialty()
+                                    if (cleanSpec.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = cleanSpec,
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
