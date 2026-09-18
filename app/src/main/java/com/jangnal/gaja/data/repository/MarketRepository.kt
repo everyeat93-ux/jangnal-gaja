@@ -336,18 +336,31 @@ class MarketRepository(private val marketDao: MarketDao) {
 
     suspend fun getShopsForMarketWithPrepopulate(marketId: Long, marketName: String, latitude: Double, longitude: Double): List<Shop> {
         return withContext(Dispatchers.IO) {
+            val cleanName = marketName
+                .replace(Regex("^\\s*\\(유\\)"), "")
+                .replace(Regex("^\\s*\\(주\\)"), "")
+                .replace(Regex("^\\s*\\(사\\)"), "")
+                .replace(Regex("^\\s*\\(재\\)"), "")
+                .replace(Regex("^\\s*\\(합\\)"), "")
+                .trim()
+                
             val existing = marketDao.getShopsForMarketList(marketId)
+            val curated = CuratedShopsData.getCuratedShops(marketId, cleanName, latitude, longitude)
+
+            if (curated != null) {
+                // If existing only has mock shops or is empty, upgrade immediately to curated real shops
+                val needsUpgrade = existing.isEmpty() || existing.all { it.isMock }
+                if (needsUpgrade) {
+                    marketDao.deleteShopsForMarket(marketId)
+                    marketDao.insertShops(curated)
+                    return@withContext marketDao.getShopsForMarketList(marketId)
+                }
+                return@withContext existing
+            }
+
             if (existing.isNotEmpty()) {
                 existing
             } else {
-                val cleanName = marketName
-                    .replace(Regex("^\\s*\\(유\\)"), "")
-                    .replace(Regex("^\\s*\\(주\\)"), "")
-                    .replace(Regex("^\\s*\\(사\\)"), "")
-                    .replace(Regex("^\\s*\\(재\\)"), "")
-                    .replace(Regex("^\\s*\\(합\\)"), "")
-                    .trim()
-                
                 val defaultShops = listOf(
                     Shop(marketId = marketId, shopName = "${cleanName} 청과·채소 농산물", category = "식당", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
                     Shop(marketId = marketId, shopName = "${cleanName} 산지직송 건어물·젓갈", category = "기타", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),

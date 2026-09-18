@@ -153,6 +153,9 @@ interface MarketDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertShops(shops: List<Shop>)
 
+    @Query("DELETE FROM shops WHERE marketId = :marketId")
+    suspend fun deleteShopsForMarket(marketId: Long)
+
     @Update
     suspend fun updateShop(shop: Shop)
 
