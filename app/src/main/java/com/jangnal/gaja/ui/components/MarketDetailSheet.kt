@@ -567,7 +567,7 @@ fun MarketDetailSheet(
                     Spacer(modifier = Modifier.height(10.dp))
                     Button(
                         onClick = {
-                            val webUrl = "https://jangnal-gaja.web.app/?market=" + Uri.encode(market.marketName)
+                            val webUrl = "https://jangnal-gaja.vercel.app/?market=" + Uri.encode(market.marketName)
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
                             try {
                                 context.startActivity(intent)
