@@ -221,16 +221,15 @@ fun MarketListScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).background(com.jangnal.gaja.ui.theme.BackgroundCream)) {
-            ScrollableTabRow(
+            TabRow(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
                 contentColor = com.jangnal.gaja.ui.theme.JangnalBrown,
-                edgePadding = 0.dp,
                 indicator = { tabPositions ->
                     TabRowDefaults.Indicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
                         color = com.jangnal.gaja.ui.theme.JangnalBrown,
-                        height = 4.dp
+                        height = 3.dp
                     )
                 }
             ) {

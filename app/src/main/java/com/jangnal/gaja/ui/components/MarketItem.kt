@@ -139,7 +139,7 @@ fun MarketItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = market.addressRoad,
+                        text = market.addressRoad.ifEmpty { market.addressJibun },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
