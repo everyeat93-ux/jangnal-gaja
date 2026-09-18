@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -109,34 +110,54 @@ fun MarketDetailSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp, bottom = 48.dp)
-                .verticalScroll(rememberScrollState())
+                .fillMaxHeight(0.92f)
         ) {
-            // Header - 시장 이름 및 즐겨찾기
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // P2: 스크롤 가능한 본문 영역
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Text(
-                    text = market.getDisplayName(),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                androidx.compose.material3.IconButton(
-                    onClick = { onFavoriteToggle(market) }
+                // Header - 시장 이름 및 즐겨찾기 (P3: 장날 알림 즉각 피드백)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = if (market.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = "즐겨찾기",
-                        tint = if (market.isFavorite) Color.Red else MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.size(32.dp)
+                    Text(
+                        text = market.getDisplayName(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
                     )
+                    
+                    androidx.compose.material3.IconButton(
+                        onClick = { 
+                            val willBeFavorite = !market.isFavorite
+                            onFavoriteToggle(market)
+                            if (willBeFavorite) {
+                                val alertMsg = if (market.isPermanent()) {
+                                    "❤️ '${market.getDisplayName()}' 단골 시장으로 등록되었습니다!"
+                                } else {
+                                    "❤️ '${market.getDisplayName()}' 단골 시장으로 등록되었습니다!\n🔔 다음 장날(${market.getNextMarketText()}) 아침에 알림을 전해드립니다."
+                                }
+                                android.widget.Toast.makeText(context, alertMsg, android.widget.Toast.LENGTH_LONG).show()
+                            } else {
+                                android.widget.Toast.makeText(context, "즐겨찾기에서 해제되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (market.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = "즐겨찾기",
+                            tint = if (market.isFavorite) Color.Red else MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             
             // 시장 유형 뱃지
             Badge(
@@ -515,47 +536,55 @@ fun MarketDetailSheet(
                 onConfirmOnnuri = onConfirmOnnuri
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
-            // Action Buttons
+        // P2: Sticky 고정 하단 액션바 (엄지 영역 최적화)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shadowElevation = 8.dp,
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
+                OutlinedButton(
                     onClick = { shareMarket(context, market) },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("공유하기")
+                    Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("공유", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
-                
+
                 Button(
                     onClick = { openMap(context, market) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1.6f).height(48.dp),
+                    shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("길찾기")
+                    Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("길찾기 안내", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Close Button
-            OutlinedButton(
-                onClick = onDismissRequest,
-                modifier = Modifier.fillMaxWidth().height(50.dp)
-            ) {
-                Text("닫기", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+                OutlinedButton(
+                    onClick = onDismissRequest,
+                    modifier = Modifier.height(48.dp),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("닫기", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                }
             }
         }
     }
+}
 }
 
 @Composable
@@ -920,6 +949,7 @@ fun ShopQueueSection(
     var selectedCategory by remember { mutableStateOf("전체") }
     var shopSearchText by remember { mutableStateOf("") }
     val confirmedShopIds = remember { mutableStateListOf<Long>() }
+    var closedWarningMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     
     // Calculate distance
@@ -1239,13 +1269,18 @@ fun ShopQueueSection(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // 3. 대기줄 상태 요약 라인
+                            // 3. 대기줄 상태 요약 라인 (P4: 영업시간 및 개장일 가드)
                             val currentCal = Calendar.getInstance()
                             val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
                             val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
+                            val isOperatingHours = currentHour in 7..20 // 07:00 ~ 20:59
                             val isMarketOpenToday = market.isPermanent() || market.isOpenOn(System.currentTimeMillis())
 
-                            val statusText = if (hasRecentReport) {
+                            val statusText = if (!isMarketOpenToday) {
+                                "비개장일 📅 (다음 장날: ${market.getNextMarketText()})"
+                            } else if (!isOperatingHours) {
+                                "영업 종료 🌙 (내일 09:00 개장)"
+                            } else if (hasRecentReport) {
                                 when (shop.queueStatus) {
                                     0 -> if (isPeakHour) "한산함 🟢 (AI 피크: 5~10분)" else "한산함 🟢 (AI 예상: 즉시 입장)"
                                     1 -> if (isPeakHour) "보통 🟡 (AI 피크: 20~30분)" else "보통 🟡 (AI 예상: 10~15분)"
@@ -1253,10 +1288,12 @@ fun ShopQueueSection(
                                     else -> "제보 없음 ⚪ (AI 평시 분석)"
                                 }
                             } else {
-                                if (isMarketOpenToday && isPeakHour) "대기제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
+                                if (isPeakHour) "대기제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
                                 else "대기제보 없음 ⚪ (AI 평시: 5~10분 예상)"
                             }
-                            val statusColor = if (hasRecentReport) {
+                            val statusColor = if (!isMarketOpenToday || !isOperatingHours) {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            } else if (hasRecentReport) {
                                 when (shop.queueStatus) {
                                     0 -> Color(0xFF2E7D32)
                                     1 -> Color(0xFFE65100)
@@ -1278,7 +1315,7 @@ fun ShopQueueSection(
                                     fontWeight = FontWeight.Medium
                                 )
 
-                                if (hasRecentReport) {
+                                if (hasRecentReport && isMarketOpenToday && isOperatingHours) {
                                     Spacer(modifier = Modifier.width(6.dp))
                                     val mins = ((System.currentTimeMillis() - shop.lastReportTime) / 60000).toInt()
                                     Text(
@@ -1341,7 +1378,15 @@ fun ShopQueueSection(
                                 }
 
                                 OutlinedButton(
-                                    onClick = { activeVotingShop = shop },
+                                    onClick = { 
+                                        if (!isMarketOpenToday) {
+                                            closedWarningMessage = "오늘은 '${market.getDisplayName()}' 장날이 아닙니다.\n다음 장날(${market.getNextMarketText()}) 운영 시간에 현장 대기줄을 제보해 주세요! 📅"
+                                        } else if (!isOperatingHours) {
+                                            closedWarningMessage = "현재는 전통시장 야간 영업 종료 시간(통상 09:00~19:00)입니다.\n내일 아침 개장 시간(09:00~) 이후 현장 대기줄을 제보해 주세요! 🌙"
+                                        } else {
+                                            activeVotingShop = shop
+                                        }
+                                    },
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(38.dp),
@@ -1867,6 +1912,19 @@ fun ShopQueueSection(
                     ) {
                         Text("취소")
                     }
+                }
+            }
+        )
+    }
+
+    if (closedWarningMessage != null) {
+        AlertDialog(
+            onDismissRequest = { closedWarningMessage = null },
+            title = { Text("대기줄 제보 안내", fontWeight = FontWeight.Bold) },
+            text = { Text(closedWarningMessage ?: "") },
+            confirmButton = {
+                Button(onClick = { closedWarningMessage = null }) {
+                    Text("확인")
                 }
             }
         )

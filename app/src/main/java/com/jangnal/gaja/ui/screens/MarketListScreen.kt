@@ -291,9 +291,11 @@ fun MarketList(
         var sortType by remember(userLocation != null) { mutableIntStateOf(if (userLocation != null) 1 else 0) }
         var filterOpenToday by remember { mutableStateOf(false) }
         var filterOpenWeekend by remember { mutableStateOf(false) }
-        var filterGangwon by remember { mutableStateOf(false) }
+        // 0: 전국, 1: 수도권, 2: 강원, 3: 충청/대전, 4: 전라/광주, 5: 경상/부산, 6: 제주
+        var selectedRegionIndex by remember { mutableIntStateOf(0) }
+        val regions = listOf("전국", "수도권", "강원", "충청/대전", "전라/광주", "경상/부산", "제주")
         
-        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, filterGangwon, userLocation) {
+        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, selectedRegionIndex, userLocation) {
             var filtered = if (searchQuery.isBlank()) markets
             else markets.filter { 
                 it.marketName.contains(searchQuery, ignoreCase = true) ||
@@ -309,8 +311,42 @@ fun MarketList(
             if (filterOpenWeekend) {
                 filtered = filtered.filter { it.isOpenThisWeekend() }
             }
-            if (filterGangwon) {
-                filtered = filtered.filter { it.addressRoad.contains("강원") || it.addressJibun.contains("강원") }
+            
+            // P1: 광역 지역 필터링
+            filtered = when (selectedRegionIndex) {
+                1 -> filtered.filter { m -> // 수도권
+                    m.addressRoad.contains("서울") || m.addressJibun.contains("서울") ||
+                    m.addressRoad.contains("경기") || m.addressJibun.contains("경기") ||
+                    m.addressRoad.contains("인천") || m.addressJibun.contains("인천")
+                }
+                2 -> filtered.filter { m -> // 강원
+                    m.addressRoad.contains("강원") || m.addressJibun.contains("강원")
+                }
+                3 -> filtered.filter { m -> // 충청/대전/세종
+                    m.addressRoad.contains("충북") || m.addressJibun.contains("충북") ||
+                    m.addressRoad.contains("충남") || m.addressJibun.contains("충남") ||
+                    m.addressRoad.contains("충청") || m.addressJibun.contains("충청") ||
+                    m.addressRoad.contains("대전") || m.addressJibun.contains("대전") ||
+                    m.addressRoad.contains("세종") || m.addressJibun.contains("세종")
+                }
+                4 -> filtered.filter { m -> // 전라/광주
+                    m.addressRoad.contains("전북") || m.addressJibun.contains("전북") ||
+                    m.addressRoad.contains("전남") || m.addressJibun.contains("전남") ||
+                    m.addressRoad.contains("전라") || m.addressJibun.contains("전라") ||
+                    m.addressRoad.contains("광주") || m.addressJibun.contains("광주")
+                }
+                5 -> filtered.filter { m -> // 경상/부산/대구/울산
+                    m.addressRoad.contains("경북") || m.addressJibun.contains("경북") ||
+                    m.addressRoad.contains("경남") || m.addressJibun.contains("경남") ||
+                    m.addressRoad.contains("경상") || m.addressJibun.contains("경상") ||
+                    m.addressRoad.contains("부산") || m.addressJibun.contains("부산") ||
+                    m.addressRoad.contains("대구") || m.addressJibun.contains("대구") ||
+                    m.addressRoad.contains("울산") || m.addressJibun.contains("울산")
+                }
+                6 -> filtered.filter { m -> // 제주
+                    m.addressRoad.contains("제주") || m.addressJibun.contains("제주")
+                }
+                else -> filtered // 전국
             }
             
             when (sortType) {
@@ -340,7 +376,7 @@ fun MarketList(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 placeholder = { Text("시장 이름 또는 주소 검색") },
                 leadingIcon = { 
                     Icon(imageVector = Icons.Default.Search, contentDescription = "검색") 
@@ -360,7 +396,7 @@ fun MarketList(
                 )
             )
             
-            // 정렬 및 필터 옵션
+            // 1차 필터: 정렬 & 개장일 필터 옵션
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -411,15 +447,40 @@ fun MarketList(
                         selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
                     )
                 )
-                FilterChip(
-                    selected = filterGangwon,
-                    onClick = { filterGangwon = !filterGangwon },
-                    label = { Text(if (filterGangwon) "🌊 강원 로컬 5일장 ✓" else "🌊 강원 로컬 5일장") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
-                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // 2차 필터: P1 전국 시/도 광역 지역 칩
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                regions.forEachIndexed { index, regionName ->
+                    val isSelected = selectedRegionIndex == index
+                    val icon = when (index) {
+                        0 -> "🌐"
+                        1 -> "🏢"
+                        2 -> "🌲"
+                        3 -> "🌾"
+                        4 -> "🍲"
+                        5 -> "🌊"
+                        else -> "🍊"
+                    }
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { selectedRegionIndex = index },
+                        label = { Text("$icon $regionName", fontSize = 12.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        shape = RoundedCornerShape(8.dp)
                     )
-                )
+                }
             }
             
             Spacer(modifier = Modifier.height(8.dp))
