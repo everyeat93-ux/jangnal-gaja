@@ -178,6 +178,9 @@ fun MarketListScreen(
                     viewModel.submitShopReview(context, market.id, shopName, rating, content, imageUri)
                 }
             },
+            onConfirmOnnuri = { shopId ->
+                viewModel.confirmOnnuriPayment(shopId)
+            },
             onDismissRequest = { selectedMarket = null }
         )
     }

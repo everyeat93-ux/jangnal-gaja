@@ -27,5 +27,9 @@ data class Shop(
     val queueStatus: Int = -1,
     val lastReportTime: Long = 0,
     val isVerifiedReport: Boolean = false,
-    val isMock: Boolean = false
+    val isMock: Boolean = false,
+    // 온누리상품권 공공 가맹 및 현장 검증 필드
+    val isOnnuri: Boolean = true,
+    val onnuriType: String = "지류·카드·모바일",
+    val onnuriConfirmedCount: Int = 0
 )

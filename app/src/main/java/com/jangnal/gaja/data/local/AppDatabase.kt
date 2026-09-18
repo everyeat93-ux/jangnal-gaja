@@ -12,7 +12,7 @@ import com.jangnal.gaja.data.local.entity.Shop
  * The Room Database for the application.
  * Defines the entities and version.
  */
-@Database(entities = [Market::class, Shop::class], version = 6, exportSchema = false)
+@Database(entities = [Market::class, Shop::class], version = 7, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun marketDao(): MarketDao

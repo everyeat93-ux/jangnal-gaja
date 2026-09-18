@@ -159,6 +159,9 @@ interface MarketDao {
     @Query("UPDATE shops SET queueStatus = :status, lastReportTime = :reportTime, isVerifiedReport = :isVerified WHERE id = :shopId")
     suspend fun updateShopQueueStatus(shopId: Long, status: Int, reportTime: Long, isVerified: Boolean)
 
+    @Query("UPDATE shops SET onnuriConfirmedCount = onnuriConfirmedCount + 1 WHERE id = :shopId")
+    suspend fun incrementShopOnnuriConfirm(shopId: Long)
+
     @Query("UPDATE markets SET hasToilet = :value WHERE id = :marketId")
     suspend fun updateMarketToilet(marketId: Long, value: String)
 

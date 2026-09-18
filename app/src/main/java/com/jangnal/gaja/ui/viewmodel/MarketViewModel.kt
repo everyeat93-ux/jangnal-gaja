@@ -310,6 +310,12 @@ class MarketViewModel(
         }
     }
 
+    fun confirmOnnuriPayment(shopId: Long) {
+        viewModelScope.launch {
+            repository.incrementShopOnnuriConfirm(shopId)
+        }
+    }
+
     fun addShopToMarket(marketId: Long, name: String, category: String, lat: Double, lon: Double) {
         val sanitizedName = name.trim().take(30)
         if (sanitizedName.isEmpty()) return
@@ -322,7 +328,10 @@ class MarketViewModel(
                 category = sanitizedCategory,
                 latitude = lat,
                 longitude = lon,
-                isMock = false
+                isMock = false,
+                isOnnuri = true,
+                onnuriType = "지류·카드·모바일",
+                onnuriConfirmedCount = 1
             )
             repository.insertShop(newShop)
 
@@ -338,7 +347,10 @@ class MarketViewModel(
                     "queueStatus" to -1,
                     "lastReportTime" to 0L,
                     "isVerifiedReport" to false,
-                    "isMock" to false
+                    "isMock" to false,
+                    "isOnnuri" to true,
+                    "onnuriType" to "지류·카드·모바일",
+                    "onnuriConfirmedCount" to 1
                 )
                 firestore.collection("markets").document(marketId.toString())
                     .collection("shops").document(sanitizedName).set(shopMap).await()

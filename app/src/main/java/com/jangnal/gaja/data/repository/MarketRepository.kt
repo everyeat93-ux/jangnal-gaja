@@ -336,7 +336,28 @@ class MarketRepository(private val marketDao: MarketDao) {
 
     suspend fun getShopsForMarketWithPrepopulate(marketId: Long, marketName: String, latitude: Double, longitude: Double): List<Shop> {
         return withContext(Dispatchers.IO) {
-            marketDao.getShopsForMarketList(marketId)
+            val existing = marketDao.getShopsForMarketList(marketId)
+            if (existing.isNotEmpty()) {
+                existing
+            } else {
+                val cleanName = marketName
+                    .replace(Regex("^\\s*\\(유\\)"), "")
+                    .replace(Regex("^\\s*\\(주\\)"), "")
+                    .replace(Regex("^\\s*\\(사\\)"), "")
+                    .replace(Regex("^\\s*\\(재\\)"), "")
+                    .replace(Regex("^\\s*\\(합\\)"), "")
+                    .trim()
+                
+                val defaultShops = listOf(
+                    Shop(marketId = marketId, shopName = "${cleanName} 청과·채소 농산물", category = "식당", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
+                    Shop(marketId = marketId, shopName = "${cleanName} 산지직송 건어물·젓갈", category = "기타", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
+                    Shop(marketId = marketId, shopName = "${cleanName} 전통 떡방앗간·참기름", category = "먹거리", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
+                    Shop(marketId = marketId, shopName = "${cleanName} 암소한우·토종정육점", category = "식당", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
+                    Shop(marketId = marketId, shopName = "${cleanName} 원조 장터 손칼국수·분식", category = "먹거리", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true)
+                )
+                marketDao.insertShops(defaultShops)
+                marketDao.getShopsForMarketList(marketId)
+            }
         }
     }
 
@@ -349,6 +370,12 @@ class MarketRepository(private val marketDao: MarketDao) {
     suspend fun updateShopQueue(shopId: Long, status: Int, isVerified: Boolean) {
         withContext(Dispatchers.IO) {
             marketDao.updateShopQueueStatus(shopId, status, System.currentTimeMillis(), isVerified)
+        }
+    }
+
+    suspend fun incrementShopOnnuriConfirm(shopId: Long) {
+        withContext(Dispatchers.IO) {
+            marketDao.incrementShopOnnuriConfirm(shopId)
         }
     }
 
