@@ -449,20 +449,154 @@ fun MarketDetailSheet(
             
             DetailRow(Icons.Default.ShoppingBag, "주요 품목: $displaySpecialty")
             Spacer(modifier = Modifier.height(6.dp))
-            OutlinedButton(
-                onClick = {
-                    val cleanSpecialty = displaySpecialty.split(",").firstOrNull()?.trim() ?: ""
-                    val cleanMarketName = market.marketName.replace("전통시장", "").replace("시장", "").trim()
-                    val query = if (cleanSpecialty.isNotEmpty()) "$cleanMarketName $cleanSpecialty" else market.marketName
-                    val shoppingUrl = "https://search.shopping.naver.com/search/all?query=" + Uri.encode(query)
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(shoppingUrl))
-                    try { context.startActivity(intent) } catch (_: Exception) {}
-                },
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
-                modifier = Modifier.fillMaxWidth().height(36.dp)
+            val (dropHeadline, dropBadge, dropSubtext) = remember(market.marketName, displaySpecialty) {
+                val name = market.marketName
+                when {
+                    name.contains("신림") || name.contains("관악") -> Triple(
+                        "🔥 오늘 30분 대기 [신림 원조 백순대 밀키트]",
+                        "한정 50세트",
+                        "30년 전통 비법 양념장 포함 집에서 3분 완성 · 당일 냉매 포장"
+                    )
+                    name.contains("속초") -> Triple(
+                        "🔥 현장 1시간 대기 [속초 수제 닭강정]",
+                        "한정 100상자",
+                        "가마솥 조청으로 갓 튀겨 당일 발송 · 식어도 바삭한 원조"
+                    )
+                    name.contains("정선") -> Triple(
+                        "🔥 2·7일 정선 장날 [햇생곤드레 & 시골 들기름]",
+                        "장날 당일 채취",
+                        "해발 700m 새벽 수확 생곤드레 1kg + 저온압착 100% 들기름"
+                    )
+                    name.contains("광장") -> Triple(
+                        "🔥 광장시장 줄 서는 [맷돌 빈대떡 & 마약김밥]",
+                        "한정 50세트",
+                        "100% 녹두 맷돌 반죽 3장 + 톡 쏘는 마약김밥 겨자소스"
+                    )
+                    name.contains("서문") -> Triple(
+                        "🔥 서문시장 원조 [납작만두 & 옛날손국수 밀키트]",
+                        "한정 60세트",
+                        "50년 전통 얇은 피 만두 30개 + 진한 남해 멸치육수 손국수"
+                    )
+                    else -> {
+                        val specialty = displaySpecialty.split(",").firstOrNull()?.trim() ?: "명물 특산물"
+                        Triple(
+                            "🔥 줄 서는 [${market.marketName} $specialty 밀키트]",
+                            "장날 한정 드롭",
+                            "5일장 장날 당일 상인 직송 · 디지털 온누리상품권 10% 추가할인"
+                        )
+                    }
+                }
+            }
+
+            // [P5] 장날 라이브 드롭(Live Drop) 고전환 커머스 카드
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, Color(0xFFFFB74D)),
+                color = Color(0xFFFFF8F0),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
             ) {
-                Text("📦 ${market.marketName} 특산물 산지직송 / 온라인 택배 주문", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Column(
+                    modifier = Modifier.padding(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFE65100)
+                            ) {
+                                Text(
+                                    text = "장날 LIVE DROP",
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFE8F5E9)
+                            ) {
+                                Text(
+                                    text = "온누리 10%↓",
+                                    color = Color(0xFF2E7D32),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFFFEBEE)
+                        ) {
+                            Text(
+                                text = dropBadge,
+                                color = Color(0xFFC62828),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = dropHeadline,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF1E1B18)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = dropSubtext,
+                        fontSize = 11.sp,
+                        color = Color(0xFF616161),
+                        lineHeight = 15.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = {
+                            val webUrl = "https://jangnal-gaja.web.app/?market=" + Uri.encode(market.marketName)
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                // Fallback to naver shopping search if browser fails
+                                val cleanSpecialty = displaySpecialty.split(",").firstOrNull()?.trim() ?: ""
+                                val cleanMarketName = market.marketName.replace("전통시장", "").replace("시장", "").trim()
+                                val query = if (cleanSpecialty.isNotEmpty()) "$cleanMarketName $cleanSpecialty" else market.marketName
+                                val fallbackUrl = "https://search.shopping.naver.com/search/all?query=" + Uri.encode(query)
+                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl))) } catch (_: Exception) {}
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE65100),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(vertical = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(38.dp)
+                    ) {
+                        Text(
+                            text = "⚡ 오늘 한정수량 집에서 받기 (택배비 무료)",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             
