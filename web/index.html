@@ -1,15 +1,22 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>장날가자 LIVE DROP | 전국 5일장 맛집·특산물 산지직송</title>
+  <title>장날가자 몰 | 전국 5일장 명물·산지직송 라이브 드롭</title>
+  <meta name="description" content="전국 5일장 줄 서는 맛집 밀키트와 당일 채취 산지직송 특산물을 장날 한정 수량으로 만나보세요. 디지털 온누리상품권 10% 상시 할인!">
+  <!-- Open Graph -->
+  <meta property="og:title" content="장날가자 몰 - 5일장 맛집·특산물 라이브 드롭">
+  <meta property="og:description" content="신림 순대타운, 속초 조청 닭강정, 정선 햇생곤드레를 집에서 3분 만에! 온누리 10% 즉시 할인">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80">
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Google Fonts: Pretendard -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  
   <script>
     tailwind.config = {
       theme: {
@@ -31,12 +38,10 @@
               900: '#7c2d12',
               dark: '#1e1b18'
             },
-            traditional: {
-              red: '#b91c1c',
-              teal: '#0f766e',
-              gold: '#d97706',
-              charcoal: '#18181b',
-              cream: '#faf8f5'
+            kurly: {
+              purple: '#5f0080',
+              purpleLight: '#f7f0fa',
+              green: '#0f766e'
             }
           }
         }
@@ -45,8 +50,8 @@
   </script>
   <style>
     body {
-      background-color: #faf8f5;
-      color: #18181b;
+      background-color: #faf9f6;
+      color: #191919;
       -webkit-font-smoothing: antialiased;
     }
     .badge-pulse {
@@ -54,7 +59,7 @@
     }
     @keyframes pulse-glow {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.75; transform: scale(1.05); }
+      50% { opacity: 0.8; transform: scale(1.04); }
     }
     .custom-scrollbar::-webkit-scrollbar {
       display: none;
@@ -63,120 +68,287 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    .glass-card {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(229, 231, 235, 0.8);
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
     }
   </style>
 </head>
-<body class="font-sans min-h-screen pb-24">
+<body class="font-sans min-h-screen pb-20 md:pb-0">
 
-  <!-- TOP APP BANNER (App Connection) -->
-  <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white text-xs px-4 py-2.5 flex items-center justify-between shadow-sm">
-    <div class="flex items-center space-x-2 font-medium">
-      <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider">장날가자 APP 연동</span>
-      <span>📢 5일장 현장 대기열 실시간 연동 LIVE DROP</span>
-    </div>
-    <div class="flex items-center space-x-2">
-      <span class="text-orange-100 hidden sm:inline">디지털 온누리상품권 10% 즉시할인</span>
-      <a href="javascript:void(0)" onclick="openOnnuriGuide()" class="underline font-bold text-white hover:text-amber-200">혜택보기 &rarr;</a>
+  <!-- 1. TOP GLOBAL NOTICE BAR -->
+  <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white text-xs px-4 py-2 flex items-center justify-between shadow-sm">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+      <div class="flex items-center space-x-2 font-medium">
+        <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[10px] font-black tracking-wider">장날가자 MALL</span>
+        <span class="hidden sm:inline">전국 5일장 줄 서는 맛집 밀키트 & 산지직송 직배송</span>
+        <span class="sm:hidden text-[11px]">전국 5일장 라이브 직송</span>
+      </div>
+      <div class="flex items-center space-x-3 text-xs">
+        <span class="text-orange-100 hidden md:inline">💳 디지털 온누리 10% 추가할인</span>
+        <button onclick="openOnnuriModal()" class="underline font-bold text-white hover:text-amber-200">혜택안내 &rarr;</button>
+        <span class="text-white/40">|</span>
+        <button onclick="openMerchantModal()" class="font-medium text-orange-100 hover:text-white">상인 입점신청</button>
+      </div>
     </div>
   </div>
 
-  <!-- NAVIGATION HEADER -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-orange-100 shadow-sm transition-all">
-    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <a href="index.html" class="flex items-center space-x-2">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black shadow-md text-base">
+  <!-- 2. MAIN HEADER (마켓컬리 / 컨비니 스타일 상단 내비게이션) -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-gray-200/80 shadow-sm transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-4">
+        <a href="index.html" class="flex items-center space-x-2.5 group">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black shadow-md text-xl group-hover:scale-105 transition">
             장
           </div>
-          <div class="leading-none">
-            <span class="font-black text-lg tracking-tight text-gray-900">장날가자 <span class="text-orange-600">LIVE DROP</span></span>
-            <span class="block text-[9px] font-bold text-gray-400 tracking-wider">5일장 맛집·특산물 한정 직송</span>
+          <div>
+            <div class="flex items-center space-x-1.5 leading-none">
+              <span class="font-black text-xl sm:text-2xl tracking-tight text-gray-900">장날가자 <span class="text-orange-600">몰</span></span>
+              <span class="bg-orange-100 text-orange-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">LIVE DROP</span>
+            </div>
+            <span class="text-[10px] font-bold text-gray-400 tracking-wider">전국 5일장 산지직송 & 맛집 큐레이션</span>
           </div>
         </a>
       </div>
 
-      <div class="flex items-center space-x-2">
-        <button onclick="toggleSearch()" class="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-full transition" aria-label="검색">
-          <i data-lucide="search" class="w-5 h-5"></i>
+      <!-- Integrated Search Bar (Kurly Style) -->
+      <div class="flex-1 max-w-lg hidden md:block">
+        <div class="relative">
+          <input type="text" id="desktop-search" onkeyup="handleSearchInput(event)" placeholder="신림 백순대, 속초 닭강정, 정선 곤드레, 광장 빈대떡..." class="w-full bg-gray-100 border border-transparent focus:border-orange-500 focus:bg-white text-sm rounded-2xl px-5 py-3 pl-11 focus:outline-none focus:ring-4 focus:ring-orange-500/10 transition">
+          <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3.5 top-3.5"></i>
+          <button onclick="executeSearch()" class="absolute right-2.5 top-2 bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-orange-700 transition">
+            검색
+          </button>
+        </div>
+      </div>
+
+      <!-- User Actions & Cart Button -->
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleMobileSearch()" class="p-2 text-gray-700 hover:text-orange-600 md:hidden">
+          <i data-lucide="search" class="w-6 h-6"></i>
         </button>
-        <button onclick="openCart()" class="relative p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-full transition" aria-label="장바구니">
+
+        <button onclick="openCartDrawer()" class="relative flex items-center space-x-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3.5 py-2.5 rounded-2xl border border-orange-200 transition">
           <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-          <span id="cart-count" class="absolute top-1 right-1 bg-orange-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+          <span class="text-xs font-black hidden sm:inline">장바구니</span>
+          <span id="header-cart-badge" class="bg-orange-600 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center">0</span>
         </button>
       </div>
     </div>
 
-    <!-- Collapsible Search Bar -->
-    <div id="search-bar" class="hidden px-4 pb-3 max-w-5xl mx-auto border-t border-gray-100 pt-2 bg-white">
+    <!-- Category Mega Menu Bar -->
+    <div class="bg-white border-t border-gray-100 px-4">
+      <div class="max-w-7xl mx-auto flex items-center space-x-6 overflow-x-auto custom-scrollbar h-11 text-xs sm:text-sm font-bold">
+        <button onclick="setCategory('all')" id="tab-all" class="nav-tab text-orange-600 border-b-2 border-orange-600 h-full flex items-center px-1 shrink-0">
+          🔥 전체 라이브 드롭
+        </button>
+        <button onclick="setCategory('mealkit')" id="tab-mealkit" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🍲 30년 전통 맛집 밀키트
+        </button>
+        <button onclick="setCategory('fresh')" id="tab-fresh" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🌿 당일 채취 햇특산물
+        </button>
+        <button onclick="setCategory('snack')" id="tab-snack" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🍗 가마솥 닭강정·주전부리
+        </button>
+        <button onclick="scrollToStory()" class="text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🎬 컨비니 장인 인터뷰
+        </button>
+        <button onclick="openOnnuriModal()" class="text-emerald-700 hover:text-emerald-800 h-full flex items-center px-1 shrink-0 ml-auto">
+          💳 온누리 10% 할인관
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Expandable Search Bar -->
+    <div id="mobile-search-bar" class="hidden px-4 py-3 bg-white border-t border-gray-100 md:hidden">
       <div class="relative">
-        <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="시장명(신림, 속초, 정선, 광장, 서문), 품목(순대, 닭강정, 곤드레) 검색..." class="w-full bg-gray-100 text-sm rounded-xl px-4 py-2.5 pl-10 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition">
-        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+        <input type="text" id="mobile-search-input" onkeyup="handleSearchInput(event)" placeholder="시장명, 품목(순대, 닭강정, 곤드레) 검색..." class="w-full bg-gray-100 text-sm rounded-xl px-4 py-2.5 pl-10 focus:outline-none focus:ring-2 focus:ring-orange-500">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
       </div>
     </div>
   </header>
 
-  <!-- DYNAMIC HERO BANNER CONTAINER -->
-  <section id="hero-banner" class="max-w-5xl mx-auto px-4 pt-4 pb-2">
-    <!-- Rendered via Javascript based on ?market= parameter -->
-  </section>
-
-  <!-- 3-STAGE KILLER FEATURE HIGHLIGHT (컨비니 + 마켓컬리 장점 극대화) -->
-  <section class="max-w-5xl mx-auto px-4 py-3">
-    <div class="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-orange-200/70 rounded-3xl p-4 sm:p-5 shadow-sm">
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center space-x-2">
-          <span class="bg-orange-600 text-white text-[11px] font-black px-2 py-0.5 rounded-full">장날 라이브 드롭 3대 원칙</span>
-          <h2 class="text-sm sm:text-base font-extrabold text-gray-900">왜 일반 온라인 쇼핑몰과 다를까요?</h2>
+  <!-- 3. APP INCOMING MARKET NOTICE (앱에서 넘어왔을 때 전용 배너) -->
+  <div id="app-incoming-banner" class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+    <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-orange-400/40">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
+          📍
         </div>
-        <span class="text-[11px] text-orange-600 font-bold hidden sm:inline">100% 전통시장 로컬 직송</span>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="bg-black/30 text-white text-[10px] font-black px-2 py-0.5 rounded">장날가자 앱 전용관</span>
+            <span id="incoming-market-name" class="font-black text-sm sm:text-base">신림중앙시장</span>
+          </div>
+          <p id="incoming-market-desc" class="text-xs text-orange-100 mt-0.5">
+            고객님께서 조회하신 시장의 [한정 수량 라이브 드롭]이 준비되었습니다!
+          </p>
+        </div>
+      </div>
+      <button onclick="scrollToTargetItem()" class="bg-white text-orange-700 text-xs font-extrabold px-4 py-2.5 rounded-xl hover:bg-orange-50 transition shadow shrink-0">
+        해당 상품 바로보기 &darr;
+      </button>
+    </div>
+  </div>
+
+  <!-- 4. HERO CAROUSEL / BRAND SHOWCASE (마켓컬리 & 컨비니 감성) -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      
+      <!-- Main Featured Hero (2 Cols) -->
+      <div id="hero-main-card" class="lg:col-span-2 relative bg-gradient-to-br from-gray-950 via-stone-900 to-amber-950 text-white rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden border border-amber-500/30 flex flex-col justify-between min-h-[380px]">
+        <div class="relative z-10 max-w-xl">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="bg-orange-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full flex items-center space-x-1">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 inline"></i>
+              <span id="hero-market-badge">신림 순대타운 본점</span>
+            </span>
+            <span class="bg-red-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full badge-pulse flex items-center space-x-1">
+              <i data-lucide="users" class="w-3.5 h-3.5 inline"></i>
+              <span id="hero-waiting-badge">실시간 현장 대기 38명</span>
+            </span>
+            <span class="bg-white/10 text-amber-200 text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10">
+              ⚡ 잔여 14세트 한정
+            </span>
+          </div>
+
+          <h1 id="hero-title" class="text-2xl sm:text-4xl font-black tracking-tight leading-snug mb-3 text-white">
+            [원조 신림 순대타운] 3분 완성 백순대·곱창볶음 밀키트 (2인분)
+          </h1>
+          <p id="hero-desc" class="text-xs sm:text-sm text-gray-300 mb-6 leading-relaxed">
+            30년 전통 비법 양념장과 당일 손질 곱창! 고소한 들깨가루와 깻잎까지 모두 담아 집에서 3분 만에 현장의 맛을 재현합니다.
+          </p>
+
+          <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span id="hero-orig-price" class="text-xs text-gray-400 line-through block">정상가 21,000원</span>
+              <div class="flex items-baseline space-x-2">
+                <span id="hero-price" class="text-2xl sm:text-3xl font-black text-orange-400">18,900원</span>
+                <span id="hero-onnuri-price" class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-500/40">
+                  온누리 10%가 17,010원
+                </span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[11px] text-amber-300 font-bold block mb-1">⏳ 장날 마감 카운트다운</span>
+              <div id="hero-timer" class="font-mono text-sm sm:text-base font-black text-white bg-black/50 px-3 py-1.5 rounded-xl border border-amber-500/40">
+                03:42:18 남음
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button onclick="heroDirectOrder()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-6 py-4 rounded-2xl shadow-xl hover:from-orange-600 hover:to-amber-600 active:scale-95 transition text-sm flex items-center space-x-2">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              <span>오늘 드롭 즉시 주문하기 (택배비 무료)</span>
+            </button>
+            <button onclick="heroAddToCart()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-4 rounded-2xl transition border border-white/20">
+              장바구니 담기
+            </button>
+          </div>
+        </div>
+
+        <div id="hero-bg-img" class="absolute right-0 top-0 bottom-0 w-3/5 opacity-30 bg-cover bg-center hidden md:block" style="background-image: url('https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1000&q=80')"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-3/5 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent hidden md:block"></div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <!-- Principle 1 -->
-        <div class="bg-white rounded-2xl p-3.5 border border-orange-100 shadow-sm flex items-start space-x-3">
-          <div class="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-            <i data-lucide="flame" class="w-5 h-5"></i>
+      <!-- Side Live Drops / Kurly Quick Picks (1 Col) -->
+      <div class="flex flex-col justify-between gap-4">
+        <!-- Quick Pick 1: Sokcho -->
+        <div onclick="selectHeroProduct('sokcho-chicken')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
+          <img src="https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="속초 닭강정">
+          <div class="flex-1">
+            <div class="flex items-center space-x-1.5">
+              <span class="bg-orange-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">속초중앙</span>
+              <span class="text-[10px] text-red-600 font-bold">1시간 대기</span>
+            </div>
+            <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">속초 30년 본점 수제 조청 닭강정</h4>
+            <div class="mt-1 flex items-baseline space-x-1.5">
+              <span class="text-xs font-black text-gray-900">21,000원</span>
+              <span class="text-[10px] font-bold text-emerald-600">온누리 18,900원</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Pick 2: Jeongseon -->
+        <div onclick="selectHeroProduct('jeongseon-gondre')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
+          <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="정선 곤드레">
+          <div class="flex-1">
+            <div class="flex items-center space-x-1.5">
+              <span class="bg-orange-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">정선5일장</span>
+              <span class="text-[10px] text-emerald-600 font-bold">새벽 채취</span>
+            </div>
+            <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">정선 햇생곤드레 & 저온압착 들기름</h4>
+            <div class="mt-1 flex items-baseline space-x-1.5">
+              <span class="text-xs font-black text-gray-900">25,900원</span>
+              <span class="text-[10px] font-bold text-emerald-600">온누리 23,310원</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onnuri Promo Banner -->
+        <div onclick="openOnnuriModal()" class="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-3xl p-4.5 shadow-sm cursor-pointer hover:opacity-95 transition flex items-center justify-between">
+          <div>
+            <span class="bg-emerald-700 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">전 상품 적용</span>
+            <h4 class="text-sm font-black mt-1">디지털 온누리 10% 즉시할인</h4>
+            <p class="text-[10px] text-emerald-100/80 mt-0.5">결제 시 10% 즉시 차감 혜택 받기</p>
+          </div>
+          <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-lg">
+            💳
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5. 3-STAGE CONVENII + KURLY PHILOSOPHY (차별화 3원칙) -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="bg-white border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-gray-100 gap-2">
+        <div>
+          <span class="text-orange-600 font-black text-xs tracking-wider uppercase">Jangnal-Gaja LIVE DROP Standard</span>
+          <h2 class="text-lg sm:text-xl font-black text-gray-900 mt-0.5">왜 일반 공장 밀키트와 차원이 다를까요?</h2>
+        </div>
+        <span class="text-xs text-gray-500">대량 가공식품이 아닌, 100% 현장 노점 장인의 손맛</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="flex items-start space-x-4">
+          <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl shrink-0">
+            🔥
           </div>
           <div>
-            <div class="text-xs font-bold text-gray-900 flex items-center space-x-1">
-              <span>1. 실시간 대기열 데이터 연동</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
-              장날가자 앱 현장 대기 30분 이상 검증된 찐 로컬 맛집만 장날 당일 한정 라이브 드롭!
+            <h3 class="text-sm font-black text-gray-900">1. 실시간 대기열 데이터 연동</h3>
+            <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+              장날가자 앱에서 웨이팅 30분 이상 입증된 전국 5일장 찐 맛집만 엄선하여 장날 당일 라이브 드롭을 진행합니다.
             </p>
           </div>
         </div>
 
-        <!-- Principle 2 -->
-        <div class="bg-white rounded-2xl p-3.5 border border-orange-100 shadow-sm flex items-start space-x-3">
-          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-            <i data-lucide="chef-hat" class="w-5 h-5"></i>
+        <div class="flex items-start space-x-4">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0">
+            🍳
           </div>
           <div>
-            <div class="text-xs font-bold text-gray-900 flex items-center space-x-1">
-              <span>2. 30년 장인의 손맛 밀키트</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
-              공장 대량가공 NO! 할머니의 비법 양념장과 당일 손질 재료로 집에서 3분 완성.
+            <h3 class="text-sm font-black text-gray-900">2. 30년 장인의 손맛 밀키트</h3>
+            <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+              공장 가공소스가 아닌, 사장님이 수십 년간 끓여낸 비법 소스와 새벽 손질 재료로 집에서 3분 만에 조리 완료됩니다.
             </p>
           </div>
         </div>
 
-        <!-- Principle 3 -->
-        <div class="bg-white rounded-2xl p-3.5 border border-orange-100 shadow-sm flex items-start space-x-3">
-          <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-            <i data-lucide="package-check" class="w-5 h-5"></i>
+        <div class="flex items-start space-x-4">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0">
+            ❄️
           </div>
           <div>
-            <div class="text-xs font-bold text-gray-900 flex items-center space-x-1">
-              <span>3. 장날 당일 1장 송장 직송</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
-              상인이 장날 하루 몰아서 특수 냉매 포장 발송! 재고 없는 극상의 신선도 보장.
+            <h3 class="text-sm font-black text-gray-900">3. 3중 안심 보랭 & 당일 발송</h3>
+            <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+              재고 보관 없이 장날 당일 바로 특수 진공포장 + 은박 보랭백 + 100% 순수 물 아이스팩으로 신선하게 직송합니다.
             </p>
           </div>
         </div>
@@ -184,132 +356,229 @@
     </div>
   </section>
 
-  <!-- CATEGORY FILTER CHIPS -->
-  <section class="max-w-5xl mx-auto px-4 py-2">
-    <div class="flex items-center space-x-2 overflow-x-auto custom-scrollbar py-1">
-      <button onclick="setCategory('all')" id="cat-all" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-orange-600 text-white shadow-sm shrink-0 transition">
-        🔥 전체 장날 드롭
-      </button>
-      <button onclick="setCategory('mealkit')" id="cat-mealkit" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:border-orange-400 shrink-0 transition">
-        🍲 줄 서는 맛집 밀키트
-      </button>
-      <button onclick="setCategory('fresh')" id="cat-fresh" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:border-orange-400 shrink-0 transition">
-        🌿 산지직송 햇나물·채소
-      </button>
-      <button onclick="setCategory('snack')" id="cat-snack" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:border-orange-400 shrink-0 transition">
-        🍗 시장 명물 닭강정·간식
-      </button>
-      <button onclick="setCategory('special')" id="cat-special" class="category-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:border-orange-400 shrink-0 transition">
-        🎁 5일장 명물 선물세트
-      </button>
-    </div>
-  </section>
-
-  <!-- LIVE DROP ITEMS GRID -->
-  <main class="max-w-5xl mx-auto px-4 py-3">
-    <div class="flex items-center justify-between mb-4">
+  <!-- 6. PRODUCT CATALOG GRID (전국 5대장 킬러 드롭 & 카테고리 필터) -->
+  <main id="catalog-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
       <div>
-        <h2 class="text-lg font-black text-gray-900 tracking-tight flex items-center space-x-2">
-          <span>⚡ 오늘의 한정 수량 장날 라이브 드롭</span>
-          <span class="bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full badge-pulse">LIVE</span>
-        </h2>
-        <p class="text-xs text-gray-500 mt-0.5">장날 당일 한정 수량이 소진되면 다음 장날까지 주문이 마감됩니다.</p>
+        <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 rounded-full bg-orange-600 animate-ping"></span>
+          <h2 class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+            ⚡ 오늘의 한정 수량 장날 라이브 드롭
+          </h2>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">오늘 준비된 수량이 모두 소진되면 다음 장날까지 주문이 마감됩니다.</p>
       </div>
-      <div class="text-right">
-        <span class="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-xl">
-          💳 디지털 온누리 10% 추가할인
-        </span>
+
+      <div class="flex items-center space-x-2 text-xs font-bold">
+        <span class="text-gray-400">정렬:</span>
+        <button onclick="sortProducts('popular')" id="sort-popular" class="text-orange-600 font-black">인기순</button>
+        <span class="text-gray-300">·</span>
+        <button onclick="sortProducts('stock')" id="sort-stock" class="text-gray-500 hover:text-gray-800">마감임박순</button>
+        <span class="text-gray-300">·</span>
+        <button onclick="sortProducts('price')" id="sort-price" class="text-gray-500 hover:text-gray-800">낮은가격순</button>
       </div>
     </div>
 
     <!-- Product Grid Container -->
-    <div id="product-grid" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Injected via JavaScript -->
     </div>
   </main>
 
-  <!-- ONNURI PROMOTION & MERCHANT PARTNER SECTION -->
-  <section class="max-w-5xl mx-auto px-4 py-5">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <!-- Onnuri Promo Banner -->
-      <div class="bg-gradient-to-r from-emerald-800 to-teal-900 text-white rounded-3xl p-5 shadow-sm relative overflow-hidden">
-        <div class="relative z-10">
-          <div class="inline-flex items-center space-x-1.5 bg-emerald-700/80 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-2">
-            <i data-lucide="wallet" class="w-3.5 h-3.5"></i>
-            <span>정부 지원 전통시장 혜택</span>
-          </div>
-          <h3 class="text-base font-extrabold mb-1">디지털 온누리상품권 10% 상시 할인</h3>
-          <p class="text-xs text-emerald-100/90 leading-relaxed mb-3">
-            장날가자 라이브 드롭 전 상품은 온누리상품권 앱 연동으로 결제 금액의 10%를 즉시 할인받으실 수 있습니다.
-          </p>
-          <button onclick="openOnnuriGuide()" class="bg-white text-emerald-900 text-xs font-extrabold px-3.5 py-2 rounded-xl hover:bg-emerald-50 transition shadow">
-            온누리 10% 할인 결제 방법 &rarr;
-          </button>
-        </div>
-        <div class="absolute -right-4 -bottom-6 w-28 h-28 bg-emerald-500/20 rounded-full blur-xl"></div>
+  <!-- 7. CONVENII STYLE ARTISAN STORY & VIDEO SHOWCASE -->
+  <section id="story-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="bg-gradient-to-br from-stone-900 to-gray-950 text-white rounded-3xl p-6 sm:p-10 shadow-xl border border-stone-800">
+      <div class="max-w-2xl mb-8">
+        <span class="text-orange-400 font-bold text-xs tracking-wider uppercase">Conveni Style Artisan Story</span>
+        <h2 class="text-xl sm:text-3xl font-black text-white mt-1">
+          "30년 동안 이 골목에서 볶았습니다. 그 맛 그대로 보냅니다."
+        </h2>
+        <p class="text-xs sm:text-sm text-stone-400 mt-2 leading-relaxed">
+          대형 마트에서는 절대 만날 수 없는 진짜 전통시장 골목의 역사와 장인들의 진심을 만나보세요.
+        </p>
       </div>
 
-      <!-- Merchant Partnership Banner -->
-      <div class="bg-gradient-to-r from-orange-900 to-amber-950 text-white rounded-3xl p-5 shadow-sm relative overflow-hidden">
-        <div class="relative z-10">
-          <div class="inline-flex items-center space-x-1.5 bg-orange-800/80 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-2">
-            <i data-lucide="store" class="w-3.5 h-3.5"></i>
-            <span>전국 5일장 상인 사장님 전용</span>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Story 1 -->
+        <div class="bg-stone-800/80 rounded-2xl p-5 border border-stone-700/60 flex flex-col justify-between">
+          <div>
+            <span class="text-orange-400 text-[10px] font-bold">신림 순대타운 30년 장인</span>
+            <h4 class="text-sm font-extrabold text-white mt-1">"백순대는 불 조절과 들깨가루 비율이 전부예요"</h4>
+            <p class="text-xs text-stone-300 mt-2 leading-relaxed">
+              "멀리서 순대타운까지 찾아오시던 단골들이 이제 집에서도 먹을 수 있어서 너무 좋아하십니다. 양념장 한 방울까지 정성껏 담았어요."
+            </p>
           </div>
-          <h3 class="text-base font-extrabold mb-1">카톡 1장 송장으로 끝내는 온라인 판매</h3>
-          <p class="text-xs text-orange-100/90 leading-relaxed mb-3">
-            복잡한 쇼핑몰 관리 없이, 카톡으로 전송되는 송장 1장만 붙이면 끝! 장날가자가 주문·정산·CS를 책임집니다.
-          </p>
-          <button onclick="openMerchantModal()" class="bg-orange-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl hover:bg-orange-400 transition shadow">
-            상인 입점 간편 신청 (1분) &rarr;
-          </button>
+          <div class="mt-4 pt-3 border-t border-stone-700 flex items-center justify-between text-xs">
+            <span class="text-stone-400">김옥자 사장님 (68세)</span>
+            <button onclick="openProductDetail('sillim-sundae')" class="text-orange-400 font-bold hover:underline">상품보기 &rarr;</button>
+          </div>
         </div>
-        <div class="absolute -right-4 -bottom-6 w-28 h-28 bg-orange-500/20 rounded-full blur-xl"></div>
+
+        <!-- Story 2 -->
+        <div class="bg-stone-800/80 rounded-2xl p-5 border border-stone-700/60 flex flex-col justify-between">
+          <div>
+            <span class="text-orange-400 text-[10px] font-bold">속초 중앙시장 가마솥 닭강정</span>
+            <h4 class="text-sm font-extrabold text-white mt-1">"가마솥 조청 소스는 식어야 진짜 바삭합니다"</h4>
+            <p class="text-xs text-stone-300 mt-2 leading-relaxed">
+              "물엿이 아닌 100% 쌀조청으로 코팅해 택배로 받으셔서 다음 날 드셔도 바삭함이 살아있습니다. 우리 아이 먹이는 마음으로 튀깁니다."
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-700 flex items-center justify-between text-xs">
+            <span class="text-stone-400">박성호 대표 (45세)</span>
+            <button onclick="openProductDetail('sokcho-chicken')" class="text-orange-400 font-bold hover:underline">상품보기 &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Story 3 -->
+        <div class="bg-stone-800/80 rounded-2xl p-5 border border-stone-700/60 flex flex-col justify-between">
+          <div>
+            <span class="text-orange-400 text-[10px] font-bold">정선 5일장 곤드레 할머니</span>
+            <h4 class="text-sm font-extrabold text-white mt-1">"장날 새벽 5시에 고랭지에서 딴 곤드레라 부드러워요"</h4>
+            <p class="text-xs text-stone-300 mt-2 leading-relaxed">
+              "억센 묵은 나물이 아니라 장날 아침에 채취한 생나물입니다. 시골 방앗간에서 갓 짠 고소한 들기름이랑 비벼 드셔보세요."
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-700 flex items-center justify-between text-xs">
+            <span class="text-stone-400">이순덕 어르신 (74세)</span>
+            <button onclick="openProductDetail('jeongseon-gondre')" class="text-orange-400 font-bold hover:underline">상품보기 &rarr;</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- LIVE SOCIAL PROOF TOAST -->
-  <div id="social-proof-toast" class="fixed bottom-20 left-4 z-50 transition-all duration-500 transform translate-y-20 opacity-0 pointer-events-none">
-    <div class="bg-gray-900/95 text-white backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-xl flex items-center space-x-3 border border-gray-700/60 max-w-sm">
-      <div class="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 text-xs font-bold">
-        🔔
+  <!-- 8. REAL CUSTOMER REVIEWS (실시간 구매자 100% 포토 후기) -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-lg sm:text-xl font-black text-gray-900">⭐ 생생한 고객 리얼 후기</h2>
+        <p class="text-xs text-gray-500 mt-0.5">실제 장날 라이브 드롭으로 받아보신 분들의 솔직한 평가입니다. (평균 평점 4.9/5.0)</p>
       </div>
-      <div class="text-xs">
-        <span id="toast-location" class="font-bold text-orange-400">서울 마포구</span>에서
-        <p id="toast-item" class="text-gray-200 font-medium truncate max-w-[200px]">신림 원조 백순대 2세트 주문 완료!</p>
+      <span class="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200">
+        100% 구매인증 리뷰
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Review 1 -->
+      <div class="bg-white rounded-2xl p-4.5 border border-gray-200 shadow-sm space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="text-amber-500 text-xs">★★★★★ <span class="text-gray-900 font-bold text-xs ml-1">5.0</span></div>
+          <span class="text-[10px] text-gray-400">2026.09.17</span>
+        </div>
+        <p class="text-xs font-bold text-gray-900">신림동 살다 이사갔는데 이 맛이 너무 그리웠어요!</p>
+        <p class="text-[11px] text-gray-600 leading-relaxed">
+          프라이팬에 기름 살짝 두르고 3분 볶았더니 신림 순대타운 3층에서 먹던 그 불향 그대로네요. 양념장도 넉넉하고 온누리 할인까지 받아서 대만족입니다!
+        </p>
+        <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+          <span>구매상품: 신림 백순대 밀키트</span>
+          <span>작성자: min***님</span>
+        </div>
       </div>
-      <span class="text-[10px] text-gray-400 shrink-0">방금 전</span>
+
+      <!-- Review 2 -->
+      <div class="bg-white rounded-2xl p-4.5 border border-gray-200 shadow-sm space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="text-amber-500 text-xs">★★★★★ <span class="text-gray-900 font-bold text-xs ml-1">5.0</span></div>
+          <span class="text-[10px] text-gray-400">2026.09.16</span>
+        </div>
+        <p class="text-xs font-bold text-gray-900">속초에서 1시간 줄 서서 사 먹던 그 바삭함 맞네요</p>
+        <p class="text-[11px] text-gray-600 leading-relaxed">
+          택배로 온 건데도 눅눅하지 않고 쌀조청 코팅이 쫀득하게 씹혀요. 에어프라이어에 3분 돌리니까 갓 튀긴 것처럼 따끈따끈 최고예요.
+        </p>
+        <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+          <span>구매상품: 속초 수제 닭강정</span>
+          <span>작성자: kjs***님</span>
+        </div>
+      </div>
+
+      <!-- Review 3 -->
+      <div class="bg-white rounded-2xl p-4.5 border border-gray-200 shadow-sm space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="text-amber-500 text-xs">★★★★★ <span class="text-gray-900 font-bold text-xs ml-1">5.0</span></div>
+          <span class="text-[10px] text-gray-400">2026.09.15</span>
+        </div>
+        <p class="text-xs font-bold text-gray-900">들기름 향이 온 집안에 진동을 합니다</p>
+        <p class="text-[11px] text-gray-600 leading-relaxed">
+          생곤드레가 너무 연해서 밥에 얹어 비벼 먹으니 꿀맛입니다. 같이 보내주신 저온압착 들기름이 진짜 시골 방앗간 찐이네요. 다음 장날에 재구매할게요!
+        </p>
+        <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+          <span>구매상품: 정선 생곤드레 & 들기름</span>
+          <span>작성자: lee***님</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. CART DRAWER (오른쪽 슬라이드 장바구니) -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden transition-all">
+    <div class="fixed right-0 top-0 bottom-0 max-w-md w-full bg-white shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-orange-600"></i>
+            <h3 class="text-base font-black text-gray-900">장바구니 (<span id="cart-drawer-count">0</span>)</h3>
+          </div>
+          <button onclick="closeCartDrawer()" class="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div id="cart-items-container" class="py-4 space-y-3">
+          <!-- Cart Items Injected via JS -->
+        </div>
+      </div>
+
+      <div id="cart-footer-summary" class="border-t border-gray-100 pt-4 space-y-3">
+        <div class="bg-orange-50 rounded-2xl p-3.5 space-y-1.5 text-xs">
+          <div class="flex justify-between text-gray-600">
+            <span>주문 금액</span>
+            <span id="cart-subtotal">0원</span>
+          </div>
+          <div class="flex justify-between text-emerald-700 font-bold">
+            <span>온누리 10% 즉시할인</span>
+            <span id="cart-discount">0원</span>
+          </div>
+          <div class="flex justify-between text-gray-600">
+            <span>배송비</span>
+            <span class="text-orange-600 font-bold">무료 (장날 특가)</span>
+          </div>
+          <div class="border-t border-orange-200 pt-1.5 flex justify-between text-sm font-black text-gray-900">
+            <span>최종 결제 예상금액</span>
+            <span id="cart-total" class="text-orange-600">0원</span>
+          </div>
+        </div>
+
+        <button onclick="proceedToCheckoutFromCart()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3.5 rounded-2xl shadow-lg active:scale-95 transition text-sm flex items-center justify-center space-x-2">
+          <span>주문서 작성 및 결제하기</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- STICKY BOTTOM BAR (Mobile Quick Cart / Info) -->
-  <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 py-2.5 px-4 shadow-lg md:hidden">
-    <div class="flex items-center justify-between max-w-lg mx-auto">
-      <div class="flex items-center space-x-2">
-        <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
-          <i data-lucide="zap" class="w-4 h-4"></i>
-        </div>
-        <div>
-          <span class="text-[10px] font-bold text-orange-600 block">장날 당일 한정 특가</span>
-          <span class="text-xs font-extrabold text-gray-900">전국 5일장 3대 명물 직송</span>
-        </div>
-      </div>
-      <button onclick="scrollToGrid()" class="bg-orange-600 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow hover:bg-orange-700 active:scale-95 transition">
-        지금 드롭 구경하기 🔥
+  <!-- 10. PRODUCT DETAIL MODAL -->
+  <div id="detail-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
+      <button onclick="closeProductDetail()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 z-10">
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
+
+      <div id="detail-modal-body">
+        <!-- Injected via JS -->
+      </div>
     </div>
   </div>
 
-  <!-- ORDER / QUICK CHECKOUT MODAL -->
+  <!-- 11. CHECKOUT MODAL -->
   <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 transform transition-all p-5">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 p-6">
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
         <div class="flex items-center space-x-2">
           <span class="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
           <h3 class="font-black text-gray-900 text-base">⚡ 1초 장날 드롭 주문하기</h3>
         </div>
-        <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+        <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -330,7 +599,7 @@
 
         <!-- Quantity Selector -->
         <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
-          <span class="text-xs font-bold text-gray-700">주문 수량 (1인당 최대 3세트 한정)</span>
+          <span class="text-xs font-bold text-gray-700">주문 수량 (1인당 최대 3세트)</span>
           <div class="flex items-center space-x-3">
             <button onclick="changeQty(-1)" class="w-7 h-7 rounded-lg bg-white border border-gray-300 font-bold text-gray-700 flex items-center justify-center hover:bg-gray-100">-</button>
             <span id="modal-qty" class="text-sm font-black text-gray-900">1</span>
@@ -397,7 +666,7 @@
     </div>
   </div>
 
-  <!-- ORDER SUCCESS MODAL -->
+  <!-- 12. ORDER SUCCESS MODAL -->
   <div id="success-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 text-center transform transition-all">
       <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl animate-bounce">
@@ -430,14 +699,14 @@
       </div>
 
       <button onclick="closeSuccessModal()" class="w-full bg-gray-900 text-white text-xs font-extrabold py-3.5 rounded-2xl hover:bg-black transition">
-        확인 (장날가자 메인으로)
+        확인 (장날가자 몰 계속 둘러보기)
       </button>
     </div>
   </div>
 
-  <!-- ONNURI GUIDE MODAL -->
+  <!-- 13. ONNURI GUIDE MODAL -->
   <div id="onnuri-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-5 border border-gray-100 max-h-[85vh] overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 border border-gray-100 max-h-[85vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
         <div class="flex items-center space-x-2">
           <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">온</div>
@@ -448,36 +717,36 @@
         </button>
       </div>
       <div class="py-4 space-y-3 text-xs text-gray-600 leading-relaxed">
-        <div class="bg-emerald-50 rounded-2xl p-3 border border-emerald-100">
+        <div class="bg-emerald-50 rounded-2xl p-3.5 border border-emerald-100">
           <h4 class="font-black text-emerald-900 text-sm mb-1">🎁 상시 10% 충전 할인 + 소득공제 40%</h4>
           <p class="text-[11px] text-emerald-800">
-            ‘온누리상품권’ 앱에서 계좌 등록 후 10% 할인된 가격으로 충전하고, 장날가자에서 온누리 카드로 1초 결제하세요!
+            ‘온누리상품권’ 공식 앱에서 계좌 등록 후 10% 할인된 가격으로 충전하고, 장날가자에서 온누리 카드로 1초 결제하세요!
           </p>
         </div>
-        <div class="space-y-2">
-          <div class="flex items-start space-x-2">
+        <div class="space-y-2.5">
+          <div class="flex items-start space-x-2.5">
             <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center shrink-0 font-bold text-[10px]">1</span>
             <p>‘온누리상품권’ 공식 앱 설치 후 본인 계좌 및 사용하실 신용/체크카드 등록</p>
           </div>
-          <div class="flex items-start space-x-2">
+          <div class="flex items-start space-x-2.5">
             <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center shrink-0 font-bold text-[10px]">2</span>
             <p>10% 할인 금액으로 충전 (예: 18,000원 충전 시 16,200원만 출금)</p>
           </div>
-          <div class="flex items-start space-x-2">
+          <div class="flex items-start space-x-2.5">
             <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center shrink-0 font-bold text-[10px]">3</span>
             <p>장날가자 결제 시 등록된 카드로 결제하면 충전금에서 1초 차감 완료!</p>
           </div>
         </div>
       </div>
-      <button onclick="closeOnnuriModal()" class="w-full bg-emerald-800 text-white text-xs font-bold py-3 rounded-xl hover:bg-emerald-900 transition">
+      <button onclick="closeOnnuriModal()" class="w-full bg-emerald-800 text-white text-xs font-bold py-3.5 rounded-xl hover:bg-emerald-900 transition">
         확인했습니다
       </button>
     </div>
   </div>
 
-  <!-- MERCHANT PARTNER MODAL -->
+  <!-- 14. MERCHANT PARTNER MODAL -->
   <div id="merchant-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-5 border border-gray-100">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 border border-gray-100">
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
         <div class="flex items-center space-x-2">
           <span class="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
@@ -495,27 +764,87 @@
         <input type="text" id="m-store" placeholder="점포명 / 상호 (예: 30년 원조 곤드레집)" class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
         <input type="text" id="m-item" placeholder="주요 판매 품목 (예: 생곤드레, 참기름)" class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
         <input type="tel" id="m-phone" placeholder="사장님 연락처 (카카오톡 알림용)" class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        <button onclick="submitMerchant()" class="w-full bg-orange-600 text-white text-xs font-bold py-3 rounded-xl hover:bg-orange-700 transition">
+        <button onclick="submitMerchant()" class="w-full bg-orange-600 text-white text-xs font-bold py-3.5 rounded-xl hover:bg-orange-700 transition">
           입점 상담 신청하기 (수수료 0% 프로모션)
         </button>
       </div>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <footer class="max-w-5xl mx-auto px-4 pt-8 pb-12 text-center text-xs text-gray-400 border-t border-gray-200 mt-8 space-y-2">
-    <div class="flex items-center justify-center space-x-2 text-gray-600 font-bold">
-      <span>장날가자 (Jangnal-Gaja)</span>
-      <span>|</span>
-      <span>대한민국 5일장 라이브 커머스 플랫폼</span>
+  <!-- 15. LIVE SOCIAL PROOF TOAST -->
+  <div id="social-proof-toast" class="fixed bottom-20 left-4 z-50 transition-all duration-500 transform translate-y-20 opacity-0 pointer-events-none">
+    <div class="bg-gray-900/95 text-white backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 border border-gray-700/60 max-w-sm">
+      <div class="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 text-xs font-bold">
+        🔔
+      </div>
+      <div class="text-xs">
+        <span id="toast-location" class="font-bold text-orange-400">서울 마포구</span>에서
+        <p id="toast-item" class="text-gray-200 font-medium truncate max-w-[200px]">신림 원조 백순대 2세트 주문 완료!</p>
+      </div>
+      <span class="text-[10px] text-gray-400 shrink-0">방금 전</span>
     </div>
-    <p class="text-[11px] text-gray-400 max-w-md mx-auto leading-relaxed">
-      본 서비스는 전국 전통시장 및 5일장 소상공인의 온라인 판로 개척과 디지털 온누리상품권 유통 촉진을 위해 실시간 장날 데이터 기반으로 직송 운영됩니다.
-    </p>
-    <p class="text-[10px] text-gray-400">&copy; 2026 장날가자 Team. All rights reserved.</p>
+  </div>
+
+  <!-- 16. MOBILE STICKY BOTTOM BAR -->
+  <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 py-2.5 px-4 shadow-lg md:hidden flex items-center justify-between">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center text-gray-600">
+      <i data-lucide="home" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold mt-0.5">홈</span>
+    </button>
+    <button onclick="scrollToCatalog()" class="flex flex-col items-center text-orange-600 font-black">
+      <i data-lucide="zap" class="w-4 h-4"></i>
+      <span class="text-[10px] mt-0.5">라이브드롭</span>
+    </button>
+    <button onclick="openCartDrawer()" class="flex flex-col items-center text-gray-600 relative">
+      <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold mt-0.5">장바구니</span>
+      <span id="mobile-bottom-cart-badge" class="absolute -top-1 right-2 bg-orange-600 text-white text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center">0</span>
+    </button>
+    <button onclick="openOnnuriModal()" class="flex flex-col items-center text-emerald-700">
+      <i data-lucide="wallet" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold mt-0.5">온누리 10%</span>
+    </button>
+  </div>
+
+  <!-- 17. COMPREHENSIVE FOOTER (사업자 정보 & 마켓컬리 스타일 신뢰 정보) -->
+  <footer class="bg-stone-900 text-stone-400 text-xs py-12 px-4 sm:px-6 mt-12 border-t border-stone-800">
+    <div class="max-w-7xl mx-auto space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-stone-800 gap-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-xl bg-orange-600 flex items-center justify-center text-white font-black text-sm">
+            장
+          </div>
+          <span class="text-white font-black text-base">장날가자 몰 (Jangnal-Gaja)</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-4 text-xs">
+          <a href="javascript:void(0)" class="hover:text-white">회사소개</a>
+          <span>·</span>
+          <a href="javascript:void(0)" class="hover:text-white font-bold text-stone-200">이용약관</a>
+          <span>·</span>
+          <a href="javascript:void(0)" class="hover:text-white font-bold text-stone-200">개인정보처리방침</a>
+          <span>·</span>
+          <a href="javascript:void(0)" onclick="openMerchantModal()" class="hover:text-orange-400 font-bold text-orange-400">전통시장 상인 입점신청</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-[11px] leading-relaxed">
+        <div>
+          <p class="font-bold text-stone-300 mb-1">고객행복센터</p>
+          <p class="text-base font-black text-white mb-1">1670-5252 <span class="text-xs text-stone-400 font-normal">(평일 09:00 ~ 18:00)</span></p>
+          <p>카카오톡 채널: @장날가자 고객센터 (365일 실시간 응대)</p>
+          <p class="mt-2 text-stone-500">배송 및 신선도 문제 발생 시 100% 무료 교환/환불 정책을 시행합니다.</p>
+        </div>
+        <div class="space-y-1">
+          <p>주식회사 장날가자 | 대표자: 장날가자 팀 | 사업자등록번호: 120-88-00000</p>
+          <p>통신판매업신고: 2026-서울마포-0123호 | 개인정보보호책임자: 장날가자 정보보안팀</p>
+          <p>주소: 서울특별시 마포구 월드컵북로 전통시장 혁신센터</p>
+          <p class="text-stone-500 pt-2">&copy; 2026 Jangnal-Gaja. All rights reserved. 대한민국 전통시장 및 5일장 소상공인 상생 플랫폼</p>
+        </div>
+      </div>
+    </div>
   </footer>
 
-  <!-- JAVASCRIPT APP LOGIC -->
+  <!-- 18. JAVASCRIPT APP LOGIC -->
   <script>
     // Product Catalog Database (Pilot 3 Killer Items + Market Expansion)
     const PRODUCTS = [
@@ -523,7 +852,7 @@
         id: 'sillim-sundae',
         market: '신림중앙시장',
         marketKeywords: ['신림', '신림중앙', '관악', '순대타운'],
-        title: '[원조 신림 순대타운] 3분 완성 백순대·곱창볶음 특제 양념장 밀키트 (2인분)',
+        title: '[원조 신림 순대타운] 3분 완성 백순대·곱창볶음 밀키트 (2인분)',
         subtitle: '현장 30분 웨이팅! 깻잎·들깨가루·단무지 풀세트 포함',
         category: 'mealkit',
         originalPrice: 21000,
@@ -622,7 +951,9 @@
     ];
 
     let currentCategory = 'all';
+    let heroProduct = PRODUCTS[0];
     let selectedProduct = PRODUCTS[0];
+    let cart = [];
     let orderQuantity = 1;
     let selectedPayMethod = 'onnuri';
     let searchQuery = '';
@@ -631,10 +962,11 @@
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       parseUrlParams();
-      renderHeroBanner();
+      renderHeroCard();
       renderProducts();
       startCountdownTimer();
       startSocialProofToast();
+      updateCartBadge();
     });
 
     // Parse URL parameter e.g. ?market=신림
@@ -642,85 +974,57 @@
       const urlParams = new URLSearchParams(window.location.search);
       const marketParam = urlParams.get('market');
       if (marketParam) {
-        searchQuery = marketParam.trim();
-        // find best matching product
+        const cleanParam = marketParam.trim();
         const matched = PRODUCTS.find(p => 
-          p.market.includes(searchQuery) || 
-          p.marketKeywords.some(k => searchQuery.includes(k) || k.includes(searchQuery))
+          p.market.includes(cleanParam) || 
+          p.marketKeywords.some(k => cleanParam.includes(k) || k.includes(cleanParam))
         );
+        
+        // Show incoming banner
+        const banner = document.getElementById('app-incoming-banner');
+        document.getElementById('incoming-market-name').textContent = cleanParam;
+        banner.classList.remove('hidden');
+
         if (matched) {
+          heroProduct = matched;
           selectedProduct = matched;
         }
       }
     }
 
-    // Render Dynamic Hero Banner
-    function renderHeroBanner() {
-      const heroContainer = document.getElementById('hero-banner');
-      const p = selectedProduct;
-      
-      heroContainer.innerHTML = `
-        <div class="relative bg-gradient-to-br from-gray-900 via-stone-900 to-amber-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl overflow-hidden border border-amber-500/30">
-          <div class="relative z-10 max-w-2xl">
-            <div class="flex flex-wrap items-center gap-2 mb-3">
-              <span class="bg-orange-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full flex items-center space-x-1">
-                <i data-lucide="map-pin" class="w-3 h-3 inline"></i>
-                <span>${p.market} 라이브 드롭</span>
-              </span>
-              <span class="bg-red-500/90 text-white text-[11px] font-bold px-2.5 py-1 rounded-full badge-pulse flex items-center space-x-1">
-                <i data-lucide="users" class="w-3 h-3 inline"></i>
-                <span>실시간 현장 대기 ${p.waitingCount}명 인증</span>
-              </span>
-              <span class="bg-white/10 text-amber-200 text-[11px] font-medium px-2 py-0.5 rounded-md border border-white/10">
-                ⚡ 잔여 ${p.limitLeft}세트 한정
-              </span>
-            </div>
-
-            <h1 class="text-xl sm:text-3xl font-black tracking-tight leading-snug mb-2 text-white">
-              ${p.title}
-            </h1>
-            <p class="text-xs sm:text-sm text-gray-300 mb-5 leading-relaxed">
-              ${p.story}
-            </p>
-
-            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <span class="text-[11px] text-gray-400 block line-through">정상가 ${p.originalPrice.toLocaleString()}원</span>
-                <div class="flex items-baseline space-x-2">
-                  <span class="text-2xl sm:text-3xl font-black text-orange-400">${p.price.toLocaleString()}원</span>
-                  <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-lg border border-emerald-500/40">
-                    온누리 10% 할인가 ${p.onnuriPrice.toLocaleString()}원
-                  </span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-[11px] text-amber-300 font-bold block mb-0.5">⏳ 오늘 주문 마감 카운트다운</span>
-                <div id="hero-countdown" class="font-mono text-sm sm:text-base font-black text-white bg-black/40 px-2.5 py-1 rounded-lg border border-amber-500/30">
-                  03:42:18 남음
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-3">
-              <button onclick="openCheckoutModal('${p.id}')" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-6 py-3.5 rounded-2xl shadow-lg hover:from-orange-600 hover:to-amber-600 active:scale-95 transition text-sm flex items-center space-x-2">
-                <i data-lucide="zap" class="w-4 h-4"></i>
-                <span>오늘 수량 즉시 주문하기 (택배 무료)</span>
-              </button>
-              <button onclick="scrollToGrid()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-3.5 rounded-2xl transition border border-white/20">
-                전체 드롭 둘러보기 &darr;
-              </button>
-            </div>
-          </div>
-
-          <!-- Background Decorative Elements -->
-          <div class="absolute right-0 top-0 bottom-0 w-1/2 opacity-25 bg-cover bg-center hidden md:block" style="background-image: url('${p.image}')"></div>
-          <div class="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-r from-gray-900 to-transparent hidden md:block"></div>
-        </div>
-      `;
+    // Render Hero Card
+    function renderHeroCard() {
+      const p = heroProduct;
+      document.getElementById('hero-market-badge').textContent = `${p.market} 라이브 드롭`;
+      document.getElementById('hero-waiting-badge').textContent = `실시간 현장 대기 ${p.waitingCount}명`;
+      document.getElementById('hero-title').textContent = p.title;
+      document.getElementById('hero-desc').textContent = p.story;
+      document.getElementById('hero-orig-price').textContent = `정상가 ${p.originalPrice.toLocaleString()}원`;
+      document.getElementById('hero-price').textContent = `${p.price.toLocaleString()}원`;
+      document.getElementById('hero-onnuri-price').textContent = `온누리 10%가 ${p.onnuriPrice.toLocaleString()}원`;
+      document.getElementById('hero-bg-img').style.backgroundImage = `url('${p.image}')`;
       lucide.createIcons();
     }
 
-    // Render Product Cards
+    function selectHeroProduct(id) {
+      const p = PRODUCTS.find(item => item.id === id);
+      if (p) {
+        heroProduct = p;
+        renderHeroCard();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function heroDirectOrder() {
+      openCheckoutModal(heroProduct.id);
+    }
+
+    function heroAddToCart() {
+      addToCart(heroProduct.id);
+      openCartDrawer();
+    }
+
+    // Render Products Grid
     function renderProducts() {
       const grid = document.getElementById('product-grid');
       let filtered = PRODUCTS;
@@ -738,32 +1042,17 @@
         );
       }
 
-      if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full py-12 text-center bg-white rounded-3xl border border-gray-100 p-6">
-            <i data-lucide="package-search" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
-            <h3 class="text-sm font-bold text-gray-700">검색된 장날 라이브 드롭 상품이 없습니다.</h3>
-            <p class="text-xs text-gray-400 mt-1">다른 시장명이나 품목으로 검색해보세요!</p>
-            <button onclick="resetFilter()" class="mt-4 bg-orange-50 text-orange-600 text-xs font-bold px-4 py-2 rounded-xl border border-orange-200">
-              전체 상품 보기
-            </button>
-          </div>
-        `;
-        lucide.createIcons();
-        return;
-      }
-
       grid.innerHTML = filtered.map(p => {
         const percentSold = Math.round(((p.limitTotal - p.limitLeft) / p.limitTotal) * 100);
         return `
-          <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition group">
+          <div id="item-${p.id}" class="bg-white rounded-3xl border border-gray-200/80 shadow-sm overflow-hidden flex flex-col hover:shadow-lg hover:border-orange-300 transition duration-300 group">
             <!-- Thumbnail & Badges -->
-            <div class="relative h-48 overflow-hidden bg-gray-100">
+            <div class="relative h-52 overflow-hidden bg-gray-100 cursor-pointer" onclick="openProductDetail('${p.id}')">
               <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
               
               <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-                <span class="bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow">
+                <span class="bg-orange-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-md shadow">
                   ${p.market}
                 </span>
                 <span class="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/20">
@@ -772,32 +1061,32 @@
               </div>
 
               <div class="absolute top-3 right-3">
-                <span class="bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow">
+                <span class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow">
                   한정 ${p.limitLeft}개 남음
                 </span>
               </div>
 
-              <div class="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px] font-medium">
+              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[11px] font-medium">
                 <span>⏱️ 조리: ${p.prepTime}</span>
                 <span>📦 ${p.shelfLife}</span>
               </div>
             </div>
 
             <!-- Content Area -->
-            <div class="p-4 flex-1 flex flex-col justify-between">
+            <div class="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <h3 class="text-sm font-extrabold text-gray-900 leading-snug line-clamp-2 group-hover:text-orange-600 transition">
+                <h3 onclick="openProductDetail('${p.id}')" class="text-sm sm:text-base font-black text-gray-900 leading-snug line-clamp-2 group-hover:text-orange-600 transition cursor-pointer">
                   ${p.title}
                 </h3>
-                <p class="text-[11px] text-gray-500 mt-1 line-clamp-1">
+                <p class="text-xs text-gray-500 mt-1 line-clamp-1">
                   ${p.subtitle}
                 </p>
 
                 <!-- Highlights -->
-                <div class="mt-3 space-y-1">
+                <div class="mt-3.5 space-y-1">
                   ${p.highlights.map(h => `
-                    <div class="flex items-center space-x-1.5 text-[11px] text-gray-600">
-                      <i data-lucide="check-circle-2" class="w-3 h-3 text-orange-500 shrink-0"></i>
+                    <div class="flex items-center space-x-1.5 text-xs text-gray-600">
+                      <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-orange-500 shrink-0"></i>
                       <span class="truncate">${h}</span>
                     </div>
                   `).join('')}
@@ -805,37 +1094,42 @@
               </div>
 
               <!-- Price & Order Action -->
-              <div class="mt-4 pt-3 border-t border-gray-100">
+              <div class="mt-5 pt-4 border-t border-gray-100">
                 <!-- Stock Progress Bar -->
-                <div class="mb-2.5">
-                  <div class="flex justify-between text-[10px] font-bold text-gray-500 mb-1">
+                <div class="mb-3">
+                  <div class="flex justify-between text-[11px] font-bold text-gray-500 mb-1">
                     <span>오늘 수량 판매율</span>
                     <span class="text-orange-600">${percentSold}% (${p.limitTotal - p.limitLeft}/${p.limitTotal}세트)</span>
                   </div>
-                  <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-gradient-to-r from-orange-500 to-red-500 h-1.5 rounded-full" style="width: ${percentSold}%"></div>
+                  <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style="width: ${percentSold}%"></div>
                   </div>
                 </div>
 
-                <div class="flex items-baseline justify-between mb-3">
+                <div class="flex items-baseline justify-between mb-3.5">
                   <div>
-                    <span class="text-[11px] text-gray-400 line-through">${p.originalPrice.toLocaleString()}원</span>
-                    <div class="text-base font-black text-gray-900">
+                    <span class="text-xs text-gray-400 line-through">${p.originalPrice.toLocaleString()}원</span>
+                    <div class="text-lg font-black text-gray-900">
                       ${p.price.toLocaleString()}원
                     </div>
                   </div>
                   <div class="text-right">
                     <span class="text-[9px] text-emerald-700 font-bold block">온누리 10% 혜택가</span>
-                    <span class="text-sm font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                    <span class="text-sm font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
                       ${p.onnuriPrice.toLocaleString()}원
                     </span>
                   </div>
                 </div>
 
-                <button onclick="openCheckoutModal('${p.id}')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs py-2.5 rounded-xl shadow-sm active:scale-95 transition flex items-center justify-center space-x-1.5">
-                  <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
-                  <span>오늘 한정수량 주문하기</span>
-                </button>
+                <div class="grid grid-cols-4 gap-2">
+                  <button onclick="addToCart('${p.id}')" class="col-span-1 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl py-3 flex items-center justify-center transition border border-orange-200" title="장바구니 담기">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="openCheckoutModal('${p.id}')" class="col-span-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md active:scale-95 transition flex items-center justify-center space-x-1.5">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    <span>오늘 수량 주문하기</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -845,44 +1139,240 @@
       lucide.createIcons();
     }
 
-    // Category Filter Handler
+    // Category Tabs Handler
     function setCategory(cat) {
       currentCategory = cat;
-      document.querySelectorAll('.category-chip').forEach(el => {
-        el.classList.remove('bg-orange-600', 'text-white', 'shadow-sm');
-        el.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-200');
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.classList.remove('text-orange-600', 'border-b-2', 'border-orange-600');
+        el.classList.add('text-gray-600');
       });
-      const activeEl = document.getElementById(`cat-${cat}`);
-      if (activeEl) {
-        activeEl.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-200');
-        activeEl.classList.add('bg-orange-600', 'text-white', 'shadow-sm');
+      const activeTab = document.getElementById(`tab-${cat}`);
+      if (activeTab) {
+        activeTab.classList.remove('text-gray-600');
+        activeTab.classList.add('text-orange-600', 'border-b-2', 'border-orange-600');
       }
       renderProducts();
     }
 
-    // Reset Filters
-    function resetFilter() {
-      searchQuery = '';
-      document.getElementById('search-input').value = '';
-      setCategory('all');
-    }
+    // Sorting Handler
+    function sortProducts(type) {
+      document.querySelectorAll('#sort-popular, #sort-stock, #sort-price').forEach(el => {
+        el.className = 'text-gray-500 hover:text-gray-800';
+      });
+      document.getElementById(`sort-${type}`).className = 'text-orange-600 font-black';
 
-    // Search Toggle & Filter
-    function toggleSearch() {
-      const el = document.getElementById('search-bar');
-      el.classList.toggle('hidden');
-      if (!el.classList.contains('hidden')) {
-        document.getElementById('search-input').focus();
+      if (type === 'popular') {
+        PRODUCTS.sort((a, b) => b.waitingCount - a.waitingCount);
+      } else if (type === 'stock') {
+        PRODUCTS.sort((a, b) => a.limitLeft - b.limitLeft);
+      } else if (type === 'price') {
+        PRODUCTS.sort((a, b) => a.price - b.price);
       }
-    }
-
-    function filterProducts() {
-      searchQuery = document.getElementById('search-input').value;
       renderProducts();
     }
 
-    function scrollToGrid() {
-      document.getElementById('product-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Search Logic
+    function handleSearchInput(e) {
+      searchQuery = e.target.value;
+      renderProducts();
+    }
+
+    function executeSearch() {
+      searchQuery = document.getElementById('desktop-search').value;
+      renderProducts();
+      scrollToCatalog();
+    }
+
+    function toggleMobileSearch() {
+      const bar = document.getElementById('mobile-search-bar');
+      bar.classList.toggle('hidden');
+    }
+
+    // Scroll Helpers
+    function scrollToCatalog() {
+      document.getElementById('catalog-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function scrollToStory() {
+      document.getElementById('story-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function scrollToTargetItem() {
+      if (heroProduct) {
+        const el = document.getElementById(`item-${heroProduct.id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-4', 'ring-orange-500');
+          setTimeout(() => el.classList.remove('ring-4', 'ring-orange-500'), 3000);
+        }
+      }
+    }
+
+    // Cart Management
+    function addToCart(productId) {
+      const p = PRODUCTS.find(item => item.id === productId);
+      if (!p) return;
+      
+      const existing = cart.find(item => item.id === productId);
+      if (existing) {
+        if (existing.qty < 3) {
+          existing.qty += 1;
+        } else {
+          alert('장날 한정 드롭 상품은 1인당 최대 3세트까지만 주문 가능합니다.');
+          return;
+        }
+      } else {
+        cart.push({ ...p, qty: 1 });
+      }
+
+      updateCartBadge();
+      renderCartDrawer();
+    }
+
+    function updateCartBadge() {
+      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('header-cart-badge').textContent = totalQty;
+      document.getElementById('cart-drawer-count').textContent = totalQty;
+      const mobBadge = document.getElementById('mobile-bottom-cart-badge');
+      if (mobBadge) mobBadge.textContent = totalQty;
+    }
+
+    function openCartDrawer() {
+      renderCartDrawer();
+      document.getElementById('cart-drawer').classList.remove('hidden');
+    }
+
+    function closeCartDrawer() {
+      document.getElementById('cart-drawer').classList.add('hidden');
+    }
+
+    function renderCartDrawer() {
+      const container = document.getElementById('cart-items-container');
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-gray-400">
+            <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
+            <p class="text-xs">장바구니가 비어 있습니다.</p>
+            <button onclick="closeCartDrawer(); scrollToCatalog();" class="mt-4 bg-orange-50 text-orange-600 text-xs font-bold px-4 py-2 rounded-xl">
+              오늘의 드롭 담으러 가기
+            </button>
+          </div>
+        `;
+        document.getElementById('cart-subtotal').textContent = '0원';
+        document.getElementById('cart-discount').textContent = '0원';
+        document.getElementById('cart-total').textContent = '0원';
+        lucide.createIcons();
+        return;
+      }
+
+      let subtotal = 0;
+      container.innerHTML = cart.map(item => {
+        subtotal += item.price * item.qty;
+        return `
+          <div class="bg-gray-50 rounded-2xl p-3 flex items-center justify-between gap-3 border border-gray-100">
+            <img src="${item.image}" class="w-14 h-14 rounded-xl object-cover border" alt="${item.title}">
+            <div class="flex-1">
+              <span class="text-[9px] font-black text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">${item.market}</span>
+              <h4 class="text-xs font-bold text-gray-900 mt-0.5 line-clamp-1">${item.title}</h4>
+              <div class="text-xs font-black text-gray-900 mt-1">${(item.price * item.qty).toLocaleString()}원</div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="changeCartQty('${item.id}', -1)" class="w-6 h-6 bg-white rounded border font-bold text-xs">-</button>
+              <span class="text-xs font-bold">${item.qty}</span>
+              <button onclick="changeCartQty('${item.id}', 1)" class="w-6 h-6 bg-white rounded border font-bold text-xs">+</button>
+              <button onclick="removeFromCart('${item.id}')" class="text-gray-400 hover:text-red-500 p-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const discount = Math.round(subtotal * 0.1);
+      const total = subtotal - discount;
+
+      document.getElementById('cart-subtotal').textContent = `${subtotal.toLocaleString()}원`;
+      document.getElementById('cart-discount').textContent = `-${discount.toLocaleString()}원 (온누리 10%)`;
+      document.getElementById('cart-total').textContent = `${total.toLocaleString()}원`;
+      lucide.createIcons();
+    }
+
+    function changeCartQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (item) {
+        if (item.qty + delta <= 0) {
+          removeFromCart(id);
+        } else if (item.qty + delta > 3) {
+          alert('1인당 최대 3세트까지만 주문 가능합니다.');
+        } else {
+          item.qty += delta;
+          updateCartBadge();
+          renderCartDrawer();
+        }
+      }
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      updateCartBadge();
+      renderCartDrawer();
+    }
+
+    function proceedToCheckoutFromCart() {
+      if (cart.length === 0) {
+        alert('장바구니가 비어 있습니다.');
+        return;
+      }
+      closeCartDrawer();
+      openCheckoutModal(cart[0].id);
+    }
+
+    // Product Detail Modal Logic
+    function openProductDetail(productId) {
+      const p = PRODUCTS.find(item => item.id === productId);
+      if (!p) return;
+
+      const body = document.getElementById('detail-modal-body');
+      body.innerHTML = `
+        <div class="space-y-4">
+          <img src="${p.image}" class="w-full h-64 rounded-2xl object-cover shadow-sm" alt="${p.title}">
+          <div class="flex items-center space-x-2">
+            <span class="bg-orange-600 text-white text-xs font-black px-2.5 py-1 rounded-md">${p.market}</span>
+            <span class="bg-red-50 text-red-600 text-xs font-bold px-2.5 py-1 rounded-md border border-red-200">🔥 실시간 대기 ${p.waitingCount}명</span>
+          </div>
+          <h3 class="text-lg font-black text-gray-900">${p.title}</h3>
+          <p class="text-xs text-gray-600 leading-relaxed">${p.story}</p>
+          
+          <div class="bg-orange-50 rounded-2xl p-4 space-y-2 border border-orange-100">
+            <div class="text-xs font-bold text-gray-800">📌 밀키트 핵심 구성</div>
+            ${p.highlights.map(h => `<div class="text-xs text-gray-600 flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-orange-600"></i><span>${h}</span></div>`).join('')}
+          </div>
+
+          <div class="flex items-baseline justify-between pt-3 border-t">
+            <div>
+              <span class="text-xs text-gray-400 line-through">정상가 ${p.originalPrice.toLocaleString()}원</span>
+              <div class="text-xl font-black text-orange-600">${p.price.toLocaleString()}원</div>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-emerald-700 font-bold block">디지털 온누리 10% 할인가</span>
+              <span class="text-base font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">${p.onnuriPrice.toLocaleString()}원</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <button onclick="closeProductDetail(); addToCart('${p.id}'); openCartDrawer();" class="bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs py-3 rounded-xl border border-orange-200">
+              장바구니 담기
+            </button>
+            <button onclick="closeProductDetail(); openCheckoutModal('${p.id}');" class="bg-orange-600 hover:bg-orange-700 text-white font-black text-xs py-3 rounded-xl shadow">
+              즉시 주문하기 &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeProductDetail() {
+      document.getElementById('detail-modal').classList.add('hidden');
     }
 
     // Checkout Modal Logic
@@ -916,7 +1406,7 @@
         document.getElementById('modal-qty').textContent = orderQuantity;
         updatePriceBreakdown();
       } else if (next > 3) {
-        alert('장날 한정 드롭 상품은 더 많은 고객님께 전해드리기 위해 1인당 최대 3세트까지만 주문 가능합니다.');
+        alert('장날 한정 드롭 상품은 1인당 최대 3세트까지만 주문 가능합니다.');
       }
     }
 
@@ -973,7 +1463,7 @@
       // reduce stock in memory
       selectedProduct.limitLeft = Math.max(0, selectedProduct.limitLeft - orderQuantity);
       renderProducts();
-      renderHeroBanner();
+      renderHeroCard();
 
       document.getElementById('success-modal').classList.remove('hidden');
     }
@@ -983,11 +1473,10 @@
     }
 
     // Modal Helpers
-    function openOnnuriGuide() { document.getElementById('onnuri-modal').classList.remove('hidden'); }
+    function openOnnuriModal() { document.getElementById('onnuri-modal').classList.remove('hidden'); }
     function closeOnnuriModal() { document.getElementById('onnuri-modal').classList.add('hidden'); }
     function openMerchantModal() { document.getElementById('merchant-modal').classList.remove('hidden'); }
     function closeMerchantModal() { document.getElementById('merchant-modal').classList.add('hidden'); }
-    function openCart() { scrollToGrid(); }
 
     function submitMerchant() {
       const mMarket = document.getElementById('m-market').value.trim();
@@ -1009,7 +1498,7 @@
         const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
         const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
         const s = String(seconds % 60).padStart(2, '0');
-        const heroEl = document.getElementById('hero-countdown');
+        const heroEl = document.getElementById('hero-timer');
         if (heroEl) {
           heroEl.textContent = `${h}:${m}:${s} 남음`;
         }
