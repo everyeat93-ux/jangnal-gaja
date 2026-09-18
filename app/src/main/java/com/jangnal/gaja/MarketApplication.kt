@@ -16,7 +16,7 @@ class MarketApplication : Application() {
     private val database by lazy { AppDatabase.getDatabase(this) }
     
     // Lazy initialization of the repository
-    val repository by lazy { MarketRepository(database.marketDao()) }
+    val repository by lazy { MarketRepository(database.marketDao(), this) }
 
     override fun onCreate() {
         super.onCreate()

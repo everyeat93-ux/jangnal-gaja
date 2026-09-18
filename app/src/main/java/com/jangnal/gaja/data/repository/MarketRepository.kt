@@ -22,7 +22,10 @@ import java.nio.charset.Charset
  * Repository for handling Market data.
  * Abstracts the source of data (currently only local Room DB) from the rest of the app.
  */
-class MarketRepository(private val marketDao: MarketDao) {
+class MarketRepository(
+    private val marketDao: MarketDao,
+    private val context: Context? = null
+) {
 
     /**
      * Observable stream of all markets, sorted by name
@@ -345,19 +348,29 @@ class MarketRepository(private val marketDao: MarketDao) {
                 .trim()
                 
             val existing = marketDao.getShopsForMarketList(marketId)
-            val curated = CuratedShopsData.getCuratedShops(marketId, cleanName, latitude, longitude)
+            val hasOnlyMock = existing.isEmpty() || existing.all { it.isMock }
 
-            if (curated != null) {
-                // If existing only has mock shops or is empty, upgrade immediately to curated real shops
-                val needsUpgrade = existing.isEmpty() || existing.all { it.isMock }
-                if (needsUpgrade) {
-                    marketDao.deleteShopsForMarket(marketId)
-                    marketDao.insertShops(curated)
-                    return@withContext marketDao.getShopsForMarketList(marketId)
-                }
+            if (!hasOnlyMock) {
                 return@withContext existing
             }
 
+            // 1. 전국 핫플 시장 큐레이션 하이라이트 확인
+            val curated = CuratedShopsData.getCuratedShops(marketId, cleanName, latitude, longitude)
+            if (!curated.isNullOrEmpty()) {
+                marketDao.deleteShopsForMarket(marketId)
+                marketDao.insertShops(curated)
+                return@withContext marketDao.getShopsForMarketList(marketId)
+            }
+
+            // 2. 소진공 79,500+ 전국 온누리 가맹점 압축 에셋(GZIP) 확인
+            val onnuriShops = context?.let { OnnuriAssetLoader.getShopsForMarket(it, marketId, latitude, longitude) }
+            if (!onnuriShops.isNullOrEmpty()) {
+                marketDao.deleteShopsForMarket(marketId)
+                marketDao.insertShops(onnuriShops)
+                return@withContext marketDao.getShopsForMarketList(marketId)
+            }
+
+            // 3. Fallback: 기본 5대 카테고리 매장 자동 생성
             if (existing.isNotEmpty()) {
                 existing
             } else {
