@@ -181,7 +181,29 @@ fun MarketDetailSheet(
             } else {
                 InfoItem(label = "운영 주기", value = "매일 상설 운영")
             }
-            
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Item 4: 영업시간 및 방문 꿀팁 안내 캡션
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text("💡", fontSize = 13.sp, modifier = Modifier.padding(end = 6.dp, top = 1.dp))
+                    Text(
+                        text = "전통시장 특성상 점포별 영업시간(통상 09:00~19:00)과 휴무일이 다를 수 있으니 늦은 시간 방문 시 확인을 권장합니다.",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
             
             // B2G Onnuri & Card Verification Rate Calculation (Official Base + User Real-time Confirmation)
@@ -895,6 +917,10 @@ fun ShopQueueSection(
 ) {
     var showAddShopDialog by remember { mutableStateOf(false) }
     var activeVotingShop by remember { mutableStateOf<Shop?>(null) }
+    var selectedCategory by remember { mutableStateOf("전체") }
+    var shopSearchText by remember { mutableStateOf("") }
+    val confirmedShopIds = remember { mutableStateListOf<Long>() }
+    val context = LocalContext.current
     
     // Calculate distance
     val distance = remember(userLocation, market) {
@@ -940,341 +966,497 @@ fun ShopQueueSection(
         
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Item 5: 미매칭 시장 빈 상태 카드 & 첫 등록 유도
         if (shops.isEmpty()) {
-            Box(
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center
+                    .padding(vertical = 12.dp),
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             ) {
-                Text(
-                    text = "상점 정보를 불러오는 중입니다...",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp
-                )
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("🏪", fontSize = 36.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "아직 등록된 상점이 없는 시장입니다",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "방문하셨던 단골 가게나 맛있는 상점을 직접 등록하여\n다른 방문자들에게 첫 번째 꿀팁을 공유해 보세요!",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Button(
+                        onClick = { showAddShopDialog = true },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text("➕ 첫 번째 상점 등록하기", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                }
             }
         } else {
             var activeReviewShop by remember { mutableStateOf<Shop?>(null) }
             
-            shops.forEach { shop ->
-                val hasRecentReport = shop.lastReportTime > 0 && 
-                        (System.currentTimeMillis() - shop.lastReportTime) < 40 * 60 * 1000 // 40 minutes
+            // Item 1: 상점 검색창
+            OutlinedTextField(
+                value = shopSearchText,
+                onValueChange = { shopSearchText = it },
+                placeholder = { Text("시장 내 상호명 또는 메뉴 검색", fontSize = 13.sp) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                leadingIcon = {
+                    Text("🔍", fontSize = 14.sp)
+                },
+                trailingIcon = {
+                    if (shopSearchText.isNotEmpty()) {
+                        IconButton(onClick = { shopSearchText = "" }) {
+                            Text("✕", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                        }
+                    }
+                }
+            )
 
-                val shopReviews = reviews[shop.shopName] ?: emptyList()
-                val avgRating = shopReviews.map { it.rating }.average()
-                val avgStr = String.format(Locale.US, "%.1f", if (avgRating.isNaN()) 0.0 else avgRating)
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // Item 1: 카테고리 퀵 필터 칩
+            val categories = listOf("전체", "식당", "먹거리", "카페", "기타")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                categories.forEach { cat ->
+                    val isSelected = selectedCategory == cat
+                    val count = when (cat) {
+                        "전체" -> shops.size
+                        "식당" -> shops.count { it.category.contains("식당") || it.category.contains("음식") || it.category.contains("한식") || it.category.contains("중식") || it.category.contains("일식") || it.category.contains("분식") }
+                        "먹거리" -> shops.count { it.category.contains("먹거리") || it.category.contains("간식") || it.category.contains("떡") || it.category.contains("베이커리") || it.category.contains("호떡") || it.category.contains("닭강정") }
+                        "카페" -> shops.count { it.category.contains("카페") || it.category.contains("음료") || it.category.contains("커피") || it.category.contains("디저트") }
+                        else -> shops.count { !it.category.contains("식당") && !it.category.contains("음식") && !it.category.contains("먹거리") && !it.category.contains("카페") }
+                    }
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { selectedCategory = cat },
+                        label = {
+                            Text(
+                                text = "$cat ($count)",
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val filteredShops = remember(shops, selectedCategory, shopSearchText) {
+                shops.filter { shop ->
+                    val matchesCat = when (selectedCategory) {
+                        "전체" -> true
+                        "식당" -> shop.category.contains("식당") || shop.category.contains("음식") || shop.category.contains("한식") || shop.category.contains("중식") || shop.category.contains("일식") || shop.category.contains("분식")
+                        "먹거리" -> shop.category.contains("먹거리") || shop.category.contains("간식") || shop.category.contains("떡") || shop.category.contains("베이커리") || shop.category.contains("호떡") || shop.category.contains("닭강정")
+                        "카페" -> shop.category.contains("카페") || shop.category.contains("음료") || shop.category.contains("커피") || shop.category.contains("디저트")
+                        "기타" -> !shop.category.contains("식당") && !shop.category.contains("음식") && !shop.category.contains("먹거리") && !shop.category.contains("카페")
+                        else -> shop.category.contains(selectedCategory)
+                    }
+                    val matchesQuery = if (shopSearchText.isBlank()) true else {
+                        shop.shopName.contains(shopSearchText, ignoreCase = true) || shop.category.contains(shopSearchText, ignoreCase = true)
+                    }
+                    matchesCat && matchesQuery
+                }
+            }
+
+            if (filteredShops.isEmpty()) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 1.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        .padding(vertical = 12.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        // 1. 상단: 상호명 + 카테고리 태그 + 평점
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("🔍 조건에 일치하는 상점이 없습니다.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        TextButton(
+                            onClick = {
+                                selectedCategory = "전체"
+                                shopSearchText = ""
+                            }
                         ) {
-                            Row(
-                                modifier = Modifier.weight(1f, fill = false),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
-                                ) {
-                                    Text(
-                                        text = shop.category,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = shop.shopName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
-                                    maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                )
-                            }
-
-                            if (shopReviews.isNotEmpty()) {
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "⭐ $avgStr (${shopReviews.size})",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            Text("필터 초기화 🔄", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
+                    }
+                }
+            } else {
+                filteredShops.forEach { shop ->
+                    val hasRecentReport = shop.lastReportTime > 0 && 
+                            (System.currentTimeMillis() - shop.lastReportTime) < 40 * 60 * 1000 // 40 minutes
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    val shopReviews = reviews[shop.shopName] ?: emptyList()
+                    val avgRating = shopReviews.map { it.rating }.average()
+                    val avgStr = String.format(Locale.US, "%.1f", if (avgRating.isNaN()) 0.0 else avgRating)
+                    val isConfirmedByUser = confirmedShopIds.contains(shop.id)
+                    val displayConfirmCount = shop.onnuriConfirmedCount + (if (isConfirmedByUser) 1 else 0)
 
-                        // 2. 중단: 온누리/카드 뱃지 및 현장 확인 칩
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            if (shop.isOnnuri) {
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFFE3F2FD),
-                                    border = BorderStroke(0.5.dp, Color(0xFF90CAF9))
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        shadowElevation = 1.dp,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            // 1. 상단: 상호명 + 카테고리 태그 + 평점
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f, fill = false),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
                                     ) {
                                         Text(
-                                            text = "🎫 온누리 공식가맹",
+                                            text = shop.category,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF1565C0)
-                                        )
-                                        Text(
-                                            text = " (${shop.onnuriType})",
-                                            fontSize = 10.sp,
-                                            color = Color(0xFF1976D2)
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                         )
                                     }
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Color(0xFFE8F5E9),
-                                border = BorderStroke(0.5.dp, Color(0xFFA5D6A7))
-                            ) {
-                                Text(
-                                    text = "💳 카드결제",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF2E7D32),
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                                )
-                            }
-
-                            if (shop.onnuriConfirmedCount > 0) {
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFFFFF3E0),
-                                    border = BorderStroke(0.5.dp, Color(0xFFFFCC80))
-                                ) {
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "🟢 현장 확인됨 (${shop.onnuriConfirmedCount}명)",
-                                        fontSize = 11.sp,
+                                        text = shop.shopName,
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFE65100),
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                        fontSize = 16.sp,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                    )
+                                }
+
+                                if (shopReviews.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "⭐ $avgStr (${shopReviews.size})",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
-                        }
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // 3. 대기줄 상태 요약 라인
-                        val currentCal = Calendar.getInstance()
-                        val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
-                        val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
-                        val isMarketOpenToday = market.isPermanent() || market.isOpenOn(System.currentTimeMillis())
-
-                        val statusText = if (hasRecentReport) {
-                            when (shop.queueStatus) {
-                                0 -> if (isPeakHour) "한산함 🟢 (AI 피크: 5~10분)" else "한산함 🟢 (AI 예상: 즉시 입장)"
-                                1 -> if (isPeakHour) "보통 🟡 (AI 피크: 20~30분)" else "보통 🟡 (AI 예상: 10~15분)"
-                                2 -> if (isPeakHour) "혼잡함 🔴 (AI 피크: 40분 이상)" else "혼잡함 🔴 (AI 예상: 25~35분)"
-                                else -> "제보 없음 ⚪ (AI 평시 분석)"
-                            }
-                        } else {
-                            if (isMarketOpenToday && isPeakHour) "대기제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
-                            else "대기제보 없음 ⚪ (AI 평시: 5~10분 예상)"
-                        }
-                        val statusColor = if (hasRecentReport) {
-                            when (shop.queueStatus) {
-                                0 -> Color(0xFF2E7D32)
-                                1 -> Color(0xFFE65100)
-                                2 -> Color(0xFFC62828)
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "⏱️ $statusText",
-                                fontSize = 12.sp,
-                                color = statusColor,
-                                fontWeight = FontWeight.Medium
-                            )
-
-                            if (hasRecentReport) {
-                                Spacer(modifier = Modifier.width(6.dp))
-                                val mins = ((System.currentTimeMillis() - shop.lastReportTime) / 60000).toInt()
-                                Text(
-                                    text = "(${mins}분 전)",
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), thickness = 0.5.dp)
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // 4. 하단 버튼 바: 3개 버튼을 가로 균등 배치
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Button(
-                                onClick = { onConfirmOnnuri(shop.id) },
-                                modifier = Modifier
-                                    .weight(1.2f)
-                                    .height(38.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF1976D2),
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Text("👍 결제확인", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            }
-
-                            OutlinedButton(
-                                onClick = { activeVotingShop = shop },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(38.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
-                            ) {
-                                Text("대기줄 제보", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                            }
-
-                            OutlinedButton(
-                                onClick = { activeReviewShop = shop },
-                                modifier = Modifier
-                                    .weight(0.9f)
-                                    .height(38.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
-                            ) {
-                                Text("한줄평", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                            }
-                        }
-
-                        val photos = shopReviews.map { it.photoUrl }.filter { it.isNotEmpty() }
-                        if (photos.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+
+                            // 2. 중단: 온누리/카드 뱃지 및 현장 확인 칩
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                photos.forEach { url ->
-                                    var showFullscreenPhoto by remember { mutableStateOf(false) }
-                                    Box(
-                                        modifier = Modifier
-                                            .size(70.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .clickable { showFullscreenPhoto = true }
+                                if (shop.isOnnuri) {
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Color(0xFFE3F2FD),
+                                        border = BorderStroke(0.5.dp, Color(0xFF90CAF9))
                                     ) {
-                                        androidx.compose.foundation.Image(
-                                            painter = coil.compose.rememberAsyncImagePainter(url),
-                                            contentDescription = "리뷰 사진",
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                        ) {
+                                            Text(
+                                                text = "🎫 온누리 공식가맹",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF1565C0)
+                                            )
+                                            Text(
+                                                text = " (${shop.onnuriType})",
+                                                fontSize = 10.sp,
+                                                color = Color(0xFF1976D2)
+                                            )
+                                        }
                                     }
-                                    
-                                    if (showFullscreenPhoto) {
-                                        AlertDialog(
-                                            onDismissRequest = { showFullscreenPhoto = false },
-                                            title = { Text("${shop.shopName} 사진 보기", fontWeight = FontWeight.Bold) },
-                                            text = {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .height(280.dp),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    androidx.compose.foundation.Image(
-                                                        painter = coil.compose.rememberAsyncImagePainter(url),
-                                                        contentDescription = "리뷰 사진 크게 보기",
-                                                        modifier = Modifier.fillMaxSize(),
-                                                        contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                                                    )
-                                                }
-                                            },
-                                            confirmButton = {
-                                                TextButton(onClick = { showFullscreenPhoto = false }) {
-                                                    Text("닫기")
-                                                }
-                                            }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFFE8F5E9),
+                                    border = BorderStroke(0.5.dp, Color(0xFFA5D6A7))
+                                ) {
+                                    Text(
+                                        text = "💳 카드결제",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF2E7D32),
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                    )
+                                }
+
+                                if (displayConfirmCount > 0) {
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = if (isConfirmedByUser) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
+                                        border = BorderStroke(0.5.dp, if (isConfirmedByUser) Color(0xFFA5D6A7) else Color(0xFFFFCC80))
+                                    ) {
+                                        Text(
+                                            text = if (isConfirmedByUser) "🟢 내 결제확인 완료 (${displayConfirmCount}명)" else "🟢 현장 확인됨 (${displayConfirmCount}명)",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isConfirmedByUser) Color(0xFF2E7D32) else Color(0xFFE65100),
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                                         )
                                     }
                                 }
                             }
-                        }
 
-                        val textReviews = shopReviews.filter { it.content.isNotEmpty() }.take(2)
-                        if (textReviews.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
+
+                            // 3. 대기줄 상태 요약 라인
+                            val currentCal = Calendar.getInstance()
+                            val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
+                            val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
+                            val isMarketOpenToday = market.isPermanent() || market.isOpenOn(System.currentTimeMillis())
+
+                            val statusText = if (hasRecentReport) {
+                                when (shop.queueStatus) {
+                                    0 -> if (isPeakHour) "한산함 🟢 (AI 피크: 5~10분)" else "한산함 🟢 (AI 예상: 즉시 입장)"
+                                    1 -> if (isPeakHour) "보통 🟡 (AI 피크: 20~30분)" else "보통 🟡 (AI 예상: 10~15분)"
+                                    2 -> if (isPeakHour) "혼잡함 🔴 (AI 피크: 40분 이상)" else "혼잡함 🔴 (AI 예상: 25~35분)"
+                                    else -> "제보 없음 ⚪ (AI 평시 분석)"
+                                }
+                            } else {
+                                if (isMarketOpenToday && isPeakHour) "대기제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
+                                else "대기제보 없음 ⚪ (AI 평시: 5~10분 예상)"
+                            }
+                            val statusColor = if (hasRecentReport) {
+                                when (shop.queueStatus) {
+                                    0 -> Color(0xFF2E7D32)
+                                    1 -> Color(0xFFE65100)
+                                    2 -> Color(0xFFC62828)
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(vertical = 2.dp)
                             ) {
-                                textReviews.forEach { rev ->
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                Text(
+                                    text = "⏱️ $statusText",
+                                    fontSize = 12.sp,
+                                    color = statusColor,
+                                    fontWeight = FontWeight.Medium
+                                )
+
+                                if (hasRecentReport) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    val mins = ((System.currentTimeMillis() - shop.lastReportTime) / 60000).toInt()
+                                    Text(
+                                        text = "(${mins}분 전)",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), thickness = 0.5.dp)
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // 4. 하단 버튼 바: Item 3 결제확인 피드백 및 1회 확인 상태 전환
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (isConfirmedByUser) {
+                                    Button(
+                                        onClick = {},
+                                        enabled = false,
+                                        modifier = Modifier
+                                            .weight(1.2f)
+                                            .height(38.dp),
                                         shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.fillMaxWidth()
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            disabledContainerColor = Color(0xFF2E7D32),
+                                            disabledContentColor = Color.White
+                                        )
                                     ) {
-                                        Column(modifier = Modifier.padding(8.dp)) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
+                                        Text("✔️ 확인완료", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                } else {
+                                    Button(
+                                        onClick = {
+                                            confirmedShopIds.add(shop.id)
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "🎉 ${shop.shopName}\n결제 확인이 인증되었습니다! (+1명) 🟢",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                            onConfirmOnnuri(shop.id)
+                                        },
+                                        modifier = Modifier
+                                            .weight(1.2f)
+                                            .height(38.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(0xFF1976D2),
+                                            contentColor = Color.White
+                                        )
+                                    ) {
+                                        Text("👍 결제확인", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                OutlinedButton(
+                                    onClick = { activeVotingShop = shop },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(38.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                                ) {
+                                    Text("대기줄 제보", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                }
+
+                                OutlinedButton(
+                                    onClick = { activeReviewShop = shop },
+                                    modifier = Modifier
+                                        .weight(0.9f)
+                                        .height(38.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                                ) {
+                                    Text("한줄평", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                }
+                            }
+
+                            val photos = shopReviews.map { it.photoUrl }.filter { it.isNotEmpty() }
+                            if (photos.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    photos.forEach { url ->
+                                        var showFullscreenPhoto by remember { mutableStateOf(false) }
+                                        Box(
+                                            modifier = Modifier
+                                                .size(70.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .clickable { showFullscreenPhoto = true }
+                                        ) {
+                                            androidx.compose.foundation.Image(
+                                                painter = coil.compose.rememberAsyncImagePainter(url),
+                                                contentDescription = "리뷰 사진",
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                            )
+                                        }
+                                        
+                                        if (showFullscreenPhoto) {
+                                            AlertDialog(
+                                                onDismissRequest = { showFullscreenPhoto = false },
+                                                title = { Text("${shop.shopName} 사진 보기", fontWeight = FontWeight.Bold) },
+                                                text = {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .height(280.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        androidx.compose.foundation.Image(
+                                                            painter = coil.compose.rememberAsyncImagePainter(url),
+                                                            contentDescription = "리뷰 사진 크게 보기",
+                                                            modifier = Modifier.fillMaxSize(),
+                                                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                                                        )
+                                                    }
+                                                },
+                                                confirmButton = {
+                                                    TextButton(onClick = { showFullscreenPhoto = false }) {
+                                                        Text("닫기")
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            val textReviews = shopReviews.filter { it.content.isNotEmpty() }.take(2)
+                            if (textReviews.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    textReviews.forEach { rev ->
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                            shape = RoundedCornerShape(8.dp),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Column(modifier = Modifier.padding(8.dp)) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = "⭐ ${rev.rating.toInt()}점 - ${rev.reporter}",
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                    val dateStr = SimpleDateFormat("M/d HH:mm", Locale.KOREA).format(Date(rev.timestamp))
+                                                    Text(
+                                                        text = dateStr,
+                                                        fontSize = 10.sp,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                                    )
+                                                }
                                                 Text(
-                                                    text = "⭐ ${rev.rating.toInt()}점 - ${rev.reporter}",
-                                                    fontSize = 11.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                                val dateStr = SimpleDateFormat("M/d HH:mm", Locale.KOREA).format(Date(rev.timestamp))
-                                                Text(
-                                                    text = dateStr,
-                                                    fontSize = 10.sp,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                                    text = rev.content,
+                                                    fontSize = 12.sp,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    modifier = Modifier.padding(top = 2.dp)
                                                 )
                                             }
-                                            Text(
-                                                text = rev.content,
-                                                fontSize = 12.sp,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                modifier = Modifier.padding(top = 2.dp)
-                                            )
                                         }
                                     }
                                 }
@@ -1285,7 +1467,7 @@ fun ShopQueueSection(
             }
 
             if (activeReviewShop != null) {
-                val context = LocalContext.current
+                val reviewTargetContext = LocalContext.current
                 val targetShop = activeReviewShop!!
                 var ratingVal by remember { mutableStateOf(5f) }
                 var textContent by remember { mutableStateOf("") }
@@ -1438,9 +1620,11 @@ fun ShopQueueSection(
         }
     }
 
-    // --- Dialogs ---
+    // --- Dialogs (Item 6: 위치 힌트 지원 & 카테고리 선택) ---
     if (showAddShopDialog) {
         var searchQuery by remember { mutableStateOf("") }
+        var locationHint by remember { mutableStateOf("") }
+        var directCategory by remember { mutableStateOf("먹거리") }
         val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
 
         AlertDialog(
@@ -1448,11 +1632,11 @@ fun ShopQueueSection(
                 showAddShopDialog = false 
                 onClearSearchShops()
             },
-            title = { Text("주변 상점/맛집 검색 등록", fontWeight = FontWeight.Bold) },
+            title = { Text("주변 상점/맛집 검색 및 등록", fontWeight = FontWeight.Bold) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "📍 시장 반경 500m 이내 실제 상점을 카카오 지도에서 검색합니다.",
+                        text = "📍 시장 반경 500m 이내 실제 상점을 검색하거나 직접 등록할 수 있습니다.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1465,7 +1649,7 @@ fun ShopQueueSection(
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("예: 닭강정, 호떡, 분식") },
+                            placeholder = { Text("상호명 (예: 호떡, 칼국수)") },
                             modifier = Modifier.weight(1f),
                             singleLine = true,
                             shape = RoundedCornerShape(8.dp)
@@ -1481,13 +1665,23 @@ fun ShopQueueSection(
                             Text("검색")
                         }
                     }
+
+                    // Item 6: 위치 힌트 입력 필드
+                    OutlinedTextField(
+                        value = locationHint,
+                        onValueChange = { locationHint = it },
+                        placeholder = { Text("위치 힌트 (예: 2번 게이트 앞, 먹거리 골목)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp)
+                    )
                     
                     Divider()
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
+                            .height(180.dp)
                     ) {
                         if (searchResults.isEmpty()) {
                             Column(
@@ -1496,17 +1690,35 @@ fun ShopQueueSection(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = if (searchQuery.isBlank()) "상점명이나 메뉴를 검색해 보세요." else "검색 결과가 없습니다.",
+                                    text = if (searchQuery.isBlank()) "상점명을 검색하거나 직접 등록하세요." else "검색 결과가 없습니다.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 if (searchQuery.isNotBlank()) {
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    
+                                    // 직접 등록 카테고리 선택
+                                    val catList = listOf("먹거리", "식당", "카페", "기타")
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        modifier = Modifier.padding(bottom = 6.dp)
+                                    ) {
+                                        catList.forEach { c ->
+                                            FilterChip(
+                                                selected = directCategory == c,
+                                                onClick = { directCategory = c },
+                                                label = { Text(c, fontSize = 10.sp) },
+                                                shape = RoundedCornerShape(6.dp)
+                                            )
+                                        }
+                                    }
+
                                     OutlinedButton(
                                         onClick = {
                                             val customName = searchQuery.trim().take(30)
                                             if (customName.isNotEmpty()) {
-                                                onAddShop(customName, "노점/먹거리")
+                                                val fullShopName = if (locationHint.isNotBlank()) "$customName (${locationHint.trim()})" else customName
+                                                onAddShop(fullShopName, directCategory)
                                                 showAddShopDialog = false
                                                 onClearSearchShops()
                                             }
@@ -1528,7 +1740,8 @@ fun ShopQueueSection(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                onAddShop(shop.shopName, shop.category)
+                                                val fullShopName = if (locationHint.isNotBlank()) "${shop.shopName} (${locationHint.trim()})" else shop.shopName
+                                                onAddShop(fullShopName, shop.category)
                                                 showAddShopDialog = false
                                                 onClearSearchShops()
                                             },

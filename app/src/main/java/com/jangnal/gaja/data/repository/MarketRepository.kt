@@ -335,12 +335,7 @@ class MarketRepository(
                 s.shopName.contains("암소한우·토종정육점") ||
                 s.shopName.contains("원조 장터 손칼국수·분식")
             }
-            val hasRealShops = shops.any { !isLegacyMock(it) }
-            if (hasRealShops) {
-                shops.filter { !isLegacyMock(it) }
-            } else {
-                shops
-            }
+            shops.filter { !isLegacyMock(it) }
         }
     }
 
@@ -363,10 +358,14 @@ class MarketRepository(
                 s.shopName.contains("암소한우·토종정육점") ||
                 s.shopName.contains("원조 장터 손칼국수·분식")
             }
-            val hasOnlyMock = existing.isEmpty() || existing.all { isMockOrLegacy(it) }
+            val realExisting = existing.filter { !isMockOrLegacy(it) }
 
-            if (!hasOnlyMock) {
-                return@withContext existing
+            if (realExisting.isNotEmpty()) {
+                if (existing.size != realExisting.size) {
+                    marketDao.deleteShopsForMarket(marketId)
+                    marketDao.insertShops(realExisting)
+                }
+                return@withContext realExisting
             }
 
             // 1. 전국 핫플 시장 큐레이션 하이라이트 확인
@@ -385,20 +384,11 @@ class MarketRepository(
                 return@withContext marketDao.getShopsForMarketList(marketId)
             }
 
-            // 3. Fallback: 기본 5대 카테고리 매장 자동 생성
+            // 3. 미매칭 시장: 가짜 상점을 생성하지 않고 빈 리스트 반환 (사용자 직접 등록 유도)
             if (existing.isNotEmpty()) {
-                existing
-            } else {
-                val defaultShops = listOf(
-                    Shop(marketId = marketId, shopName = "${cleanName} 청과·채소 농산물", category = "식당", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
-                    Shop(marketId = marketId, shopName = "${cleanName} 산지직송 건어물·젓갈", category = "기타", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
-                    Shop(marketId = marketId, shopName = "${cleanName} 전통 떡방앗간·참기름", category = "먹거리", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
-                    Shop(marketId = marketId, shopName = "${cleanName} 암소한우·토종정육점", category = "식당", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true),
-                    Shop(marketId = marketId, shopName = "${cleanName} 원조 장터 손칼국수·분식", category = "먹거리", latitude = latitude, longitude = longitude, isOnnuri = true, onnuriType = "지류·카드·모바일", isMock = true)
-                )
-                marketDao.insertShops(defaultShops)
-                marketDao.getShopsForMarketList(marketId)
+                marketDao.deleteShopsForMarket(marketId)
             }
+            emptyList()
         }
     }
 
