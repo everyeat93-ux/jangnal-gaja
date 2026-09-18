@@ -18,8 +18,14 @@ class MarketApplication : Application() {
     // Lazy initialization of the repository
     val repository by lazy { MarketRepository(database.marketDao(), this) }
 
+    companion object {
+        lateinit var instance: MarketApplication
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
+        instance = this
         
         // 키 해시 확인용 (안드로이드 기본 API 사용)
         try {

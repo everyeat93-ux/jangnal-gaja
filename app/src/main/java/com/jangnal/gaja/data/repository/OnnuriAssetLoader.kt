@@ -16,11 +16,12 @@ object OnnuriAssetLoader {
     private var cachedData: Map<Long, List<Shop>>? = null
     private val lock = Any()
 
-    fun getShopsForMarket(context: Context, marketId: Long, latitude: Double, longitude: Double): List<Shop>? {
+    fun getShopsForMarket(context: Context? = null, marketId: Long, latitude: Double, longitude: Double): List<Shop>? {
+        val ctx = context ?: runCatching { com.jangnal.gaja.MarketApplication.instance }.getOrNull() ?: return null
         if (cachedData == null) {
             synchronized(lock) {
                 if (cachedData == null) {
-                    cachedData = loadAllShops(context)
+                    cachedData = loadAllShops(ctx)
                 }
             }
         }

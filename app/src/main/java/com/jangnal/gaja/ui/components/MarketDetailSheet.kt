@@ -967,176 +967,218 @@ fun ShopQueueSection(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                        .padding(vertical = 6.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 1.dp,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        // 1. 상단: 상호명 + 카테고리 태그 + 평점
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = shop.shopName,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "[${shop.category}]",
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                
-                                Spacer(modifier = Modifier.height(2.dp))
-                                
-                                // 온누리 공식 가맹 및 카드 결제 뱃지
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                            Row(
+                                modifier = Modifier.weight(1f, fill = false),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
                                 ) {
-                                    if (shop.isOnnuri) {
-                                        Text(
-                                            text = "🎫 온누리 공식가맹 (${shop.onnuriType})",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF1565C0),
-                                            modifier = Modifier
-                                                .background(Color(0xFFE3F2FD), RoundedCornerShape(4.dp))
-                                                .padding(horizontal = 4.dp, vertical = 1.dp)
-                                        )
-                                    }
                                     Text(
-                                        text = "💳 카드결제",
-                                        fontSize = 10.sp,
+                                        text = shop.category,
+                                        fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF2E7D32),
-                                        modifier = Modifier
-                                            .background(Color(0xFFE8F5E9), RoundedCornerShape(4.dp))
-                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                     )
-                                    if (shop.onnuriConfirmedCount > 0) {
-                                        Text(
-                                            text = "🟢 현장 확인됨 (${shop.onnuriConfirmedCount}명)",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFE65100),
-                                            modifier = Modifier
-                                                .background(Color(0xFFFFF3E0), RoundedCornerShape(4.dp))
-                                                .padding(horizontal = 4.dp, vertical = 1.dp)
-                                        )
-                                    }
                                 }
-                                
-                                val currentCal = Calendar.getInstance()
-                                val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
-                                val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
-                                val isMarketOpenToday = market.isPermanent() || market.isOpenOn(System.currentTimeMillis())
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = shop.shopName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                )
+                            }
 
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    val statusText = if (hasRecentReport) {
-                                        when (shop.queueStatus) {
-                                            0 -> if (isPeakHour) "한산함 🟢 (AI 피크: 5~10분)" else "한산함 🟢 (AI 예상: 즉시 입장)"
-                                            1 -> if (isPeakHour) "보통 🟡 (AI 피크: 20~30분)" else "보통 🟡 (AI 예상: 10~15분)"
-                                            2 -> if (isPeakHour) "혼잡함 🔴 (AI 피크: 40분 이상)" else "혼잡함 🔴 (AI 예상: 25~35분)"
-                                            else -> "제보 없음 ⚪ (AI 평시 분석)"
-                                        }
-                                    } else {
-                                        if (isMarketOpenToday && isPeakHour) "제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
-                                        else "제보 없음 ⚪ (AI 평시: 5~10분 예상)"
-                                    }
-                                    val statusColor = if (hasRecentReport) {
-                                        when (shop.queueStatus) {
-                                            0 -> Color(0xFF2E7D32)
-                                            1 -> Color(0xFFE65100)
-                                            2 -> Color(0xFFC62828)
-                                            else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                        }
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                    
-                                    Text(
-                                        text = statusText,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = statusColor
-                                    )
-                                    
-                                    if (hasRecentReport) {
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        val mins = ((System.currentTimeMillis() - shop.lastReportTime) / 60000).toInt()
-                                        Text(
-                                            text = "${mins}분 전",
-                                            fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        
-                                        if (shop.isVerifiedReport) {
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = "현장인증됨",
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF2E7D32),
-                                                modifier = Modifier
-                                                    .background(Color(0xFFE8F5E9), RoundedCornerShape(4.dp))
-                                                    .padding(horizontal = 4.dp, vertical = 1.dp)
-                                            )
-                                        }
-                                    }
-                                }
+                            if (shopReviews.isNotEmpty()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "⭐ $avgStr (${shopReviews.size})",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
 
-                                if (shopReviews.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // 2. 중단: 온누리/카드 뱃지 및 현장 확인 칩
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            if (shop.isOnnuri) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFFE3F2FD),
+                                    border = BorderStroke(0.5.dp, Color(0xFF90CAF9))
+                                ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(top = 4.dp)
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                                     ) {
                                         Text(
-                                            text = "⭐ $avgStr (${shopReviews.size}개 한줄평)",
-                                            fontSize = 12.sp,
+                                            text = "🎫 온누리 공식가맹",
+                                            fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = Color(0xFF1565C0)
+                                        )
+                                        Text(
+                                            text = " (${shop.onnuriType})",
+                                            fontSize = 10.sp,
+                                            color = Color(0xFF1976D2)
                                         )
                                     }
                                 }
                             }
-                            
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
+
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFE8F5E9),
+                                border = BorderStroke(0.5.dp, Color(0xFFA5D6A7))
                             ) {
-                                OutlinedButton(
-                                    onClick = { onConfirmOnnuri(shop.id) },
-                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.height(32.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF1565C0))
+                                Text(
+                                    text = "💳 카드결제",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E7D32),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                )
+                            }
+
+                            if (shop.onnuriConfirmedCount > 0) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFFFFF3E0),
+                                    border = BorderStroke(0.5.dp, Color(0xFFFFCC80))
                                 ) {
-                                    Text("👍 결제확인", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = "🟢 현장 확인됨 (${shop.onnuriConfirmedCount}명)",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFE65100),
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                    )
                                 }
-                                OutlinedButton(
-                                    onClick = { activeVotingShop = shop },
-                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.height(32.dp)
-                                ) {
-                                    Text("대기줄", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
-                                OutlinedButton(
-                                    onClick = { activeReviewShop = shop },
-                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.height(32.dp)
-                                ) {
-                                    Text("한줄평 💬", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // 3. 대기줄 상태 요약 라인
+                        val currentCal = Calendar.getInstance()
+                        val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
+                        val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
+                        val isMarketOpenToday = market.isPermanent() || market.isOpenOn(System.currentTimeMillis())
+
+                        val statusText = if (hasRecentReport) {
+                            when (shop.queueStatus) {
+                                0 -> if (isPeakHour) "한산함 🟢 (AI 피크: 5~10분)" else "한산함 🟢 (AI 예상: 즉시 입장)"
+                                1 -> if (isPeakHour) "보통 🟡 (AI 피크: 20~30분)" else "보통 🟡 (AI 예상: 10~15분)"
+                                2 -> if (isPeakHour) "혼잡함 🔴 (AI 피크: 40분 이상)" else "혼잡함 🔴 (AI 예상: 25~35분)"
+                                else -> "제보 없음 ⚪ (AI 평시 분석)"
+                            }
+                        } else {
+                            if (isMarketOpenToday && isPeakHour) "대기제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
+                            else "대기제보 없음 ⚪ (AI 평시: 5~10분 예상)"
+                        }
+                        val statusColor = if (hasRecentReport) {
+                            when (shop.queueStatus) {
+                                0 -> Color(0xFF2E7D32)
+                                1 -> Color(0xFFE65100)
+                                2 -> Color(0xFFC62828)
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "⏱️ $statusText",
+                                fontSize = 12.sp,
+                                color = statusColor,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            if (hasRecentReport) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                val mins = ((System.currentTimeMillis() - shop.lastReportTime) / 60000).toInt()
+                                Text(
+                                    text = "(${mins}분 전)",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), thickness = 0.5.dp)
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // 4. 하단 버튼 바: 3개 버튼을 가로 균등 배치
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Button(
+                                onClick = { onConfirmOnnuri(shop.id) },
+                                modifier = Modifier
+                                    .weight(1.2f)
+                                    .height(38.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF1976D2),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("👍 결제확인", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            OutlinedButton(
+                                onClick = { activeVotingShop = shop },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(38.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                            ) {
+                                Text("대기줄 제보", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            }
+
+                            OutlinedButton(
+                                onClick = { activeReviewShop = shop },
+                                modifier = Modifier
+                                    .weight(0.9f)
+                                    .height(38.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                            ) {
+                                Text("한줄평", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
 

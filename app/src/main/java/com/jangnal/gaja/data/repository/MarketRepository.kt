@@ -325,12 +325,19 @@ class MarketRepository(
         }
     }
 
-    // --- Shop / Wait Times Operations ---
     fun getShopsForMarketFlow(marketId: Long): Flow<List<Shop>> {
         return marketDao.getShopsForMarketFlow(marketId).map { shops ->
-            val hasRealShops = shops.any { !it.isMock }
+            val isLegacyMock = { s: Shop ->
+                s.isMock ||
+                s.shopName.contains("청과·채소 농산물") ||
+                s.shopName.contains("산지직송 건어물·젓갈") ||
+                s.shopName.contains("전통 떡방앗간·참기름") ||
+                s.shopName.contains("암소한우·토종정육점") ||
+                s.shopName.contains("원조 장터 손칼국수·분식")
+            }
+            val hasRealShops = shops.any { !isLegacyMock(it) }
             if (hasRealShops) {
-                shops.filter { !it.isMock }
+                shops.filter { !isLegacyMock(it) }
             } else {
                 shops
             }
@@ -348,7 +355,15 @@ class MarketRepository(
                 .trim()
                 
             val existing = marketDao.getShopsForMarketList(marketId)
-            val hasOnlyMock = existing.isEmpty() || existing.all { it.isMock }
+            val isMockOrLegacy = { s: Shop ->
+                s.isMock ||
+                s.shopName.contains("청과·채소 농산물") ||
+                s.shopName.contains("산지직송 건어물·젓갈") ||
+                s.shopName.contains("전통 떡방앗간·참기름") ||
+                s.shopName.contains("암소한우·토종정육점") ||
+                s.shopName.contains("원조 장터 손칼국수·분식")
+            }
+            val hasOnlyMock = existing.isEmpty() || existing.all { isMockOrLegacy(it) }
 
             if (!hasOnlyMock) {
                 return@withContext existing
@@ -363,7 +378,7 @@ class MarketRepository(
             }
 
             // 2. 소진공 79,500+ 전국 온누리 가맹점 압축 에셋(GZIP) 확인
-            val onnuriShops = context?.let { OnnuriAssetLoader.getShopsForMarket(it, marketId, latitude, longitude) }
+            val onnuriShops = OnnuriAssetLoader.getShopsForMarket(context, marketId, latitude, longitude)
             if (!onnuriShops.isNullOrEmpty()) {
                 marketDao.deleteShopsForMarket(marketId)
                 marketDao.insertShops(onnuriShops)
