@@ -75,6 +75,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.InputChip
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
@@ -160,566 +162,606 @@ fun MarketDetailSheet(
                 Spacer(modifier = Modifier.height(8.dp))
             
             // 시장 유형 뱃지
-            Badge(
-                text = market.getSimpleTypeText(),
-                bgColor = MaterialTheme.colorScheme.primaryContainer,
-                textColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 개장 정보 섹션 (헬스케어/달력 스타일 반영)
-            Text(
-                text = "📅 개장 정보 및 달력",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // 캘린더 형태의 시각적 요소 제공
-            MarketCalendarView(market = market)
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            if (!market.isPermanent()) {
-                InfoItem(label = "시장 유형", value = market.getMarketTypeName())
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                val (cycle, _) = market.parseCyclePublic()
-                if (cycle != null) {
-                    InfoItem(label = "개장 주기", value = "${cycle}일 주기")
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                
-                InfoItem(
-                    label = "다음 개장일", 
-                    value = market.getNextMarketText(),
-                    highlight = market.isOpenToday()
-                )
-            } else {
-                InfoItem(label = "운영 주기", value = "매일 상설 운영")
-            }
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Item 4: 영업시간 및 방문 꿀팁 안내 캡션
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
-            ) {
+                // 1. 헤더 뱃지 행 (시장 유형 + 오늘 개장 여부 + 온누리 가맹 1줄 뱃지)
                 Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.Top
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("💡", fontSize = 13.sp, modifier = Modifier.padding(end = 6.dp, top = 1.dp))
-                    Text(
-                        text = "전통시장 특성상 점포별 영업시간(통상 09:00~19:00)과 휴무일이 다를 수 있으니 늦은 시간 방문 시 확인을 권장합니다.",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 16.sp
+                    Badge(
+                        text = market.getSimpleTypeText(),
+                        bgColor = MaterialTheme.colorScheme.primaryContainer,
+                        textColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // B2G Onnuri & Card Verification Rate Calculation (Official Base + User Real-time Confirmation)
-            val totalShopsCount = shops.size
-            val onnuriOfficialShopsCount = shops.count { it.isOnnuri }
-            val userConfirmedShopsCount = shops.count { shop ->
-                val shopRevs = reviews[shop.shopName] ?: emptyList()
-                shop.onnuriConfirmedCount > 0 || shopRevs.any { it.content.contains("온누리") || it.content.contains("카드") || it.content.contains("간편결제") }
-            }
-            
-            // 공공데이터 베이스 기본 88% + 사용자 현장 결제 확인 시 최대 98%까지 상승
-            val baseRate = 88
-            val bonusRate = if (totalShopsCount > 0) {
-                ((userConfirmedShopsCount.toFloat() / totalShopsCount.toFloat()) * 10).toInt().coerceIn(0, 10)
-            } else 0
-            val dynamicPercent = baseRate + bonusRate
-            
-            val isStandardMet = dynamicPercent >= 70
-            val rateDescText = "$dynamicPercent% (소진공 공공 가맹 기준 충족 🟢)"
-            val progressVal = (dynamicPercent / 100f).coerceIn(0f, 1f)
-            val infoExplainText = if (userConfirmedShopsCount > 0) {
-                "💡 소진공 공공데이터 온누리 공식 가맹점 등록 기준을 충족하며, 방문객 현장 결제 확인(${userConfirmedShopsCount}건)이 실시간 검증된 시장입니다."
-            } else {
-                "💡 소상공인시장진흥공단 공공 온누리상품권(지류·카드형·모바일) 가맹점 등록 데이터가 연동된 시장입니다. [결제 확인]을 눌러 현장 검증에 참여해 보세요!"
-            }
-
-            // B2G Onnuri & Card Verification Rate Card
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("📊 온누리·카드 공공 가맹 검증률", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text(rateDescText, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    androidx.compose.material3.LinearProgressIndicator(
-                        progress = progressVal,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
-                        color = Color(0xFF2E7D32),
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = infoExplainText,
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // 편의 시설 섹션 (카드/아이콘화)
-            Text(
-                text = "🏗 편의 시설",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            var activeAmenityReport by remember { mutableStateOf<Pair<String, String>?>(null) } // amenityType to Label
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                AmenityCard(
-                    label = "공중화장실",
-                    icon = "🚻",
-                    hasAmenity = market.hasToilet == "Y",
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            activeAmenityReport = Pair("toilet", "공중화장실")
-                        }
-                )
-                AmenityCard(
-                    label = "주차 공간",
-                    icon = "🅿️",
-                    hasAmenity = market.hasParking == "Y",
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            activeAmenityReport = Pair("parking", "주차 공간")
-                        }
-                )
-            }
-
-            if (activeAmenityReport != null) {
-                val (amenityType, label) = activeAmenityReport!!
-                AlertDialog(
-                    onDismissRequest = { activeAmenityReport = null },
-                    title = { Text("$label 정보 제보", fontWeight = FontWeight.Bold) },
-                    text = {
-                        Text("이 시장에 ${label}이(가) 실제로 존재하고 이용 가능한가요? 현장 기여를 통해 실시간으로 편의시설 정보를 업데이트할 수 있습니다.")
-                    },
-                    confirmButton = {},
-                    dismissButton = {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(
-                                onClick = {
-                                    onReportAmenity(amenityType, true)
-                                    activeAmenityReport = null
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("있음 / 이용 가능 🟢")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    onReportAmenity(amenityType, false)
-                                    activeAmenityReport = null
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("없음 / 정보 없음 ⚪")
-                            }
-                            if (amenityType == "parking") {
-                                OutlinedButton(
-                                    onClick = {
-                                        launchNavigationToParking(context, market)
-                                        activeAmenityReport = null
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
-                                ) {
-                                    Text("🅿️ 주변 공영주차장 길안내 검색 🚗", fontWeight = FontWeight.Bold)
-                                }
-                            }
-                            TextButton(
-                                onClick = { activeAmenityReport = null },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("취소")
-                            }
-                        }
-                    }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 실시간 제보 및 투표 (크라우드소싱)
-            Text(
-                text = "💬 실시간 장날 제보",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "오늘 시장이 열렸는지 현장의 소식을 실시간으로 공유해 주세요!",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { onVoteClick(market.id, true) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
-                        Text("👍 오늘 열렸어요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text("${market.voteOpenTodayCount}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-                
-                OutlinedButton(
-                    onClick = { onVoteClick(market.id, false) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
-                        Text("👎 닫혔어요/안열려요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text("${market.voteClosedTodayCount}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // 위치 및 주요 품목 정보
-            DetailRow(Icons.Default.LocationOn, market.addressRoad.ifEmpty { market.addressJibun })
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            DetailRow(Icons.Default.ShoppingBag, "주요 품목: $displaySpecialty")
-            Spacer(modifier = Modifier.height(6.dp))
-            val (dropHeadline, dropBadge, dropSubtext) = remember(market.marketName, displaySpecialty) {
-                val name = market.marketName
-                when {
-                    name.contains("신림") || name.contains("관악") -> Triple(
-                        "🔥 오늘 30분 대기 [신림 원조 백순대 밀키트]",
-                        "한정 50세트",
-                        "30년 전통 비법 양념장 포함 집에서 3분 완성 · 당일 냉매 포장"
-                    )
-                    name.contains("속초") -> Triple(
-                        "🔥 현장 1시간 대기 [속초 수제 닭강정]",
-                        "한정 100상자",
-                        "가마솥 조청으로 갓 튀겨 당일 발송 · 식어도 바삭한 원조"
-                    )
-                    name.contains("정선") -> Triple(
-                        "🔥 2·7일 정선 장날 [햇생곤드레 & 시골 들기름]",
-                        "장날 당일 채취",
-                        "해발 700m 새벽 수확 생곤드레 1kg + 저온압착 100% 들기름"
-                    )
-                    name.contains("광장") -> Triple(
-                        "🔥 광장시장 줄 서는 [맷돌 빈대떡 & 마약김밥]",
-                        "한정 50세트",
-                        "100% 녹두 맷돌 반죽 3장 + 톡 쏘는 마약김밥 겨자소스"
-                    )
-                    name.contains("서문") -> Triple(
-                        "🔥 서문시장 원조 [납작만두 & 옛날손국수 밀키트]",
-                        "한정 60세트",
-                        "50년 전통 얇은 피 만두 30개 + 진한 남해 멸치육수 손국수"
-                    )
-                    else -> {
-                        val specialty = displaySpecialty.split(",").firstOrNull()?.trim() ?: "명물 특산물"
-                        Triple(
-                            "🔥 줄 서는 [${market.marketName} $specialty 밀키트]",
-                            "장날 한정 드롭",
-                            "5일장 장날 당일 상인 직송 · 디지털 온누리상품권 10% 추가할인"
+                    if (market.isOpenToday()) {
+                        Badge(
+                            text = "🟢 오늘 개장",
+                            bgColor = Color(0xFFE8F5E9),
+                            textColor = Color(0xFF2E7D32)
+                        )
+                    } else if (!market.isPermanent()) {
+                        Badge(
+                            text = "📅 다음: ${market.getNextMarketText()}",
+                            bgColor = Color(0xFFFFF3E0),
+                            textColor = Color(0xFFE65100)
                         )
                     }
+                    Badge(
+                        text = "💳 온누리 10% 가맹 (88% 검증)",
+                        bgColor = Color(0xFFE0F2F1),
+                        textColor = Color(0xFF00695C)
+                    )
                 }
-            }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // [P5] 장날 라이브 드롭(Live Drop) 고전환 커머스 카드
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                border = BorderStroke(1.dp, Color(0xFFFFB74D)),
-                color = Color(0xFFFFF8F0),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Color(0xFFE65100)
-                            ) {
-                                Text(
-                                    text = "장날 LIVE DROP",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Color(0xFFE8F5E9)
-                            ) {
-                                Text(
-                                    text = "온누리 10%↓",
-                                    color = Color(0xFF2E7D32),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
+                // 2. [First Fold 최적화] 🔥 인기 상점 실시간 대기줄 & 온누리 가맹 (최상단으로 전격 배치)
+                ShopQueueSection(
+                    market = market,
+                    shops = shops,
+                    searchResults = searchResults,
+                    reviews = reviews,
+                    userLocation = userLocation,
+                    onReportQueue = onReportQueue,
+                    onAddShop = onAddShop,
+                    onSearchShops = onSearchShops,
+                    onClearSearchShops = onClearSearchShops,
+                    onSubmitReview = onSubmitReview,
+                    onConfirmOnnuri = onConfirmOnnuri
+                )
 
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = Color(0xFFFFEBEE)
-                        ) {
-                            Text(
-                                text = dropBadge,
-                                color = Color(0xFFC62828),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                Spacer(modifier = Modifier.height(20.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 3. [P1 & P5] 🛒 장날 LIVE DROP 고전환 커머스 카드 (구체적 음식명 + 고화질 사진 1장 + 명확한 택배 주문 CTA)
+                val dropItem = remember(market.marketName, displaySpecialty) {
+                    val name = market.marketName
+                    when {
+                        name.contains("구로") -> LiveDropItem(
+                            headline = "🔥 줄 서는 [구로시장 칠공주 떡볶이 & 수제 모듬전]",
+                            badge = "한정 40세트",
+                            subtext = "40년 전통 즉석 떡볶이와 바삭한 모듬전 풀세트 · 당일 신선 포장",
+                            image = "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("신림") || name.contains("관악") -> LiveDropItem(
+                            headline = "🔥 오늘 30분 대기 [신림 원조 백순대·곱창볶음 3분 밀키트]",
+                            badge = "한정 50세트",
+                            subtext = "30년 전통 비법 양념장과 들깨가루·깻잎 포함 · 집에서 3분 완성",
+                            image = "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("속초") -> LiveDropItem(
+                            headline = "🔥 현장 1시간 대기 [속초 수제 조청 닭강정 본점]",
+                            badge = "한정 100상자",
+                            subtext = "가마솥 조청으로 갓 튀겨 당일 발송 · 식어도 바삭한 원조 닭강정",
+                            image = "https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("정선") -> LiveDropItem(
+                            headline = "🔥 2·7일 정선 장날 [햇생곤드레(1kg) & 저온압착 들기름]",
+                            badge = "장날 당일 채취",
+                            subtext = "해발 700m 정선 새벽 수확 생곤드레와 시골 방앗간 햇들기름 세트",
+                            image = "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("광장") || name.contains("종로") -> LiveDropItem(
+                            headline = "🔥 광장시장 줄 서는 [원조 맷돌 빈대떡 & 마약김밥 세트]",
+                            badge = "한정 50세트",
+                            subtext = "100% 녹두 맷돌 반죽 3장 + 톡 쏘는 겨자소스 마약김밥 2팩",
+                            image = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("서문") || name.contains("대구") -> LiveDropItem(
+                            headline = "🔥 서문시장 명물 [50년 원조 납작만두(30개) & 옛날손국수]",
+                            badge = "한정 60세트",
+                            subtext = "50년 전통 얇은 피 만두 30개 + 진한 남해 멸치육수 손국수",
+                            image = "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("망원") || name.contains("마포") -> LiveDropItem(
+                            headline = "🔥 망원시장 핫플 [수제 닭강정 & 훈훈 찹쌀호떡 밀키트]",
+                            badge = "한정 50세트",
+                            subtext = "망리단길 줄 서는 명물 양념 닭강정과 쫄깃한 호떡 반죽",
+                            image = "https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("통인") -> LiveDropItem(
+                            headline = "🔥 통인시장 명물 [원조 기름떡볶이(매콤/간장) 밀키트]",
+                            badge = "한정 40세트",
+                            subtext = "무쇠 솥뚜껑에 볶아내는 겉바속촉 60년 전통 원조 기름떡볶이",
+                            image = "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("부산") || name.contains("자갈치") || name.contains("부평") || name.contains("깡통") || name.contains("국제") -> LiveDropItem(
+                            headline = "🔥 부산 깡통시장 [원조 씨앗호떡 & 비빔당면 밀키트]",
+                            badge = "한정 50세트",
+                            subtext = "부산 대표 먹거리! 매콤새콤 비빔당면과 고소한 씨앗호떡 풀세트",
+                            image = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80"
+                        )
+                        name.contains("강릉") -> LiveDropItem(
+                            headline = "🔥 강릉 중앙시장 [수제 배니 닭강정 & 오징어순대 밀키트]",
+                            badge = "한정 50세트",
+                            subtext = "동해안 속 꽉 찬 오징어순대와 50년 비법 닭강정 당일 발송",
+                            image = "https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=400&q=80"
+                        )
+                        else -> {
+                            val rawWords = displaySpecialty.split(",", " ", "/").map { it.trim() }
+                            val cleanWords = rawWords.filter { w -> 
+                                w.isNotEmpty() && 
+                                !w.contains("가공식품") && 
+                                !w.contains("농산물") && 
+                                !w.contains("수산물") && 
+                                !w.contains("축산물") && 
+                                !w.contains("잡화") && 
+                                !w.contains("의류") && 
+                                !w.contains("공산품") && 
+                                !w.contains("식료품") && 
+                                !w.contains("근린") && 
+                                !w.contains("기타") &&
+                                !w.contains("특산물")
+                            }
+                            val cleanSpecialty = cleanWords.firstOrNull() ?: "30년 손맛 대표 먹거리"
+                            LiveDropItem(
+                                headline = "🔥 오늘 줄 서는 [${market.marketName} $cleanSpecialty 밀키트]",
+                                badge = "장날 한정 드롭",
+                                subtext = "30년 전통 비법 양념과 신선 재료 밀키트 · 특수 냉매 안심 포장",
+                                image = "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=400&q=80"
                             )
                         }
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = dropHeadline,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF1E1B18)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = dropSubtext,
-                        fontSize = 11.sp,
-                        color = Color(0xFF616161),
-                        lineHeight = 15.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        onClick = {
-                            val webUrl = "https://jangnal-gaja.vercel.app/?market=" + Uri.encode(market.marketName)
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
-                            try {
-                                context.startActivity(intent)
-                            } catch (_: Exception) {
-                                // Fallback to naver shopping search if browser fails
-                                val cleanSpecialty = displaySpecialty.split(",").firstOrNull()?.trim() ?: ""
-                                val cleanMarketName = market.marketName.replace("전통시장", "").replace("시장", "").trim()
-                                val query = if (cleanSpecialty.isNotEmpty()) "$cleanMarketName $cleanSpecialty" else market.marketName
-                                val fallbackUrl = "https://search.shopping.naver.com/search/all?query=" + Uri.encode(query)
-                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl))) } catch (_: Exception) {}
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE65100),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(10.dp),
-                        contentPadding = PaddingValues(vertical = 8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(38.dp)
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Color(0xFFFFB74D)),
+                    color = Color(0xFFFFF8F0),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp)
                     ) {
-                        Text(
-                            text = "⚡ 오늘 한정수량 집에서 받기 (택배비 무료)",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            if (displayFeature.isNotEmpty()) {
-                Text(
-                    text = "💡 특징",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = displayFeature,
-                    style = MaterialTheme.typography.bodyLarge,
-                    lineHeight = 24.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            
-            if (market.phoneNumber.isNotEmpty()) {
-                Row(
-                   modifier = Modifier
-                       .fillMaxWidth()
-                       .clickable {
-                           val intent = Intent(Intent.ACTION_DIAL).apply {
-                               data = "tel:${market.phoneNumber}".toUri()
-                           }
-                           try {
-                               context.startActivity(intent)
-                           } catch (_: Exception) {
-                               // Ignore
-                           }
-                       }
-                ) {
-                    DetailRow(Icons.Default.Phone, market.phoneNumber)
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:collcokorea@gmail.com?subject=" + Uri.encode("[장날가자] ${market.marketName} 시장 정보 수정/오류 제보"))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFFE65100)
+                                ) {
+                                    Text(
+                                        text = "장날 LIVE DROP",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFFE8F5E9)
+                                ) {
+                                    Text(
+                                        text = "온누리 10%↓",
+                                        color = Color(0xFF2E7D32),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFFFEBEE)
+                            ) {
+                                Text(
+                                    text = dropItem.badge,
+                                    color = Color(0xFFC62828),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
                         }
-                        try { context.startActivity(emailIntent) } catch (_: Exception) {}
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            AsyncImage(
+                                model = dropItem.image,
+                                contentDescription = "음식 썸네일",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFFFFE0B2))
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = dropItem.headline,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF1E1B18),
+                                    lineHeight = 17.sp
+                                )
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = dropItem.subtext,
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF616161),
+                                    lineHeight = 15.sp
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = {
+                                val webUrl = "https://jangnal-gaja.vercel.app/?market=" + Uri.encode(market.marketName)
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    val cleanSpecialty = displaySpecialty.split(",").firstOrNull()?.trim() ?: ""
+                                    val cleanMarketName = market.marketName.replace("전통시장", "").replace("시장", "").trim()
+                                    val query = if (cleanSpecialty.isNotEmpty()) "$cleanMarketName $cleanSpecialty" else market.marketName
+                                    val fallbackUrl = "https://search.shopping.naver.com/search/all?query=" + Uri.encode(query)
+                                    try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl))) } catch (_: Exception) {}
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE65100),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(vertical = 10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(42.dp)
+                        ) {
+                            Text(
+                                text = "⚡ 장날 갓 만든 밀키트 택배 주문 (온누리 10% 할인)",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 4. [P3] 📅 개장 일정 & 스마트 캘린더 (상설시장은 슬림 요약 칩 + 아코디언)
                 Text(
-                    text = "🚨 시장 정보가 다르거나 변경되었나요? (오류/수정 제보)",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+                    text = "📅 개장 정보 및 일정",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp
                 )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (market.isPermanent()) {
+                    var showFullCalendar by remember { mutableStateOf(false) }
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🏪", fontSize = 18.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("상설 시장 (연중무휴 매일 개장 🟢)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF2E7D32))
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("🕒 권장 방문 시간: 09:00 ~ 21:00 (점포별 상이)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text("📅 정기 휴무: 점포별 자율 휴무 (일요일/공휴일 정상 영업 점포 다수)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            
+                            if (showFullCalendar) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                MarketCalendarView(market = market)
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                TextButton(
+                                    onClick = { showFullCalendar = !showFullCalendar },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Text(if (showFullCalendar) "달력 접기 ▴" else "월간 달력 보기 ▾", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    MarketCalendarView(market = market)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    InfoItem(label = "시장 유형", value = market.getMarketTypeName())
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val (cycle, _) = market.parseCyclePublic()
+                    if (cycle != null) {
+                        InfoItem(label = "개장 주기", value = "${cycle}일 주기")
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    InfoItem(
+                        label = "다음 개장일", 
+                        value = market.getNextMarketText(),
+                        highlight = market.isOpenToday()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 5. 💬 실시간 제보 및 투표
+                Text(
+                    text = "💬 실시간 장날 제보",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "오늘 시장이 열렸는지 현장의 소식을 실시간으로 공유해 주세요!",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { onVoteClick(market.id, true) },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Text("👍 오늘 열렸어요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 13.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("${market.voteOpenTodayCount}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    
+                    OutlinedButton(
+                        onClick = { onVoteClick(market.id, false) },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Text("👎 닫혔어요/안열려요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("${market.voteClosedTodayCount}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 6. 편의 시설 & 위치 및 연락처
+                Text(
+                    text = "🏗 편의 시설 및 위치",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                var activeAmenityReport by remember { mutableStateOf<Pair<String, String>?>(null) }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    AmenityCard(
+                        label = "공중화장실",
+                        icon = "🚻",
+                        hasAmenity = market.hasToilet == "Y",
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                activeAmenityReport = Pair("toilet", "공중화장실")
+                            }
+                    )
+                    AmenityCard(
+                        label = "주차 공간",
+                        icon = "🅿️",
+                        hasAmenity = market.hasParking == "Y",
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                activeAmenityReport = Pair("parking", "주차 공간")
+                            }
+                    )
+                }
+
+                if (activeAmenityReport != null) {
+                    val (amenityType, label) = activeAmenityReport!!
+                    AlertDialog(
+                        onDismissRequest = { activeAmenityReport = null },
+                        title = { Text("$label 정보 제보", fontWeight = FontWeight.Bold) },
+                        text = {
+                            Text("이 시장에 ${label}이(가) 실제로 존재하고 이용 가능한가요? 현장 기여를 통해 실시간으로 편의시설 정보를 업데이트할 수 있습니다.")
+                        },
+                        confirmButton = {},
+                        dismissButton = {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        onReportAmenity(amenityType, true)
+                                        activeAmenityReport = null
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("있음 / 이용 가능 🟢")
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        onReportAmenity(amenityType, false)
+                                        activeAmenityReport = null
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("없음 / 정보 없음 ⚪")
+                                }
+                                if (amenityType == "parking") {
+                                    OutlinedButton(
+                                        onClick = {
+                                            launchNavigationToParking(context, market)
+                                            activeAmenityReport = null
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                                    ) {
+                                        Text("🅿️ 주변 공영주차장 길안내 검색 🚗", fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                                TextButton(
+                                    onClick = { activeAmenityReport = null },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("취소")
+                                }
+                            }
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+                DetailRow(Icons.Default.LocationOn, market.addressRoad.ifEmpty { market.addressJibun })
+                Spacer(modifier = Modifier.height(12.dp))
+                DetailRow(Icons.Default.ShoppingBag, "주요 품목: $displaySpecialty")
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (displayFeature.isNotEmpty()) {
+                    Text(
+                        text = "💡 특징",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = displayFeature,
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+                
+                if (market.phoneNumber.isNotEmpty()) {
+                    Row(
+                       modifier = Modifier
+                           .fillMaxWidth()
+                           .clickable {
+                               val intent = Intent(Intent.ACTION_DIAL).apply {
+                                   data = "tel:${market.phoneNumber}".toUri()
+                               }
+                               try { context.startActivity(intent) } catch (_: Exception) {}
+                           }
+                    ) {
+                        DetailRow(Icons.Default.Phone, market.phoneNumber)
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("mailto:collcokorea@gmail.com?subject=" + Uri.encode("[장날가자] ${market.marketName} 시장 정보 수정/오류 제보"))
+                            }
+                            try { context.startActivity(emailIntent) } catch (_: Exception) {}
+                        }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🚨 시장 정보가 다르거나 변경되었나요? (오류/수정 제보)",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
             }
-            Spacer(modifier = Modifier.height(20.dp))
 
-            // 대기줄 정보 섹션
-            ShopQueueSection(
-                market = market,
-                shops = shops,
-                searchResults = searchResults,
-                reviews = reviews,
-                userLocation = userLocation,
-                onReportQueue = onReportQueue,
-                onAddShop = onAddShop,
-                onSearchShops = onSearchShops,
-                onClearSearchShops = onClearSearchShops,
-                onSubmitReview = onSubmitReview,
-                onConfirmOnnuri = onConfirmOnnuri
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-
-        // P2: Sticky 고정 하단 액션바 (엄지 영역 최적화)
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shadowElevation = 8.dp,
-            color = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
+            // [P4] Sticky 고정 하단 액션바 (닫기 버튼 제거 & 길찾기 메인 CTA 확장)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shadowElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             ) {
-                OutlinedButton(
-                    onClick = { shareMarket(context, market) },
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(10.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("공유", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
+                    OutlinedButton(
+                        onClick = { shareMarket(context, market) },
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("공유", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
 
-                Button(
-                    onClick = { openMap(context, market) },
-                    modifier = Modifier.weight(1.6f).height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("길찾기 안내", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                }
-
-                OutlinedButton(
-                    onClick = onDismissRequest,
-                    modifier = Modifier.height(48.dp),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("닫기", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Button(
+                        onClick = { openMap(context, market) },
+                        modifier = Modifier.weight(2.4f).height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("📍 길찾기 안내", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    }
                 }
             }
         }
     }
 }
-}
+
+private data class LiveDropItem(
+    val headline: String,
+    val badge: String,
+    val subtext: String,
+    val image: String
+)
 
 @Composable
 fun MarketCalendarView(market: Market) {
