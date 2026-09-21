@@ -100,14 +100,27 @@ class MarketViewModel(
             val todayStr = getTodayDateString()
             repository.submitVote(marketId, isOpenToday, todayStr)
             
-            // Push to Firestore with increment
+            // Push to Firestore with increment or daily reset
             try {
                 val firestore = FirebaseFirestore.getInstance()
-                firestore.collection("market_votes").document(marketId.toString()).set(mapOf(
-                    "voteOpenTodayCount" to FieldValue.increment(if (isOpenToday) 1L else 0L),
-                    "voteClosedTodayCount" to FieldValue.increment(if (!isOpenToday) 1L else 0L),
-                    "lastVoteDate" to todayStr
-                ), SetOptions.merge()).await()
+                val docRef = firestore.collection("market_votes").document(marketId.toString())
+                val docSnapshot = docRef.get().await()
+                val lastVoteDate = if (docSnapshot.exists()) docSnapshot.getString("lastVoteDate") ?: "" else ""
+                
+                if (lastVoteDate == todayStr) {
+                    docRef.set(mapOf(
+                        "voteOpenTodayCount" to FieldValue.increment(if (isOpenToday) 1L else 0L),
+                        "voteClosedTodayCount" to FieldValue.increment(if (!isOpenToday) 1L else 0L),
+                        "lastVoteDate" to todayStr
+                    ), SetOptions.merge()).await()
+                } else {
+                    // New day: reset counts
+                    docRef.set(mapOf(
+                        "voteOpenTodayCount" to if (isOpenToday) 1L else 0L,
+                        "voteClosedTodayCount" to if (!isOpenToday) 1L else 0L,
+                        "lastVoteDate" to todayStr
+                    )).await()
+                }
             } catch (e: Exception) {
                 android.util.Log.e("FirebaseSync", "Vote push to Firestore failed for market $marketId: ", e)
             }
@@ -255,11 +268,13 @@ class MarketViewModel(
                             return@addSnapshotListener
                         }
                         if (doc != null && doc.exists()) {
-                            val open = doc.getLong("voteOpenTodayCount")?.toInt() ?: 0
-                            val closed = doc.getLong("voteClosedTodayCount")?.toInt() ?: 0
+                            val todayStr = getTodayDateString()
                             val date = doc.getString("lastVoteDate") ?: ""
+                            val isSameDay = date == todayStr
+                            val open = if (isSameDay) (doc.getLong("voteOpenTodayCount")?.toInt() ?: 0) else 0
+                            val closed = if (isSameDay) (doc.getLong("voteClosedTodayCount")?.toInt() ?: 0) else 0
                             viewModelScope.launch(Dispatchers.IO) {
-                                repository.updateVoteCounts(market.id, open, closed, date)
+                                repository.updateVoteCounts(market.id, open, closed, todayStr)
                             }
                         }
                     }

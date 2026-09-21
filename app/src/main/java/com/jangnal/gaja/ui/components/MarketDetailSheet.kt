@@ -162,7 +162,15 @@ fun MarketDetailSheet(
                 Spacer(modifier = Modifier.height(8.dp))
             
             // 시장 유형 뱃지
-                // 1. 헤더 뱃지 행 (시장 유형 + 오늘 개장 여부 + 온누리 가맹 1줄 뱃지)
+                // 1. 헤더 뱃지 행 (시장 유형 + 오늘 개장 여부 + 온누리 가맹 1줄 뱃지 - 해당 시장 실제 상점 데이터 기반 동적 계산)
+                val onnuriCount = shops.count { it.isOnnuri }
+                val onnuriBadgeText = when {
+                    shops.isNotEmpty() && onnuriCount > 0 -> "💳 온누리 가맹 ${onnuriCount}곳 (${onnuriCount * 100 / shops.size}%)"
+                    shops.isNotEmpty() && onnuriCount == 0 -> "💳 온누리 가맹 확인중"
+                    market.isPermanent() -> "💳 온누리 10% 가맹 상설시장"
+                    else -> "💳 온누리상품권 10% 가맹"
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -187,7 +195,7 @@ fun MarketDetailSheet(
                         )
                     }
                     Badge(
-                        text = "💳 온누리 10% 가맹 (88% 검증)",
+                        text = onnuriBadgeText,
                         bgColor = Color(0xFFE0F2F1),
                         textColor = Color(0xFF00695C)
                     )
@@ -522,6 +530,17 @@ fun MarketDetailSheet(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
+                val todayVoteDate = remember {
+                    val cal = Calendar.getInstance()
+                    val year = cal.get(Calendar.YEAR)
+                    val month = cal.get(Calendar.MONTH) + 1
+                    val day = cal.get(Calendar.DAY_OF_MONTH)
+                    String.format(Locale.US, "%04d-%02d-%02d", year, month, day)
+                }
+                val isVoteToday = market.lastVoteDate == todayVoteDate
+                val displayOpenVotes = if (isVoteToday) market.voteOpenTodayCount else 0
+                val displayClosedVotes = if (isVoteToday) market.voteClosedTodayCount else 0
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -538,7 +557,7 @@ fun MarketDetailSheet(
                         ) {
                             Text("👍 오늘 열렸어요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 13.sp)
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text("${market.voteOpenTodayCount}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("${displayOpenVotes}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     
@@ -554,7 +573,7 @@ fun MarketDetailSheet(
                         ) {
                             Text("👎 닫혔어요/안열려요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text("${market.voteClosedTodayCount}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("${displayClosedVotes}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }

@@ -360,6 +360,37 @@ class MarketRepository(
             }
             val realExisting = existing.filter { !isMockOrLegacy(it) }
 
+            // 1. 소진공 79,500+ 전국 온누리 가맹점 공식 공공데이터 확인
+            val onnuriShops = OnnuriAssetLoader.getShopsForMarket(context, marketId, latitude, longitude)
+            val curated = CuratedShopsData.getCuratedShops(marketId, cleanName, latitude, longitude)
+
+            val baseShops = when {
+                !onnuriShops.isNullOrEmpty() && !curated.isNullOrEmpty() -> {
+                    val curatedNames = curated.map { it.shopName.take(4) }.toSet()
+                    val filteredOnnuri = onnuriShops.filter { oShop ->
+                        curatedNames.none { oShop.shopName.contains(it) }
+                    }
+                    curated + filteredOnnuri
+                }
+                !onnuriShops.isNullOrEmpty() -> onnuriShops
+                !curated.isNullOrEmpty() -> curated
+                else -> emptyList()
+            }
+
+            if (baseShops.isNotEmpty()) {
+                // If existing cache in Room DB has wrong count or outdated data, refresh with official public data
+                val isDataValid = realExisting.isNotEmpty() && realExisting.size >= baseShops.size &&
+                        realExisting.firstOrNull()?.shopName == baseShops.firstOrNull()?.shopName
+                
+                if (!isDataValid) {
+                    marketDao.deleteShopsForMarket(marketId)
+                    marketDao.insertShops(baseShops)
+                    return@withContext marketDao.getShopsForMarketList(marketId)
+                }
+                return@withContext realExisting
+            }
+
+            // 미매칭 시장: 사용자가 직접 추가한 상점이 있으면 유지, 없으면 빈 리스트
             if (realExisting.isNotEmpty()) {
                 if (existing.size != realExisting.size) {
                     marketDao.deleteShopsForMarket(marketId)
@@ -368,23 +399,6 @@ class MarketRepository(
                 return@withContext realExisting
             }
 
-            // 1. 전국 핫플 시장 큐레이션 하이라이트 확인
-            val curated = CuratedShopsData.getCuratedShops(marketId, cleanName, latitude, longitude)
-            if (!curated.isNullOrEmpty()) {
-                marketDao.deleteShopsForMarket(marketId)
-                marketDao.insertShops(curated)
-                return@withContext marketDao.getShopsForMarketList(marketId)
-            }
-
-            // 2. 소진공 79,500+ 전국 온누리 가맹점 압축 에셋(GZIP) 확인
-            val onnuriShops = OnnuriAssetLoader.getShopsForMarket(context, marketId, latitude, longitude)
-            if (!onnuriShops.isNullOrEmpty()) {
-                marketDao.deleteShopsForMarket(marketId)
-                marketDao.insertShops(onnuriShops)
-                return@withContext marketDao.getShopsForMarketList(marketId)
-            }
-
-            // 3. 미매칭 시장: 가짜 상점을 생성하지 않고 빈 리스트 반환 (사용자 직접 등록 유도)
             if (existing.isNotEmpty()) {
                 marketDao.deleteShopsForMarket(marketId)
             }
