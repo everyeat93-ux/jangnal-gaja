@@ -66,20 +66,18 @@ fun AboutScreen(
 
                 // 1. 서비스 소개 & 핵심 기능 가이드
                 InfoCard(
-                    title = "🏪 '장날가자' v1.2.0 주요 기능 안내",
+                    title = "🏪 '장날가자' v1.3.2 주요 기능 안내",
                     content = "복잡한 장날 계산과 전통시장 방문 정보, 이제 '장날가자' 하나로 스마트하게 해결하세요!\n\n" +
                             "☀️ 오늘 개장 & 🚗 주말 개장 5일장 모아보기\n" +
                             "• '오늘 개장' 및 '이번 주말 개장' 칩으로 오늘/주말에 열리는 5일장을 터치 한 번으로 쉽게 찾을 수 있습니다.\n\n" +
-                            "🎫 온누리상품권 · 💳 카드결제 상호검증 뱃지\n" +
-                            "• 상점별 온누리/카드 결제 가능 여부를 확인하고, 리뷰를 통해 직접 결제 태그를 제보할 수 있습니다.\n\n" +
-                            "🤖 실시간 대기줄 & AI 예상 대기시간 안내\n" +
-                            "• 현장 방문객의 제보와 시간대별 AI 가중치를 분석하여 예상 대기시간을 제공합니다.\n\n" +
+                            "🎫 온누리상품권 10% 실시간 가맹 검증 뱃지\n" +
+                            "• 시장별 79,500+개 소진공 공식 온누리 가맹 상점 수와 가맹 비율을 실시간으로 확인하고 제보할 수 있습니다.\n\n" +
+                            "🔥 실시간 대기줄 & 인기 상점 현황\n" +
+                            "• 시장 상세 첫 화면에서 인기 상점의 실시간 대기열과 혼잡도를 바로 확인하세요.\n\n" +
+                            "🛒 장날 LIVE DROP 로컬 명물 밀키트 배송\n" +
+                            "• 전국 5일장/전통시장의 대표 핫플 먹거리를 온누리 10% 할인 혜택으로 집에서 택배 주문할 수 있습니다.\n\n" +
                             "🅿️ 공영주차장 내비게이션 길안내 연동\n" +
-                            "• 시장 상세페이지에서 주변 공영주차장을 네이버/카카오/티맵으로 즉시 길안내받을 수 있습니다.\n\n" +
-                            "📦 특산물 산지직송 / 온라인 택배 주문\n" +
-                            "• 시장 대표 특산물을 현장 방문 없이도 온라인으로 손쉽게 찾아보고 주문할 수 있습니다.\n\n" +
-                            "🌊 강원 로컬 5일장 특화 큐레이션\n" +
-                            "• 속초, 강릉, 양양, 정선 등 강원 지역의 매력적인 5일장만 한눈에 모아볼 수 있습니다."
+                            "• 시장 상세페이지에서 주변 공영주차장을 네이버/카카오/티맵으로 즉시 길안내받을 수 있습니다."
                 )
 
                 // 2. 알뜰 사용 팁
@@ -239,15 +237,24 @@ fun AboutScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "버전 1.2.0 | 만든이: 콜코(COLLCO)",
+                        text = "장날가자 v1.3.2 | 상호명: 콜코(COLLCO) | 대표자: 김문정",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = Color.Gray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "문의 및 제휴: collcokorea@gmail.com",
+                        text = "사업자등록번호: 850-64-00732 | 통신판매업: 2024-서울구로-0598",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = Color.Gray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "고객센터/제휴문의: collcokorea@gmail.com",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
