@@ -66,7 +66,7 @@ fun AboutScreen(
 
                 // 1. 서비스 소개 & 핵심 기능 가이드
                 InfoCard(
-                    title = "🏪 '장날가자' v1.3.2 주요 기능 안내",
+                    title = "🏪 '장날가자' v1.3.3 주요 기능 안내",
                     content = "복잡한 장날 계산과 전통시장 방문 정보, 이제 '장날가자' 하나로 스마트하게 해결하세요!\n\n" +
                             "☀️ 오늘 개장 & 🚗 주말 개장 5일장 모아보기\n" +
                             "• '오늘 개장' 및 '이번 주말 개장' 칩으로 오늘/주말에 열리는 5일장을 터치 한 번으로 쉽게 찾을 수 있습니다.\n\n" +
@@ -237,7 +237,7 @@ fun AboutScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "장날가자 v1.3.2 | 상호명: 콜코(COLLCO) | 대표자: 김문정",
+                        text = "장날가자 v1.3.3 | 상호명: 콜코(COLLCO) | 대표자: 김문정",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
