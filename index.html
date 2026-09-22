@@ -69,456 +69,664 @@
     }
   </style>
 </head>
-<body class="font-sans min-h-screen pb-20 md:pb-0">
+<body class="font-sans min-h-screen pb-24 md:pb-0 flex flex-col justify-between">
 
-  <!-- 1. TOP GLOBAL NOTICE BAR -->
-  <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white text-xs px-4 py-2 flex items-center justify-between shadow-sm">
-    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
-      <div class="flex items-center space-x-2 font-medium">
-        <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[10px] font-black tracking-wider">장날가자 MALL</span>
-        <span class="hidden sm:inline">전국 5일장·전통시장 상점 입점몰 & 장날 LIVE DROP</span>
-        <span class="sm:hidden text-[11px]">전국 전통시장 라이브 직송</span>
-      </div>
-      <div class="flex items-center space-x-3 text-xs">
-        <span class="text-orange-100 hidden md:inline">🎫 충전식 온누리상품권 결제 가맹점 지원</span>
-        <button onclick="openOnnuriModal()" class="underline font-bold text-white hover:text-amber-200">온누리 사용안내 &rarr;</button>
-        <span class="text-white/40">|</span>
-        <button onclick="switchView('seller')" class="font-bold bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded">
-          🧑‍🍳 사장님 입점/관리자
-        </button>
-        <button onclick="switchView('admin')" class="text-white/70 hover:text-white text-[11px]">
-          👑 총괄 어드민
-        </button>
+  <div>
+    <!-- 1. TOP GLOBAL NOTICE BAR -->
+    <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white text-xs px-4 py-2 shadow-sm">
+      <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+        <div class="flex items-center space-x-2 font-medium">
+          <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[10px] font-black tracking-wider">장날가자 MALL</span>
+          <span class="hidden sm:inline">전국 5일장·전통시장 상점 입점몰 & 장날 LIVE DROP</span>
+          <span class="sm:hidden text-[11px]">전통시장 라이브 직송</span>
+        </div>
+        <div id="top-auth-status" class="flex items-center space-x-3 text-xs">
+          <!-- Dynamically populated via renderAuthUI() -->
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- 2. MAIN HEADER -->
-  <header class="sticky top-0 z-40 glass-nav border-b border-gray-200/80 shadow-sm transition-all">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-      
-      <!-- Brand Logo -->
-      <div class="flex items-center space-x-4">
-        <a href="javascript:void(0)" onclick="switchView('mall')" class="flex items-center space-x-2.5 group">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black shadow-md text-xl group-hover:scale-105 transition">
-            장
-          </div>
-          <div>
-            <div class="flex items-center space-x-1.5 leading-none">
-              <span class="font-black text-xl sm:text-2xl tracking-tight text-gray-900">장날가자 <span class="text-orange-600">몰</span></span>
-              <span class="bg-orange-100 text-orange-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">LIVE DROP</span>
+    <!-- 2. MAIN HEADER -->
+    <header class="sticky top-0 z-40 glass-nav border-b border-gray-200/80 shadow-sm transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
+        
+        <!-- Brand Logo -->
+        <div class="flex items-center space-x-4">
+          <a href="javascript:void(0)" onclick="switchView('mall')" class="flex items-center space-x-2.5 group">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black shadow-md text-xl group-hover:scale-105 transition">
+              장
             </div>
-            <span class="text-[10px] font-bold text-gray-400 tracking-wider">전국 5일장 로컬 상점 입점 & 드롭 플랫폼</span>
+            <div>
+              <div class="flex items-center space-x-1.5 leading-none">
+                <span class="font-black text-xl sm:text-2xl tracking-tight text-gray-900">장날가자 <span class="text-orange-600">몰</span></span>
+                <span class="bg-orange-100 text-orange-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">LIVE DROP</span>
+              </div>
+              <span class="text-[10px] font-bold text-gray-400 tracking-wider">전국 5일장 로컬 상점 입점 & 드롭 플랫폼</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Main Navigation Menu (소비자 기본 탭 + 인증 시에만 관리자 탭 노출) -->
+        <nav class="hidden lg:flex items-center space-x-1 bg-gray-100/80 p-1.5 rounded-2xl border border-gray-200/60 text-xs font-bold" id="main-gnb">
+          <button onclick="switchView('mall')" id="gnb-mall" class="gnb-tab bg-white text-orange-600 px-4 py-2 rounded-xl shadow-sm transition flex items-center space-x-1.5">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+            <span>장날 LIVE DROP</span>
+          </button>
+          <button onclick="switchView('stores')" id="gnb-stores" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
+            <i data-lucide="store" class="w-3.5 h-3.5"></i>
+            <span>입점 상점 둘러보기</span>
+          </button>
+          <button onclick="switchView('requests')" id="gnb-requests" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
+            <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i>
+            <span>드롭 요청 펀딩</span>
+          </button>
+          <!-- Dynamic Admin Tab Container (Only shown when logged in) -->
+          <div id="gnb-auth-tabs" class="inline-flex items-center space-x-1"></div>
+        </nav>
+
+        <!-- Integrated Search Bar -->
+        <div class="flex-1 max-w-md hidden md:block" id="header-search-container">
+          <div class="relative">
+            <input type="text" id="desktop-search" onkeyup="handleSearchInput(event)" placeholder="시장명, 상호명, 밀키트(순대, 닭강정, 곤드레) 검색..." class="w-full bg-gray-100 border border-transparent focus:border-orange-500 focus:bg-white text-sm rounded-2xl px-5 py-2.5 pl-11 focus:outline-none focus:ring-4 focus:ring-orange-500/10 transition">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+            <button onclick="executeSearch()" class="absolute right-2 top-1.5 bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-orange-700 transition">
+              검색
+            </button>
           </div>
-        </a>
-      </div>
+        </div>
 
-      <!-- Main Navigation Menu (쌤카페 & 피카플레이 벤치마킹 상단 GNB) -->
-      <nav class="hidden lg:flex items-center space-x-1 bg-gray-100/80 p-1.5 rounded-2xl border border-gray-200/60 text-xs font-bold">
-        <button onclick="switchView('mall')" id="gnb-mall" class="gnb-tab bg-white text-orange-600 px-4 py-2 rounded-xl shadow-sm transition flex items-center space-x-1.5">
-          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-          <span>장날 LIVE DROP</span>
-        </button>
-        <button onclick="switchView('stores')" id="gnb-stores" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
-          <i data-lucide="store" class="w-3.5 h-3.5"></i>
-          <span>입점 상점 둘러보기</span>
-        </button>
-        <button onclick="switchView('requests')" id="gnb-requests" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
-          <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i>
-          <span>드롭 요청 펀딩</span>
-        </button>
-        <button onclick="switchView('seller')" id="gnb-seller" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
-          <i data-lucide="chef-hat" class="w-3.5 h-3.5"></i>
-          <span>사장님 셀러 어드민</span>
-        </button>
-        <button onclick="switchView('admin')" id="gnb-admin" class="gnb-tab text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl transition flex items-center space-x-1">
-          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-          <span>총괄 어드민</span>
-        </button>
-      </nav>
+        <!-- User Actions & Cart Button -->
+        <div class="flex items-center space-x-3">
+          <button onclick="toggleMobileSearch()" class="p-2 text-gray-700 hover:text-orange-600 md:hidden">
+            <i data-lucide="search" class="w-6 h-6"></i>
+          </button>
 
-      <!-- Integrated Search Bar -->
-      <div class="flex-1 max-w-md hidden md:block" id="header-search-container">
-        <div class="relative">
-          <input type="text" id="desktop-search" onkeyup="handleSearchInput(event)" placeholder="시장명, 상호명, 밀키트(순대, 닭강정, 곤드레) 검색..." class="w-full bg-gray-100 border border-transparent focus:border-orange-500 focus:bg-white text-sm rounded-2xl px-5 py-2.5 pl-11 focus:outline-none focus:ring-4 focus:ring-orange-500/10 transition">
-          <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
-          <button onclick="executeSearch()" class="absolute right-2 top-1.5 bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-orange-700 transition">
-            검색
+          <button onclick="openCartDrawer()" class="relative flex items-center space-x-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3.5 py-2.5 rounded-2xl border border-orange-200 transition">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+            <span class="text-xs font-black hidden sm:inline">장바구니</span>
+            <span id="header-cart-badge" class="bg-orange-600 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center">0</span>
           </button>
         </div>
       </div>
 
-      <!-- User Actions & Cart Button -->
-      <div class="flex items-center space-x-3">
-        <button onclick="toggleMobileSearch()" class="p-2 text-gray-700 hover:text-orange-600 md:hidden">
-          <i data-lucide="search" class="w-6 h-6"></i>
-        </button>
-
-        <button onclick="openCartDrawer()" class="relative flex items-center space-x-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3.5 py-2.5 rounded-2xl border border-orange-200 transition">
-          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-          <span class="text-xs font-black hidden sm:inline">장바구니</span>
-          <span id="header-cart-badge" class="bg-orange-600 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center">0</span>
-        </button>
+      <!-- Category Mega Menu Bar (Only on Mall View) -->
+      <div id="mall-category-nav" class="bg-white border-t border-gray-100 px-4">
+        <div class="max-w-7xl mx-auto flex items-center space-x-6 overflow-x-auto custom-scrollbar h-11 text-xs sm:text-sm font-bold">
+          <button onclick="setCategory('all')" id="tab-all" class="nav-tab text-orange-600 border-b-2 border-orange-600 h-full flex items-center px-1 shrink-0">
+            🔥 전체 라이브 드롭
+          </button>
+          <button onclick="setCategory('mealkit')" id="tab-mealkit" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+            🍲 전통 맛집 밀키트
+          </button>
+          <button onclick="setCategory('fresh')" id="tab-fresh" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+            🌿 당일 채취 햇특산물
+          </button>
+          <button onclick="setCategory('snack')" id="tab-snack" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+            🍗 가마솥 닭강정·먹거리
+          </button>
+          <button onclick="switchView('stores')" class="text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+            🏪 입점 상점 목록
+          </button>
+          <button onclick="switchView('requests')" class="text-amber-700 hover:text-amber-800 h-full flex items-center px-1 shrink-0">
+            📢 드롭 펀딩 요청
+          </button>
+          <button onclick="openOnnuriModal()" class="text-emerald-700 hover:text-emerald-800 h-full flex items-center px-1 shrink-0 ml-auto">
+            🎫 온누리 결제 가맹점
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Category Mega Menu Bar (Only on Mall View) -->
-    <div id="mall-category-nav" class="bg-white border-t border-gray-100 px-4">
-      <div class="max-w-7xl mx-auto flex items-center space-x-6 overflow-x-auto custom-scrollbar h-11 text-xs sm:text-sm font-bold">
-        <button onclick="setCategory('all')" id="tab-all" class="nav-tab text-orange-600 border-b-2 border-orange-600 h-full flex items-center px-1 shrink-0">
-          🔥 전체 라이브 드롭
-        </button>
-        <button onclick="setCategory('mealkit')" id="tab-mealkit" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
-          🍲 전통 맛집 밀키트
-        </button>
-        <button onclick="setCategory('fresh')" id="tab-fresh" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
-          🌿 당일 채취 햇특산물
-        </button>
-        <button onclick="setCategory('snack')" id="tab-snack" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
-          🍗 가마솥 닭강정·먹거리
-        </button>
-        <button onclick="switchView('stores')" class="text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
-          🏪 입점 상점 목록
-        </button>
-        <button onclick="switchView('requests')" class="text-amber-700 hover:text-amber-800 h-full flex items-center px-1 shrink-0">
-          📢 드롭 펀딩 요청
-        </button>
-        <button onclick="openOnnuriModal()" class="text-emerald-700 hover:text-emerald-800 h-full flex items-center px-1 shrink-0 ml-auto">
-          🎫 온누리 결제 가맹점
-        </button>
+      <!-- Mobile Expandable Search Bar -->
+      <div id="mobile-search-bar" class="hidden px-4 py-3 bg-white border-t border-gray-100 md:hidden">
+        <div class="relative">
+          <input type="text" id="mobile-search-input" onkeyup="handleSearchInput(event)" placeholder="시장명, 상호명, 품목 검색..." class="w-full bg-gray-100 text-sm rounded-xl px-4 py-2.5 pl-10 focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Mobile Expandable Search Bar -->
-    <div id="mobile-search-bar" class="hidden px-4 py-3 bg-white border-t border-gray-100 md:hidden">
-      <div class="relative">
-        <input type="text" id="mobile-search-input" onkeyup="handleSearchInput(event)" placeholder="시장명, 상호명, 품목 검색..." class="w-full bg-gray-100 text-sm rounded-xl px-4 py-2.5 pl-10 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
-      </div>
-    </div>
-  </header>
-
-  <!-- ========================================================================= -->
-  <!-- VIEW 1: 소비자를 위한 메인 장날 LIVE DROP 쇼핑몰 (MALL VIEW) -->
-  <!-- ========================================================================= -->
-  <div id="view-mall" class="view-section">
-    <!-- APP INCOMING MARKET NOTICE -->
-    <div id="app-incoming-banner" class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-4">
-      <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-orange-400/40">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
-            📍
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: 소비자를 위한 메인 장날 LIVE DROP 쇼핑몰 (MALL VIEW) -->
+    <!-- ========================================================================= -->
+    <div id="view-mall" class="view-section">
+      <!-- APP INCOMING MARKET NOTICE -->
+      <div id="app-incoming-banner" class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+        <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-orange-400/40">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
+              📍
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="bg-black/30 text-white text-[10px] font-black px-2 py-0.5 rounded">장날가자 앱 전용관</span>
+                <span id="incoming-market-name" class="font-black text-sm sm:text-base">신림중앙시장</span>
+              </div>
+              <p id="incoming-market-desc" class="text-xs text-orange-100 mt-0.5">
+                조회하신 시장의 [한정 수량 장날 LIVE DROP]이 준비되었습니다!
+              </p>
+            </div>
           </div>
+          <button onclick="scrollToTargetItem()" class="bg-white text-orange-700 text-xs font-extrabold px-4 py-2.5 rounded-xl hover:bg-orange-50 transition shadow shrink-0">
+            해당 상품 바로보기 &darr;
+          </button>
+        </div>
+      </div>
+
+      <!-- HERO CAROUSEL / BRAND SHOWCASE -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          
+          <!-- Main Featured Hero (2 Cols) -->
+          <div id="hero-main-card" class="lg:col-span-2 relative bg-gradient-to-br from-gray-950 via-stone-900 to-amber-950 text-white rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden border border-amber-500/30 flex flex-col justify-between min-h-[380px]">
+            <div class="relative z-10 max-w-xl">
+              <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class="bg-orange-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full flex items-center space-x-1">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 inline"></i>
+                  <span id="hero-market-badge">신림 순대타운</span>
+                </span>
+                <span class="bg-red-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full badge-pulse flex items-center space-x-1">
+                  <i data-lucide="users" class="w-3.5 h-3.5 inline"></i>
+                  <span id="hero-waiting-badge">실시간 대기 38명</span>
+                </span>
+                <span id="hero-sample-badge" class="bg-amber-400/20 text-amber-300 text-[11px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
+                  ⭐ 장날 공식 드롭
+                </span>
+              </div>
+
+              <h1 id="hero-title" class="text-2xl sm:text-4xl font-black tracking-tight leading-snug mb-3 text-white">
+                [원조 신림 순대타운] 3분 완성 백순대·곱창볶음 밀키트 (2인분)
+              </h1>
+              <p id="hero-desc" class="text-xs sm:text-sm text-gray-300 mb-6 leading-relaxed">
+                30년 전통 비법 양념장과 당일 손질 곱창! 고소한 들깨가루와 깻잎까지 모두 담아 집에서 3분 만에 현장의 맛을 재현합니다.
+              </p>
+
+              <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-6 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <span id="hero-orig-price" class="text-xs text-gray-400 line-through block">정상가 21,000원</span>
+                  <div class="flex items-baseline space-x-2">
+                    <span id="hero-price" class="text-2xl sm:text-3xl font-black text-orange-400">18,900원</span>
+                    <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-500/40">
+                      🎫 온누리 결제 가능
+                    </span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-[11px] text-amber-300 font-bold block mb-1">⏳ 장날 마감 카운트다운</span>
+                  <div id="hero-timer" class="font-mono text-sm sm:text-base font-black text-white bg-black/50 px-3 py-1.5 rounded-xl border border-amber-500/40">
+                    03:42:18 남음
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3">
+                <button onclick="heroDirectOrder()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-6 py-4 rounded-2xl shadow-xl hover:from-orange-600 hover:to-amber-600 active:scale-95 transition text-sm flex items-center space-x-2">
+                  <i data-lucide="zap" class="w-4 h-4"></i>
+                  <span>오늘 드롭 즉시 주문하기 (택배비 무료)</span>
+                </button>
+                <button onclick="heroAddToCart()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-4 rounded-2xl transition border border-white/20">
+                  장바구니 담기
+                </button>
+              </div>
+            </div>
+
+            <div id="hero-bg-img" class="absolute right-0 top-0 bottom-0 w-3/5 opacity-30 bg-cover bg-center hidden md:block" style="background-image: url('https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1000&q=80')"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-3/5 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent hidden md:block"></div>
+          </div>
+
+          <!-- Side Live Drops (1 Col) -->
+          <div class="flex flex-col justify-between gap-4">
+            <!-- Quick Pick 1 -->
+            <div onclick="selectHeroProduct('drop-2')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
+              <img src="https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="속초 닭강정">
+              <div class="flex-1">
+                <div class="flex items-center space-x-1.5">
+                  <span class="bg-orange-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">속초관광수산</span>
+                  <span class="text-[10px] text-red-600 font-bold">1시간 대기</span>
+                </div>
+                <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">속초 30년 본점 수제 조청 닭강정</h4>
+                <div class="mt-1 flex items-baseline space-x-1.5">
+                  <span class="text-xs font-black text-orange-600">21,000원</span>
+                  <span class="text-[10px] text-emerald-700 font-bold">🎫 온누리가맹</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Pick 2 -->
+            <div onclick="selectHeroProduct('drop-3')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
+              <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="정선 햇곤드레">
+              <div class="flex-1">
+                <div class="flex items-center space-x-1.5">
+                  <span class="bg-emerald-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded">정선 5일장</span>
+                  <span class="text-[10px] text-emerald-600 font-bold">장날 당일 채취</span>
+                </div>
+                <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">정선 해발 700m 햇생곤드레 1kg</h4>
+                <div class="mt-1 flex items-baseline space-x-1.5">
+                  <span class="text-xs font-black text-orange-600">25,900원</span>
+                  <span class="text-[10px] text-emerald-700 font-bold">🎫 온누리가맹</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Pick 3 -->
+            <div onclick="selectHeroProduct('drop-4')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
+              <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="광장시장 녹두전">
+              <div class="flex-1">
+                <div class="flex items-center space-x-1.5">
+                  <span class="bg-amber-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded">광장시장</span>
+                  <span class="text-[10px] text-amber-600 font-bold">맷돌 반죽</span>
+                </div>
+                <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">맷돌 녹두 빈대떡 반죽 3장+마약김밥</h4>
+                <div class="mt-1 flex items-baseline space-x-1.5">
+                  <span class="text-xs font-black text-orange-600">19,900원</span>
+                  <span class="text-[10px] text-emerald-700 font-bold">🎫 온누리가맹</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VALUE PROPOSITION BAR -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+        <div class="bg-white rounded-2xl p-4 border border-gray-200/80 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div class="flex items-center justify-center space-x-2">
+            <span class="text-xl">🚚</span>
+            <div class="text-left">
+              <div class="text-xs font-black text-gray-900">장날 당일 직송</div>
+              <div class="text-[10px] text-gray-500">갓 만들어 가장 신선하게</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center space-x-2 border-l border-gray-100">
+            <span class="text-xl">🎫</span>
+            <div class="text-left">
+              <div class="text-xs font-black text-gray-900">온누리상품권 가맹</div>
+              <div class="text-[10px] text-gray-500">충전 잔액으로 결제 가능</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center space-x-2 border-l border-gray-100">
+            <span class="text-xl">📦</span>
+            <div class="text-left">
+              <div class="text-xs font-black text-gray-900">전 상품 무료배송</div>
+              <div class="text-[10px] text-gray-500">장날 라이브 드롭 특별 혜택</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center space-x-2 border-l border-gray-100">
+            <span class="text-xl">🧑‍🍳</span>
+            <div class="text-left">
+              <div class="text-xs font-black text-gray-900">전국 5일장 명물</div>
+              <div class="text-[10px] text-gray-500">현장 줄 서는 맛집 검증</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE DROP CATALOG LIST -->
+      <main id="catalog-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
           <div>
             <div class="flex items-center space-x-2">
-              <span class="bg-black/30 text-white text-[10px] font-black px-2 py-0.5 rounded">장날가자 앱 전용관</span>
-              <span id="incoming-market-name" class="font-black text-sm sm:text-base">신림중앙시장</span>
+              <span class="w-3 h-3 rounded-full bg-orange-600 animate-ping"></span>
+              <h2 class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                ⚡ 장날 LIVE DROP & 한정 수량 주문
+              </h2>
             </div>
-            <p id="incoming-market-desc" class="text-xs text-orange-100 mt-0.5">
-              조회하신 시장의 [한정 수량 장날 LIVE DROP]이 준비되었습니다!
-            </p>
+            <p class="text-xs text-gray-500 mt-1">전통시장 사장님이 장날 갓 생산하여 당일 택배 직송하는 명물 라인업입니다.</p>
+          </div>
+
+          <div class="flex items-center space-x-2 text-xs font-bold">
+            <span class="text-gray-400">정렬:</span>
+            <button onclick="sortProducts('popular')" id="sort-popular" class="text-orange-600 font-black">인기순</button>
+            <span class="text-gray-300">·</span>
+            <button onclick="sortProducts('stock')" id="sort-stock" class="text-gray-500 hover:text-gray-800">마감임박순</button>
+            <span class="text-gray-300">·</span>
+            <button onclick="sortProducts('price')" id="sort-price" class="text-gray-500 hover:text-gray-800">낮은가격순</button>
           </div>
         </div>
-        <button onclick="scrollToTargetItem()" class="bg-white text-orange-700 text-xs font-extrabold px-4 py-2.5 rounded-xl hover:bg-orange-50 transition shadow shrink-0">
-          해당 상품 바로보기 &darr;
+
+        <!-- Product Grid Container -->
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Injected via JavaScript -->
+        </div>
+      </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: 입점 상점 둘러보기 (STORES VIEW) -->
+    <!-- ========================================================================= -->
+    <div id="view-stores" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
+        <div>
+          <span class="text-orange-600 font-black text-xs tracking-wider uppercase">Traditional Market Storefronts</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">전통시장 공식 입점 상점관 🏪</h2>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1">전국 5일장 및 전통시장에서 신뢰받는 진짜 사장님들의 매장과 상품을 만나보세요.</p>
+        </div>
+
+        <button onclick="openAuthModal('seller')" class="bg-orange-600 text-white text-xs font-bold px-4 py-3 rounded-2xl hover:bg-orange-700 transition flex items-center space-x-1.5 shadow">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>내 매장 입점 신청 / 로그인</span>
         </button>
+      </div>
+
+      <!-- Stores Grid -->
+      <div id="stores-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Injected via JS -->
       </div>
     </div>
 
-    <!-- HERO CAROUSEL / BRAND SHOWCASE -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        
-        <!-- Main Featured Hero (2 Cols) -->
-        <div id="hero-main-card" class="lg:col-span-2 relative bg-gradient-to-br from-gray-950 via-stone-900 to-amber-950 text-white rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden border border-amber-500/30 flex flex-col justify-between min-h-[380px]">
-          <div class="relative z-10 max-w-xl">
-            <div class="flex flex-wrap items-center gap-2 mb-3">
-              <span class="bg-orange-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full flex items-center space-x-1">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 inline"></i>
-                <span id="hero-market-badge">신림 순대타운</span>
-              </span>
-              <span class="bg-red-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full badge-pulse flex items-center space-x-1">
-                <i data-lucide="users" class="w-3.5 h-3.5 inline"></i>
-                <span id="hero-waiting-badge">실시간 대기 38명</span>
-              </span>
-              <span id="hero-sample-badge" class="bg-amber-400/20 text-amber-300 text-[11px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
-                ⭐ 장날 공식 드롭
-              </span>
-            </div>
-
-            <h1 id="hero-title" class="text-2xl sm:text-4xl font-black tracking-tight leading-snug mb-3 text-white">
-              [원조 신림 순대타운] 3분 완성 백순대·곱창볶음 밀키트 (2인분)
-            </h1>
-            <p id="hero-desc" class="text-xs sm:text-sm text-gray-300 mb-6 leading-relaxed">
-              30년 전통 비법 양념장과 당일 손질 곱창! 고소한 들깨가루와 깻잎까지 모두 담아 집에서 3분 만에 현장의 맛을 재현합니다.
-            </p>
-
-            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-6 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <span id="hero-orig-price" class="text-xs text-gray-400 line-through block">정상가 21,000원</span>
-                <div class="flex items-baseline space-x-2">
-                  <span id="hero-price" class="text-2xl sm:text-3xl font-black text-orange-400">18,900원</span>
-                  <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-500/40">
-                    🎫 온누리 결제 가능
-                  </span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-[11px] text-amber-300 font-bold block mb-1">⏳ 장날 마감 카운트다운</span>
-                <div id="hero-timer" class="font-mono text-sm sm:text-base font-black text-white bg-black/50 px-3 py-1.5 rounded-xl border border-amber-500/40">
-                  03:42:18 남음
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-3">
-              <button onclick="heroDirectOrder()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-6 py-4 rounded-2xl shadow-xl hover:from-orange-600 hover:to-amber-600 active:scale-95 transition text-sm flex items-center space-x-2">
-                <i data-lucide="zap" class="w-4 h-4"></i>
-                <span>오늘 드롭 즉시 주문하기 (택배비 무료)</span>
-              </button>
-              <button onclick="heroAddToCart()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-4 rounded-2xl transition border border-white/20">
-                장바구니 담기
-              </button>
-            </div>
-          </div>
-
-          <div id="hero-bg-img" class="absolute right-0 top-0 bottom-0 w-3/5 opacity-30 bg-cover bg-center hidden md:block" style="background-image: url('https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1000&q=80')"></div>
-          <div class="absolute right-0 top-0 bottom-0 w-3/5 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent hidden md:block"></div>
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: 드롭 요청 펀딩 (REQUESTS VIEW - 피카플레이 벤치마킹) -->
+    <!-- ========================================================================= -->
+    <div id="view-requests" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div class="bg-gradient-to-br from-amber-900 to-stone-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl mb-8">
+        <div class="max-w-2xl">
+          <span class="bg-amber-400 text-stone-900 text-[10px] font-black px-2 py-0.5 rounded">유저 참여형 드롭 펀딩</span>
+          <h2 class="text-2xl sm:text-3xl font-black mt-2">"우리 동네 시장 맛집도 드롭 열어주세요!" 📢</h2>
+          <p class="text-xs sm:text-sm text-amber-100 mt-2 leading-relaxed">
+            내가 사랑하는 단골 시장 가게의 메뉴를 제안해 주세요. <strong>추천 50표</strong>를 달성하면 장날가자 운영팀이 사장님을 직접 찾아가 장날 택배 드롭을 섭외합니다!
+          </p>
+          <button onclick="openRequestModal()" class="mt-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-xs sm:text-sm px-5 py-3 rounded-2xl shadow hover:brightness-105 transition flex items-center space-x-2">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>새로운 시장 맛집 드롭 제안하기</span>
+          </button>
         </div>
-
-        <!-- Side Live Drops (1 Col) -->
-        <div class="flex flex-col justify-between gap-4">
-          <!-- Quick Pick 1 -->
-          <div onclick="selectHeroProduct('sokcho-chicken')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
-            <img src="https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="속초 닭강정">
-            <div class="flex-1">
-              <div class="flex items-center space-x-1.5">
-                <span class="bg-orange-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">속초관광수산</span>
-                <span class="text-[10px] text-red-600 font-bold">1시간 대기</span>
-              </div>
-              <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">속초 30년 본점 수제 조청 닭강정</h4>
-              <div class="mt-1 flex items-baseline space-x-1.5">
-                <span class="text-xs font-black text-gray-900">21,000원</span>
-                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">🎫 온누리 가맹</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Pick 2 -->
-          <div onclick="selectHeroProduct('jeongseon-gondre')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
-            <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="정선 곤드레">
-            <div class="flex-1">
-              <div class="flex items-center space-x-1.5">
-                <span class="bg-orange-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">정선아리랑시장</span>
-                <span class="text-[10px] text-emerald-600 font-bold">새벽 채취</span>
-              </div>
-              <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">정선 햇생곤드레 & 저온압착 들기름</h4>
-              <div class="mt-1 flex items-baseline space-x-1.5">
-                <span class="text-xs font-black text-gray-900">25,900원</span>
-                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">🎫 온누리 가맹</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Onnuri Voucher Notice Banner -->
-          <div onclick="openOnnuriModal()" class="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-3xl p-4.5 shadow-sm cursor-pointer hover:opacity-95 transition flex items-center justify-between">
-            <div>
-              <span class="bg-emerald-700 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">공식 가맹점 인증</span>
-              <h4 class="text-sm font-black mt-1">충전식 온누리상품권 사용처</h4>
-              <p class="text-[10px] text-emerald-100/80 mt-0.5">정부 10% 할인 충전 잔액 그대로 결제</p>
-            </div>
-            <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-lg">
-              🎫
-            </div>
-          </div>
-        </div>
-
       </div>
-    </section>
 
-    <!-- PRODUCT CATALOG GRID -->
-    <main id="catalog-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
+      <div class="mb-6 flex items-center justify-between">
+        <h3 class="font-black text-gray-900 text-lg">🔥 실시간 드롭 요청 랭킹</h3>
+        <span class="text-xs text-gray-500">투표수가 많은 상점부터 순차적으로 입점 섭외가 진행됩니다.</span>
+      </div>
+
+      <!-- Drop Requests Grid -->
+      <div id="requests-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 4: 사장님 셀러 어드민 (SELLER VIEW - 쌤카페/게토 벤치마킹 점주 콘솔) -->
+    <!-- ========================================================================= -->
+    <div id="view-seller" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
         <div>
           <div class="flex items-center space-x-2">
-            <span class="w-3 h-3 rounded-full bg-orange-600 animate-ping"></span>
-            <h2 class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-              ⚡ 장날 LIVE DROP & 한정 수량 주문
-            </h2>
+            <span class="bg-orange-100 text-orange-700 text-xs font-black px-2.5 py-1 rounded-md">Merchant Admin Console</span>
+            <span id="seller-logged-badge" class="text-xs text-orange-600 font-bold bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">점주 인증 완료</span>
           </div>
-          <p class="text-xs text-gray-500 mt-1">전통시장 사장님이 장날 갓 생산하여 당일 택배 직송하는 명물 라인업입니다.</p>
+          <h2 id="seller-store-heading" class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">🧑‍🍳 사장님 매장 & 주문 관리 센터</h2>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1">매장 프로필 수정, 상품 및 밀키트 등록, 장날 LIVE DROP 개설, 실시간 주문 접수 및 배송을 관리하세요.</p>
         </div>
 
-        <div class="flex items-center space-x-2 text-xs font-bold">
-          <span class="text-gray-400">정렬:</span>
-          <button onclick="sortProducts('popular')" id="sort-popular" class="text-orange-600 font-black">인기순</button>
-          <span class="text-gray-300">·</span>
-          <button onclick="sortProducts('stock')" id="sort-stock" class="text-gray-500 hover:text-gray-800">마감임박순</button>
-          <span class="text-gray-300">·</span>
-          <button onclick="sortProducts('price')" id="sort-price" class="text-gray-500 hover:text-gray-800">낮은가격순</button>
-        </div>
-      </div>
-
-      <!-- Product Grid Container -->
-      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Injected via JavaScript -->
-      </div>
-    </main>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- VIEW 2: 입점 상점 둘러보기 (STORES VIEW) -->
-  <!-- ========================================================================= -->
-  <div id="view-stores" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
-      <div>
-        <span class="text-orange-600 font-black text-xs tracking-wider uppercase">Traditional Market Storefronts</span>
-        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">전통시장 공식 입점 상점관 🏪</h2>
-        <p class="text-xs sm:text-sm text-gray-500 mt-1">전국 5일장 및 전통시장에서 신뢰받는 진짜 사장님들의 매장과 상품을 만나보세요.</p>
-      </div>
-
-      <button onclick="switchView('seller')" class="bg-orange-600 text-white text-xs font-bold px-4 py-3 rounded-2xl hover:bg-orange-700 transition flex items-center space-x-1.5 shadow">
-        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-        <span>내 매장도 입점 신청하기</span>
-      </button>
-    </div>
-
-    <!-- Stores Grid -->
-    <div id="stores-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Injected via JS -->
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- VIEW 3: 드롭 요청 펀딩 (REQUESTS VIEW - 피카플레이 벤치마킹) -->
-  <!-- ========================================================================= -->
-  <div id="view-requests" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    <div class="bg-gradient-to-br from-amber-900 to-stone-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl mb-8">
-      <div class="max-w-2xl">
-        <span class="bg-amber-400 text-stone-900 text-[10px] font-black px-2 py-0.5 rounded">유저 참여형 드롭 펀딩</span>
-        <h2 class="text-2xl sm:text-3xl font-black mt-2">"우리 동네 시장 맛집도 드롭 열어주세요!" 📢</h2>
-        <p class="text-xs sm:text-sm text-amber-100 mt-2 leading-relaxed">
-          내가 사랑하는 단골 시장 가게의 메뉴를 제안해 주세요. <strong>추천 50표</strong>를 달성하면 장날가자 운영팀이 사장님을 직접 찾아가 장날 택배 드롭을 섭외합니다!
-        </p>
-        <button onclick="openRequestModal()" class="mt-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-xs sm:text-sm px-5 py-3 rounded-2xl shadow hover:brightness-105 transition flex items-center space-x-2">
-          <i data-lucide="send" class="w-4 h-4"></i>
-          <span>새로운 시장 맛집 드롭 제안하기</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="mb-6 flex items-center justify-between">
-      <h3 class="font-black text-gray-900 text-lg">🔥 실시간 드롭 요청 랭킹</h3>
-      <span class="text-xs text-gray-500">투표수가 많은 상점부터 순차적으로 입점 섭외가 진행됩니다.</span>
-    </div>
-
-    <!-- Drop Requests Grid -->
-    <div id="requests-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Injected via JS -->
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- VIEW 4: 사장님 셀러 어드민 (SELLER VIEW - 쌤카페/게토 벤치마킹 점주 콘솔) -->
-  <!-- ========================================================================= -->
-  <div id="view-seller" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
-      <div>
         <div class="flex items-center space-x-2">
-          <span class="bg-orange-100 text-orange-700 text-xs font-black px-2.5 py-1 rounded-md">Merchant Admin Console</span>
-          <span class="text-xs text-gray-400">점주 전용 포털</span>
+          <button onclick="openAddProductModal()" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow flex items-center space-x-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>새 상품/밀키트 등록</span>
+          </button>
+          <button onclick="openCreateDropModal()" class="bg-stone-900 hover:bg-black text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow flex items-center space-x-1.5">
+            <i data-lucide="flame" class="w-4 h-4"></i>
+            <span>장날 DROP 개설</span>
+          </button>
+          <button onclick="logout()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2.5 rounded-xl transition">
+            로그아웃
+          </button>
         </div>
-        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">🧑‍🍳 사장님 매장 & 주문 관리 센터</h2>
-        <p class="text-xs sm:text-sm text-gray-500 mt-1">매장 프로필, 상품 및 밀키트 등록, 장날 LIVE DROP 개설, 실시간 주문 접수 및 배송을 관리하세요.</p>
       </div>
 
-      <div class="flex items-center space-x-2">
-        <button onclick="openAddProductModal()" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow flex items-center space-x-1.5">
-          <i data-lucide="plus" class="w-4 h-4"></i>
-          <span>새 상품/밀키트 등록</span>
+      <!-- Seller Sub-tabs -->
+      <div class="flex border-b border-gray-200 mb-6 text-xs font-bold">
+        <button onclick="setSellerTab('orders')" id="stab-orders" class="seller-tab text-orange-600 border-b-2 border-orange-600 pb-3 px-4 flex items-center space-x-1.5">
+          <i data-lucide="package-check" class="w-4 h-4"></i>
+          <span>실시간 주문/배송 관리 (<span id="seller-order-count">0</span>)</span>
         </button>
-        <button onclick="openCreateDropModal()" class="bg-stone-900 hover:bg-black text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow flex items-center space-x-1.5">
+        <button onclick="setSellerTab('products')" id="stab-products" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+          <i data-lucide="boxes" class="w-4 h-4"></i>
+          <span>등록 상품 관리 (<span id="seller-prod-count">0</span>)</span>
+        </button>
+        <button onclick="setSellerTab('drops')" id="stab-drops" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          <span>내 장날 드롭 캠페인 (<span id="seller-drop-count">0</span>)</span>
+        </button>
+        <button onclick="setSellerTab('profile')" id="stab-profile" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>매장 정보 설정</span>
+        </button>
+      </div>
+
+      <!-- Seller Tab Contents -->
+      <div id="seller-tab-content">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 5: 장날가자 총괄 마스터 어드민 (MASTER ADMIN VIEW) -->
+    <!-- ========================================================================= -->
+    <div id="view-admin" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="bg-purple-100 text-purple-700 text-xs font-black px-2.5 py-1 rounded-md">Master Control Center</span>
+            <span class="text-xs text-gray-400">장날가자 본사 총괄 관리자</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">👑 장날가자 플랫폼 총괄 센터</h2>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1">신규 상점 입점 심사 승인, 장날 드롭 큐레이션 검수, 전국 주문 CS 및 정산 대시보드를 총괄합니다.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="resetDataToDemo()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition">
+            🔄 데모 데이터 리셋
+          </button>
+          <button onclick="logout()" class="bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold px-3 py-2 rounded-xl transition border border-purple-200">
+            총괄 로그아웃
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Sub-tabs -->
+      <div class="flex border-b border-gray-200 mb-6 text-xs font-bold">
+        <button onclick="setAdminTab('merchants')" id="atab-merchants" class="admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>입점 심사 관리 (<span id="admin-pending-merchant-count">0</span>건 대기)</span>
+        </button>
+        <button onclick="setAdminTab('drops')" id="atab-drops" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
           <i data-lucide="flame" class="w-4 h-4"></i>
-          <span>장날 DROP 개설</span>
+          <span>드롭 승인/큐레이션</span>
+        </button>
+        <button onclick="setAdminTab('orders')" id="atab-orders" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          <span>전국 주문 모니터링</span>
+        </button>
+        <button onclick="setAdminTab('settlement')" id="atab-settlement" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+          <i data-lucide="wallet" class="w-4 h-4"></i>
+          <span>정산 대시보드</span>
         </button>
       </div>
-    </div>
 
-    <!-- Seller Sub-tabs -->
-    <div class="flex border-b border-gray-200 mb-6 text-xs font-bold">
-      <button onclick="setSellerTab('orders')" id="stab-orders" class="seller-tab text-orange-600 border-b-2 border-orange-600 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="package-check" class="w-4 h-4"></i>
-        <span>실시간 주문/배송 관리 (<span id="seller-order-count">0</span>)</span>
-      </button>
-      <button onclick="setSellerTab('products')" id="stab-products" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="boxes" class="w-4 h-4"></i>
-        <span>등록 상품 관리 (<span id="seller-prod-count">0</span>)</span>
-      </button>
-      <button onclick="setSellerTab('drops')" id="stab-drops" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="zap" class="w-4 h-4"></i>
-        <span>내 장날 드롭 캠페인 (<span id="seller-drop-count">0</span>)</span>
-      </button>
-      <button onclick="setSellerTab('profile')" id="stab-profile" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="store" class="w-4 h-4"></i>
-        <span>매장 정보 설정</span>
-      </button>
-    </div>
-
-    <!-- Seller Tab Contents -->
-    <div id="seller-tab-content">
-      <!-- Injected via JS -->
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- VIEW 5: 장날가자 총괄 마스터 어드민 (MASTER ADMIN VIEW) -->
-  <!-- ========================================================================= -->
-  <div id="view-admin" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
-      <div>
-        <div class="flex items-center space-x-2">
-          <span class="bg-purple-100 text-purple-700 text-xs font-black px-2.5 py-1 rounded-md">Master Control Center</span>
-          <span class="text-xs text-gray-400">장날가자 본사 총괄 관리자</span>
-        </div>
-        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">👑 장날가자 플랫폼 총괄 센터</h2>
-        <p class="text-xs sm:text-sm text-gray-500 mt-1">신규 상점 입점 심사 승인, 장날 드롭 큐레이션 검수, 전국 주문 CS 및 정산 대시보드를 총괄합니다.</p>
+      <!-- Admin Tab Contents -->
+      <div id="admin-tab-content">
+        <!-- Injected via JS -->
       </div>
-      <button onclick="resetDataToDemo()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition">
-        🔄 데이터 초기화
-      </button>
-    </div>
-
-    <!-- Admin Sub-tabs -->
-    <div class="flex border-b border-gray-200 mb-6 text-xs font-bold">
-      <button onclick="setAdminTab('merchants')" id="atab-merchants" class="admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="store" class="w-4 h-4"></i>
-        <span>입점 심사 관리 (<span id="admin-pending-merchant-count">0</span>건 대기)</span>
-      </button>
-      <button onclick="setAdminTab('drops')" id="atab-drops" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="flame" class="w-4 h-4"></i>
-        <span>드롭 승인/큐레이션</span>
-      </button>
-      <button onclick="setAdminTab('orders')" id="atab-orders" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-        <span>전국 주문 모니터링</span>
-      </button>
-      <button onclick="setAdminTab('settlement')" id="atab-settlement" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
-        <i data-lucide="wallet" class="w-4 h-4"></i>
-        <span>정산 대시보드</span>
-      </button>
-    </div>
-
-    <!-- Admin Tab Contents -->
-    <div id="admin-tab-content">
-      <!-- Injected via JS -->
     </div>
   </div>
+
+  <!-- ========================================================================= -->
+  <!-- GLOBAL FOOTER -->
+  <!-- ========================================================================= -->
+  <footer class="bg-stone-900 text-stone-400 text-xs py-12 border-t border-stone-800 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-stone-800">
+        <div class="md:col-span-2 space-y-3">
+          <div class="flex items-center space-x-2">
+            <div class="w-7 h-7 rounded-xl bg-orange-600 flex items-center justify-center text-white font-black text-sm">
+              장
+            </div>
+            <span class="text-base font-black text-white">장날가자 온라인몰 2.0</span>
+          </div>
+          <p class="text-xs text-stone-400 leading-relaxed max-w-md">
+            전국 5일장 및 전통시장의 활성화를 위한 산지직송 장날 LIVE DROP & 가맹 상점 입점 플랫폼입니다. 대한민국 소상공인과 소비자를 가장 신선하게 잇습니다.
+          </p>
+          <div class="text-[11px] text-stone-500 space-y-0.5">
+            <div>운영사: <strong>(주)콜코 (COLLCO Inc.)</strong> | 대표: 고동현 | 사업자등록번호: 242-88-02488</div>
+            <div>통신판매업신고: 2024-서울영등포-0891호 | 주소: 서울특별시 영등포구 도림천로 19길 14, 203호</div>
+            <div>고객센터: 02-888-1234 (평일 09:00~18:00) | 이메일: support@collco.kr</div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-stone-200 font-bold mb-3 text-xs">서비스 안내</h4>
+          <ul class="space-y-2 text-[11px]">
+            <li><a href="javascript:void(0)" onclick="switchView('mall')" class="hover:text-white transition">🔥 장날 LIVE DROP</a></li>
+            <li><a href="javascript:void(0)" onclick="switchView('stores')" class="hover:text-white transition">🏪 전통시장 입점 상점관</a></li>
+            <li><a href="javascript:void(0)" onclick="switchView('requests')" class="hover:text-white transition">📢 맛집 드롭 요청 펀딩</a></li>
+            <li><a href="javascript:void(0)" onclick="openOnnuriModal()" class="hover:text-emerald-400 transition">🎫 온누리상품권 사용안내</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-stone-200 font-bold mb-3 text-xs">파트너스 & 관리자</h4>
+          <ul class="space-y-2 text-[11px]">
+            <li>
+              <button onclick="openAuthModal('seller')" class="text-orange-400 hover:text-orange-300 font-bold transition flex items-center space-x-1">
+                <i data-lucide="store" class="w-3.5 h-3.5"></i>
+                <span>🧑‍🍳 사장님(셀러) 로그인 / 입점</span>
+              </button>
+            </li>
+            <li>
+              <button onclick="openAuthModal('admin')" class="text-stone-400 hover:text-stone-200 transition flex items-center space-x-1">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                <span>👑 총괄 마스터 관리자</span>
+              </button>
+            </li>
+            <li class="pt-2">
+              <span class="text-[10px] text-stone-500">전통시장 상인회 및 지자체 제휴 문의 환영</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-stone-500 gap-2">
+        <p>&copy; 2026 장날가자 (주식회사 콜코). All rights reserved.</p>
+        <div class="flex items-center space-x-4">
+          <a href="#" class="hover:underline">이용약관</a>
+          <a href="#" class="hover:underline">개인정보처리방침</a>
+          <a href="#" class="hover:underline">전자금융거래이용약관</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- MOBILE BOTTOM NAVIGATION BAR (FIXED) -->
+  <!-- ========================================================================= -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 py-2 px-3 flex justify-around items-center md:hidden shadow-lg" id="mobile-bottom-nav">
+    <button onclick="switchView('mall')" id="mob-mall" class="flex flex-col items-center text-orange-600 text-[10px] font-black">
+      <i data-lucide="zap" class="w-5 h-5"></i>
+      <span class="mt-0.5">라이브드롭</span>
+    </button>
+    <button onclick="switchView('stores')" id="mob-stores" class="flex flex-col items-center text-gray-500 hover:text-gray-900 text-[10px] font-bold">
+      <i data-lucide="store" class="w-5 h-5"></i>
+      <span class="mt-0.5">입점상점</span>
+    </button>
+    <button onclick="switchView('requests')" id="mob-requests" class="flex flex-col items-center text-gray-500 hover:text-gray-900 text-[10px] font-bold">
+      <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+      <span class="mt-0.5">드롭펀딩</span>
+    </button>
+    <button onclick="openCartDrawer()" class="flex flex-col items-center text-gray-500 hover:text-gray-900 text-[10px] font-bold relative">
+      <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+      <span class="mt-0.5">장바구니</span>
+      <span id="mob-cart-badge" class="absolute -top-1 right-2 bg-orange-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">0</span>
+    </button>
+    <div id="mob-auth-tab" class="contents"></div>
+  </nav>
 
   <!-- ========================================================================= -->
   <!-- MODALS & DRAWERS -->
   <!-- ========================================================================= -->
 
-  <!-- 1. CART DRAWER -->
+  <!-- 1. AUTHENTICATION & LOGIN MODAL (SELLER / MASTER ADMIN) -->
+  <div id="auth-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-5 relative">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white text-xl shadow-md mb-3">
+          🔒
+        </div>
+        <h3 class="text-xl font-black text-gray-900">관리자 & 파트너스 인증</h3>
+        <p class="text-xs text-gray-500 mt-1">상점 사장님 셀러 콘솔 또는 장날가자 총괄 어드민 로그인</p>
+      </div>
+
+      <!-- Auth Tab Selector -->
+      <div class="grid grid-cols-2 bg-gray-100 p-1 rounded-2xl text-xs font-bold">
+        <button onclick="switchAuthTab('seller')" id="authtab-seller" class="py-2.5 rounded-xl bg-white text-orange-600 shadow-sm transition">
+          🧑‍🍳 사장님(셀러) 로그인
+        </button>
+        <button onclick="switchAuthTab('admin')" id="authtab-admin" class="py-2.5 rounded-xl text-gray-500 hover:text-gray-900 transition">
+          👑 총괄 마스터 로그인
+        </button>
+      </div>
+
+      <!-- Seller Login Tab Content -->
+      <div id="auth-seller-content" class="space-y-4">
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">사장님 아이디 / 등록 이메일</label>
+            <input type="text" id="seller-login-id" placeholder="예: soondae (또는 등록 ID)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">비밀번호</label>
+            <input type="password" id="seller-login-pw" placeholder="비밀번호 (기본: 1234)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+          </div>
+        </div>
+
+        <button onclick="handleSellerLogin()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl transition text-xs shadow-md">
+          사장님 관리자로 로그인 &rarr;
+        </button>
+
+        <!-- Quick Demo Accounts -->
+        <div class="bg-orange-50/80 rounded-2xl p-3.5 border border-orange-100 space-y-2">
+          <span class="text-[11px] font-black text-orange-800 block">⚡ 원클릭 데모 사장님 체험 계정:</span>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px]">
+            <button onclick="quickLoginSeller('m-1')" class="bg-white hover:bg-orange-100 border border-orange-200 text-orange-900 font-bold p-2 rounded-lg text-left truncate">
+              [신림] 백순대 김옥자
+            </button>
+            <button onclick="quickLoginSeller('m-2')" class="bg-white hover:bg-orange-100 border border-orange-200 text-orange-900 font-bold p-2 rounded-lg text-left truncate">
+              [속초] 닭강정 박성호
+            </button>
+            <button onclick="quickLoginSeller('m-3')" class="bg-white hover:bg-orange-100 border border-orange-200 text-orange-900 font-bold p-2 rounded-lg text-left truncate">
+              [정선] 산나물 이순덕
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Master Admin Login Tab Content -->
+      <div id="auth-admin-content" class="hidden space-y-4">
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">총괄 관리자 마스터 ID</label>
+            <input type="text" id="admin-login-id" placeholder="예: admin" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">마스터 비밀번호</label>
+            <input type="password" id="admin-login-pw" placeholder="비밀번호 (기본: admin1234)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+        </div>
+
+        <button onclick="handleAdminLogin()" class="w-full bg-stone-900 hover:bg-black text-white font-black py-3 rounded-xl transition text-xs shadow-md">
+          👑 총괄 관리자 콘솔 로그인 &rarr;
+        </button>
+
+        <div class="bg-purple-50 rounded-2xl p-3 border border-purple-100">
+          <button onclick="quickLoginAdmin()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-black py-2 rounded-xl transition">
+            ⚡ 원클릭 총괄 마스터 계정으로 바로 체험
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CART DRAWER -->
   <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden transition-all">
     <div class="fixed right-0 top-0 bottom-0 max-w-md w-full bg-white shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
       <div>
@@ -561,7 +769,7 @@
     </div>
   </div>
 
-  <!-- 2. PRODUCT / DROP DETAIL MODAL -->
+  <!-- 3. PRODUCT / DROP DETAIL MODAL -->
   <div id="detail-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
       <button onclick="closeProductDetail()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 z-10">
@@ -571,7 +779,7 @@
     </div>
   </div>
 
-  <!-- 3. CHECKOUT MODAL -->
+  <!-- 4. CHECKOUT MODAL -->
   <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 p-6">
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -672,7 +880,7 @@
     </div>
   </div>
 
-  <!-- 4. ORDER SUCCESS MODAL -->
+  <!-- 5. ORDER SUCCESS MODAL -->
   <div id="success-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
       <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl mx-auto flex items-center justify-center text-3xl shadow-inner">
@@ -708,7 +916,7 @@
     </div>
   </div>
 
-  <!-- 5. ONNURI INFO MODAL -->
+  <!-- 6. ONNURI INFO MODAL -->
   <div id="onnuri-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b border-gray-100">
@@ -745,7 +953,7 @@
     </div>
   </div>
 
-  <!-- 6. ADD PRODUCT MODAL (SELLER) -->
+  <!-- 7. ADD PRODUCT MODAL (SELLER) -->
   <div id="add-product-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b">
@@ -805,7 +1013,7 @@
     </div>
   </div>
 
-  <!-- 7. CREATE DROP MODAL (SELLER) -->
+  <!-- 8. CREATE DROP MODAL (SELLER) -->
   <div id="create-drop-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b">
@@ -841,12 +1049,12 @@
       </div>
 
       <button onclick="saveNewDrop()" class="w-full bg-stone-900 hover:bg-black text-white font-bold py-3 rounded-xl transition text-xs shadow">
-        드롭 개설 신청하기 (관리자 승인 후 노출)
+        드롭 개설 신청하기
       </button>
     </div>
   </div>
 
-  <!-- 8. REQUEST NEW DROP MODAL (USER FUNDING) -->
+  <!-- 9. REQUEST NEW DROP MODAL (USER FUNDING) -->
   <div id="request-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b">
@@ -891,14 +1099,17 @@
     const STORAGE_KEY_DROPS = 'jg_drops_v2';
     const STORAGE_KEY_ORDERS = 'jg_orders_v2';
     const STORAGE_KEY_REQUESTS = 'jg_requests_v2';
+    const STORAGE_KEY_AUTH = 'jg_auth_user_v2';
 
-    // Initial Production Seed Data (초기 데이터 - 샘플 뱃지 표기)
+    // Initial Production Seed Data
     const INITIAL_MERCHANTS = [
       {
         id: 'm-1',
         marketName: '신림중앙시장 (순대타운)',
         storeName: '원조 30년 백순대 본점',
         ownerName: '김옥자',
+        loginId: 'soondae',
+        password: '1234',
         businessNumber: '119-04-82910',
         phone: '02-888-1234',
         category: '맛집 밀키트',
@@ -914,6 +1125,8 @@
         marketName: '속초관광수산시장',
         storeName: '속초 수제 조청 닭강정 본점',
         ownerName: '박성호',
+        loginId: 'sokcho',
+        password: '1234',
         businessNumber: '220-11-93820',
         phone: '033-633-5678',
         category: '간식/먹거리',
@@ -929,6 +1142,8 @@
         marketName: '정선아리랑시장 (2·7일장)',
         storeName: '정선 고랭지 산나물 방앗간',
         ownerName: '이순덕',
+        loginId: 'jeongseon',
+        password: '1234',
         businessNumber: '312-88-10293',
         phone: '033-562-9988',
         category: '농축수산/특산물',
@@ -944,6 +1159,8 @@
         marketName: '서울 광장시장',
         storeName: '광장 맷돌 빈대떡 & 마약김밥',
         ownerName: '정영숙',
+        loginId: 'gwangjang',
+        password: '1234',
         businessNumber: '101-22-38491',
         phone: '02-2267-0099',
         category: '맛집 밀키트',
@@ -1091,6 +1308,7 @@
     let selectedPayMethod = 'onnuri';
     let currentSellerTab = 'orders';
     let currentAdminTab = 'merchants';
+    let currentUser = null; // { role: 'seller' | 'admin', merchantId, ownerName, storeName, marketName }
 
     // Init App State
     function initData() {
@@ -1098,6 +1316,7 @@
       drops = JSON.parse(localStorage.getItem(STORAGE_KEY_DROPS)) || INITIAL_DROPS;
       orders = JSON.parse(localStorage.getItem(STORAGE_KEY_ORDERS)) || [];
       dropRequests = JSON.parse(localStorage.getItem(STORAGE_KEY_REQUESTS)) || INITIAL_REQUESTS;
+      currentUser = JSON.parse(localStorage.getItem(STORAGE_KEY_AUTH)) || null;
 
       saveAll();
       heroProduct = drops[0];
@@ -1123,14 +1342,206 @@
     }
 
     // ==========================================
-    // VIEW NAVIGATION
+    // AUTHENTICATION & ROLE MANAGEMENT
+    // ==========================================
+    function renderAuthUI() {
+      const topStatus = document.getElementById('top-auth-status');
+      const gnbAuth = document.getElementById('gnb-auth-tabs');
+      const mobAuth = document.getElementById('mob-auth-tab');
+
+      if (!currentUser) {
+        // General Public Consumer
+        topStatus.innerHTML = `
+          <span class="text-orange-100 hidden md:inline">🎫 충전식 온누리상품권 결제 가맹점 지원</span>
+          <button onclick="openOnnuriModal()" class="underline font-bold text-white hover:text-amber-200">온누리 안내 &rarr;</button>
+          <span class="text-white/40">|</span>
+          <button onclick="openAuthModal('seller')" class="font-bold bg-white/20 hover:bg-white/30 text-white px-2.5 py-0.5 rounded flex items-center space-x-1">
+            <i data-lucide="lock" class="w-3 h-3"></i>
+            <span>파트너스/관리자</span>
+          </button>
+        `;
+        gnbAuth.innerHTML = '';
+        mobAuth.innerHTML = '';
+      } else if (currentUser.role === 'seller') {
+        // Merchant Logged In
+        topStatus.innerHTML = `
+          <span class="text-amber-200 font-bold hidden sm:inline">🧑‍🍳 [${currentUser.marketName}] ${currentUser.storeName} (${currentUser.ownerName} 사장님)</span>
+          <button onclick="switchView('seller')" class="font-bold bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded">
+            사장님 셀러 콘솔
+          </button>
+          <span class="text-white/40">|</span>
+          <button onclick="logout()" class="underline text-white/80 hover:text-white font-medium">로그아웃</button>
+        `;
+        gnbAuth.innerHTML = `
+          <button onclick="switchView('seller')" id="gnb-seller" class="gnb-tab bg-orange-50 text-orange-700 hover:bg-orange-100 px-3.5 py-2 rounded-xl transition flex items-center space-x-1 border border-orange-200">
+            <i data-lucide="chef-hat" class="w-3.5 h-3.5 text-orange-600"></i>
+            <span>사장님 관리자</span>
+          </button>
+        `;
+        mobAuth.innerHTML = `
+          <button onclick="switchView('seller')" id="mob-seller" class="flex flex-col items-center text-orange-600 text-[10px] font-bold">
+            <i data-lucide="chef-hat" class="w-5 h-5"></i>
+            <span class="mt-0.5">내관리자</span>
+          </button>
+        `;
+      } else if (currentUser.role === 'admin') {
+        // Master Admin Logged In
+        topStatus.innerHTML = `
+          <span class="text-purple-200 font-bold hidden sm:inline">👑 장날가자 총괄 마스터 관리자</span>
+          <button onclick="switchView('admin')" class="font-bold bg-purple-900/60 hover:bg-purple-900 text-purple-100 px-2.5 py-0.5 rounded border border-purple-400/40">
+            총괄 콘솔
+          </button>
+          <button onclick="switchView('seller')" class="text-white/80 hover:text-white text-[11px]">
+            셀러뷰
+          </button>
+          <span class="text-white/40">|</span>
+          <button onclick="logout()" class="underline text-white/80 hover:text-white font-medium">로그아웃</button>
+        `;
+        gnbAuth.innerHTML = `
+          <button onclick="switchView('admin')" id="gnb-admin" class="gnb-tab bg-purple-50 text-purple-700 hover:bg-purple-100 px-3.5 py-2 rounded-xl transition flex items-center space-x-1 border border-purple-200">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-600"></i>
+            <span>총괄 어드민</span>
+          </button>
+        `;
+        mobAuth.innerHTML = `
+          <button onclick="switchView('admin')" id="mob-admin" class="flex flex-col items-center text-purple-600 text-[10px] font-bold">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+            <span class="mt-0.5">총괄어드민</span>
+          </button>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function openAuthModal(defaultTab = 'seller') {
+      switchAuthTab(defaultTab);
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    function switchAuthTab(tab) {
+      const sellerTabBtn = document.getElementById('authtab-seller');
+      const adminTabBtn = document.getElementById('authtab-admin');
+      const sellerContent = document.getElementById('auth-seller-content');
+      const adminContent = document.getElementById('auth-admin-content');
+
+      if (tab === 'seller') {
+        sellerTabBtn.className = 'py-2.5 rounded-xl bg-white text-orange-600 shadow-sm transition font-bold';
+        adminTabBtn.className = 'py-2.5 rounded-xl text-gray-500 hover:text-gray-900 transition font-bold';
+        sellerContent.classList.remove('hidden');
+        adminContent.classList.add('hidden');
+      } else {
+        adminTabBtn.className = 'py-2.5 rounded-xl bg-white text-purple-600 shadow-sm transition font-bold';
+        sellerTabBtn.className = 'py-2.5 rounded-xl text-gray-500 hover:text-gray-900 transition font-bold';
+        adminContent.classList.remove('hidden');
+        sellerContent.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function handleSellerLogin() {
+      const id = document.getElementById('seller-login-id').value.trim();
+      const pw = document.getElementById('seller-login-pw').value.trim();
+
+      const merchant = merchants.find(m => m.loginId === id || m.id === id || m.ownerName === id);
+      if (merchant) {
+        setLoggedInUser({
+          role: 'seller',
+          merchantId: merchant.id,
+          ownerName: merchant.ownerName,
+          storeName: merchant.storeName,
+          marketName: merchant.marketName
+        });
+        closeAuthModal();
+        switchView('seller');
+        alert(`[${merchant.storeName}] ${merchant.ownerName} 점주님 환영합니다!`);
+      } else {
+        alert('일치하는 상점 점주 계정을 찾을 수 없습니다. (데모: soondae / 1234)');
+      }
+    }
+
+    function quickLoginSeller(merchantId) {
+      const merchant = merchants.find(m => m.id === merchantId) || merchants[0];
+      setLoggedInUser({
+        role: 'seller',
+        merchantId: merchant.id,
+        ownerName: merchant.ownerName,
+        storeName: merchant.storeName,
+        marketName: merchant.marketName
+      });
+      closeAuthModal();
+      switchView('seller');
+      alert(`[${merchant.storeName}] ${merchant.ownerName} 점주님 계정으로 로그인되었습니다!`);
+    }
+
+    function handleAdminLogin() {
+      const id = document.getElementById('admin-login-id').value.trim();
+      const pw = document.getElementById('admin-login-pw').value.trim();
+
+      if (id === 'admin' || id === 'master') {
+        quickLoginAdmin();
+      } else {
+        alert('총괄 관리자 ID 또는 비밀번호가 올바르지 않습니다. (데모: admin / admin1234)');
+      }
+    }
+
+    function quickLoginAdmin() {
+      setLoggedInUser({
+        role: 'admin',
+        ownerName: '총괄 마스터',
+        storeName: '장날가자 본사',
+        marketName: '본사 관리국'
+      });
+      closeAuthModal();
+      switchView('admin');
+      alert('장날가자 총괄 마스터 관리자로 인증되었습니다.');
+    }
+
+    function setLoggedInUser(userObj) {
+      currentUser = userObj;
+      localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(currentUser));
+      renderAuthUI();
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem(STORAGE_KEY_AUTH);
+      renderAuthUI();
+      switchView('mall');
+      alert('로그아웃되었습니다. 일반 쇼핑몰 화면으로 이동합니다.');
+    }
+
+    // ==========================================
+    // VIEW NAVIGATION (WITH ROUTE GUARDS)
     // ==========================================
     function switchView(viewName) {
+      // 1. Route Security Guard
+      if (viewName === 'seller') {
+        if (!currentUser) {
+          alert('사장님 전용 관리자 페이지입니다. 점주 계정으로 로그인해 주세요.');
+          openAuthModal('seller');
+          return;
+        }
+      }
+
+      if (viewName === 'admin') {
+        if (!currentUser || currentUser.role !== 'admin') {
+          alert('장날가자 총괄 마스터 관리자 인증이 필요합니다.');
+          openAuthModal('admin');
+          return;
+        }
+      }
+
+      // 2. Hide all view sections
       document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.gnb-tab').forEach(el => {
         el.className = 'gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5';
       });
 
+      // 3. Show target view
       const target = document.getElementById(`view-${viewName}`);
       if (target) {
         target.classList.remove('hidden');
@@ -1140,6 +1551,18 @@
       if (activeGnb) {
         activeGnb.className = 'gnb-tab bg-white text-orange-600 px-4 py-2 rounded-xl shadow-sm transition flex items-center space-x-1.5';
       }
+
+      // Update mobile bottom nav active style
+      ['mall', 'stores', 'requests'].forEach(v => {
+        const mobEl = document.getElementById(`mob-${v}`);
+        if (mobEl) {
+          if (v === viewName) {
+            mobEl.className = 'flex flex-col items-center text-orange-600 text-[10px] font-black';
+          } else {
+            mobEl.className = 'flex flex-col items-center text-gray-500 hover:text-gray-900 text-[10px] font-bold';
+          }
+        }
+      });
 
       const catNav = document.getElementById('mall-category-nav');
       if (catNav) {
@@ -1248,53 +1671,39 @@
                 <h3 onclick="openProductDetail('${p.id}')" class="text-sm sm:text-base font-black text-gray-900 leading-snug line-clamp-2 group-hover:text-orange-600 transition cursor-pointer mt-0.5">
                   ${p.title}
                 </h3>
-
-                <!-- Highlights -->
-                <div class="mt-3.5 space-y-1">
-                  ${(p.highlights || []).map(h => `
-                    <div class="flex items-center space-x-1.5 text-xs text-gray-600">
-                      <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-orange-500 shrink-0"></i>
-                      <span class="truncate">${h}</span>
-                    </div>
-                  `).join('')}
-                </div>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">${p.story}</p>
               </div>
 
-              <!-- Price & Order Action -->
-              <div class="mt-5 pt-4 border-t border-gray-100">
-                <!-- Stock Progress Bar -->
-                <div class="mb-3">
-                  <div class="flex justify-between text-[11px] font-bold text-gray-500 mb-1">
-                    <span>드롭 달성률 (${p.currentCount}/${p.targetCount}세트)</span>
-                    <span class="text-orange-600">${percentSold}%</span>
+              <!-- Price & Drop Progress Gauge -->
+              <div class="mt-4 pt-3 border-t border-gray-100 space-y-3">
+                <!-- Drop Goal Bar -->
+                <div>
+                  <div class="flex justify-between text-[11px] font-bold mb-1">
+                    <span class="text-orange-600">장날 수량 달성률 ${percentSold}%</span>
+                    <span class="text-gray-400">${p.currentCount}/${p.targetCount} 세트</span>
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                    <div class="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style="width: ${percentSold}%"></div>
+                    <div class="bg-gradient-to-r from-orange-500 to-amber-500 h-2 rounded-full transition-all duration-500" style="width: ${percentSold}%"></div>
                   </div>
                 </div>
 
-                <div class="flex items-baseline justify-between mb-3.5">
+                <div class="flex items-end justify-between">
                   <div>
                     <span class="text-xs text-gray-400 line-through">${p.originalPrice.toLocaleString()}원</span>
-                    <div class="text-lg font-black text-gray-900">
-                      ${p.dropPrice.toLocaleString()}원
+                    <div class="text-lg sm:text-xl font-black text-gray-900 leading-none">
+                      ${p.dropPrice.toLocaleString()}<span class="text-xs font-bold text-orange-600">원</span>
                     </div>
                   </div>
-                  <div class="text-right">
-                    <span class="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
-                      🎫 온누리 결제 지원
-                    </span>
-                  </div>
-                </div>
 
-                <div class="grid grid-cols-4 gap-2">
-                  <button onclick="addToCart('${p.id}')" class="col-span-1 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl py-3 flex items-center justify-center transition border border-orange-200" title="장바구니 담기">
-                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-                  </button>
-                  <button onclick="openCheckoutModal('${p.id}')" class="col-span-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md active:scale-95 transition flex items-center justify-center space-x-1.5">
-                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                    <span>장날 드롭 주문하기</span>
-                  </button>
+                  <div class="flex items-center space-x-1.5">
+                    <button onclick="addToCart('${p.id}')" class="p-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 transition border border-orange-200" title="장바구니 담기">
+                      <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="openCheckoutModal('${p.id}')" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-black px-3.5 py-2.5 rounded-xl shadow-md transition flex items-center space-x-1">
+                      <span>드롭 주문</span>
+                      <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1500,17 +1909,34 @@
     }
 
     function renderSellerView() {
-      document.getElementById('seller-order-count').textContent = orders.length;
-      document.getElementById('seller-prod-count').textContent = drops.length;
-      document.getElementById('seller-drop-count').textContent = drops.length;
+      const currentMerchantId = (currentUser && currentUser.merchantId) ? currentUser.merchantId : 'm-1';
+      const myMerchant = merchants.find(m => m.id === currentMerchantId) || merchants[0];
+
+      // Update store heading
+      const headingEl = document.getElementById('seller-store-heading');
+      if (headingEl && myMerchant) {
+        headingEl.textContent = `🧑‍🍳 [${myMerchant.marketName}] ${myMerchant.storeName}`;
+      }
+
+      // Filter data for this merchant
+      const myOrders = orders.filter(o => !o.merchantId || o.merchantId === myMerchant.id);
+      const myDrops = drops.filter(d => !d.merchantId || d.merchantId === myMerchant.id);
+
+      document.getElementById('seller-order-count').textContent = myOrders.length;
+      document.getElementById('seller-prod-count').textContent = myDrops.length;
+      document.getElementById('seller-drop-count').textContent = myDrops.length;
       setSellerTab(currentSellerTab);
     }
 
     function renderSellerTabContent() {
       const container = document.getElementById('seller-tab-content');
+      const currentMerchantId = (currentUser && currentUser.merchantId) ? currentUser.merchantId : 'm-1';
+      const myMerchant = merchants.find(m => m.id === currentMerchantId) || merchants[0];
+      const myOrders = orders.filter(o => !o.merchantId || o.merchantId === myMerchant.id);
+      const myDrops = drops.filter(d => !d.merchantId || d.merchantId === myMerchant.id);
       
       if (currentSellerTab === 'orders') {
-        if (orders.length === 0) {
+        if (myOrders.length === 0) {
           container.innerHTML = `
             <div class="bg-white rounded-3xl p-12 text-center border border-gray-200 text-gray-400">
               <i data-lucide="package" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
@@ -1521,7 +1947,7 @@
         } else {
           container.innerHTML = `
             <div class="space-y-4">
-              ${orders.map(o => `
+              ${myOrders.map(o => `
                 <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div class="space-y-1">
                     <div class="flex items-center space-x-2">
@@ -1555,7 +1981,7 @@
       } else if (currentSellerTab === 'products') {
         container.innerHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            ${drops.map(d => `
+            ${myDrops.map(d => `
               <div class="bg-white rounded-3xl p-4 border border-gray-200 shadow-sm flex space-x-3.5 items-center">
                 <img src="${d.image}" class="w-20 h-20 rounded-2xl object-cover border" alt="">
                 <div class="flex-1">
@@ -1573,7 +1999,7 @@
       } else if (currentSellerTab === 'drops') {
         container.innerHTML = `
           <div class="space-y-4">
-            ${drops.map(d => `
+            ${myDrops.map(d => `
               <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <span class="bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded">${d.marketName}</span>
@@ -1589,29 +2015,62 @@
           </div>
         `;
       } else if (currentSellerTab === 'profile') {
-        const m = merchants[0];
         container.innerHTML = `
-          <div class="bg-white rounded-3xl p-6 border border-gray-200 max-w-xl space-y-4">
-            <h4 class="font-black text-gray-900 text-sm">매장 프로필 정보 설정</h4>
+          <div class="bg-white rounded-3xl p-6 border border-gray-200 max-w-xl space-y-4 shadow-sm">
+            <div class="flex items-center space-x-3 pb-3 border-b">
+              <img src="${myMerchant.image}" class="w-14 h-14 rounded-2xl object-cover border" alt="">
+              <div>
+                <h4 class="font-black text-gray-900 text-sm">${myMerchant.storeName}</h4>
+                <p class="text-xs text-gray-500">${myMerchant.marketName} · 대표자: ${myMerchant.ownerName}</p>
+              </div>
+            </div>
+
             <div class="space-y-3 text-xs">
               <div>
                 <label class="font-bold text-gray-700 block mb-1">상점 상호명</label>
-                <input type="text" value="${m.storeName}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+                <input type="text" id="prof-storeName" value="${myMerchant.storeName}" class="w-full bg-gray-50 border rounded-xl p-2.5 focus:bg-white focus:outline-none">
               </div>
               <div>
                 <label class="font-bold text-gray-700 block mb-1">소속 시장</label>
-                <input type="text" value="${m.marketName}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+                <input type="text" id="prof-marketName" value="${myMerchant.marketName}" class="w-full bg-gray-50 border rounded-xl p-2.5 focus:bg-white focus:outline-none">
               </div>
               <div>
                 <label class="font-bold text-gray-700 block mb-1">매장 위치 힌트</label>
-                <input type="text" value="${m.locationHint}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+                <input type="text" id="prof-location" value="${myMerchant.locationHint}" class="w-full bg-gray-50 border rounded-xl p-2.5 focus:bg-white focus:outline-none">
               </div>
-              <button onclick="alert('매장 정보가 저장되었습니다.')" class="w-full bg-orange-600 text-white font-bold py-2.5 rounded-xl">저장하기</button>
+              <div>
+                <label class="font-bold text-gray-700 block mb-1">매장 소개글</label>
+                <textarea id="prof-desc" rows="2" class="w-full bg-gray-50 border rounded-xl p-2.5 focus:bg-white focus:outline-none">${myMerchant.description}</textarea>
+              </div>
+              <div>
+                <label class="font-bold text-gray-700 block mb-1">대표 사진 URL</label>
+                <input type="text" id="prof-img" value="${myMerchant.image}" class="w-full bg-gray-50 border rounded-xl p-2.5 focus:bg-white focus:outline-none">
+              </div>
+              <button onclick="saveMerchantProfile('${myMerchant.id}')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition shadow">
+                매장 프로필 정보 저장하기
+              </button>
             </div>
           </div>
         `;
       }
       lucide.createIcons();
+    }
+
+    function saveMerchantProfile(id) {
+      const m = merchants.find(item => item.id === id);
+      if (m) {
+        m.storeName = document.getElementById('prof-storeName').value.trim() || m.storeName;
+        m.marketName = document.getElementById('prof-marketName').value.trim() || m.marketName;
+        m.locationHint = document.getElementById('prof-location').value.trim() || m.locationHint;
+        m.description = document.getElementById('prof-desc').value.trim() || m.description;
+        m.image = document.getElementById('prof-img').value.trim() || m.image;
+
+        saveAll();
+        renderStores();
+        renderProducts();
+        renderSellerView();
+        alert('매장 프로필 정보가 성공적으로 업데이트되었습니다! ✨');
+      }
     }
 
     function promptShipping(orderId) {
@@ -1645,11 +2104,14 @@
         return;
       }
 
+      const currentMerchantId = (currentUser && currentUser.merchantId) ? currentUser.merchantId : 'm-1';
+      const myMerchant = merchants.find(m => m.id === currentMerchantId) || merchants[0];
+
       drops.unshift({
         id: 'drop-' + Date.now(),
-        merchantId: 'm-1',
-        marketName: '신림 순대타운',
-        storeName: '원조 30년 백순대 본점',
+        merchantId: myMerchant.id,
+        marketName: myMerchant.marketName,
+        storeName: myMerchant.storeName,
         title: name,
         badge: `한정 ${stock}세트`,
         targetCount: stock,
@@ -1670,6 +2132,7 @@
 
       saveAll();
       closeAddProductModal();
+      renderProducts();
       renderSellerView();
       alert('신규 상품/밀키트가 등록되어 라이브 드롭에 반영되었습니다! 🎉');
     }
@@ -1689,11 +2152,14 @@
         return;
       }
 
+      const currentMerchantId = (currentUser && currentUser.merchantId) ? currentUser.merchantId : 'm-1';
+      const myMerchant = merchants.find(m => m.id === currentMerchantId) || merchants[0];
+
       drops.unshift({
         id: 'drop-' + Date.now(),
-        merchantId: 'm-1',
-        marketName: '신림 순대타운',
-        storeName: '원조 30년 백순대 본점',
+        merchantId: myMerchant.id,
+        marketName: myMerchant.marketName,
+        storeName: myMerchant.storeName,
         title: title,
         badge: `장날 한정 ${target}세트`,
         targetCount: target,
@@ -1714,6 +2180,7 @@
 
       saveAll();
       closeCreateDropModal();
+      renderProducts();
       renderSellerView();
       alert('장날 LIVE DROP 캠페인이 성공적으로 개설되었습니다! 🔥');
     }
@@ -1877,6 +2344,8 @@
       const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
       document.getElementById('header-cart-badge').textContent = totalQty;
       document.getElementById('cart-drawer-count').textContent = totalQty;
+      const mobBadge = document.getElementById('mob-cart-badge');
+      if (mobBadge) mobBadge.textContent = totalQty;
     }
 
     function openCartDrawer() {
@@ -2129,12 +2598,17 @@
       const params = new URLSearchParams(window.location.search);
       const incomingMarket = params.get('market');
       const viewParam = params.get('view');
+      const authParam = params.get('auth');
 
       if (incomingMarket) {
         document.getElementById('app-incoming-banner').classList.remove('hidden');
         document.getElementById('incoming-market-name').textContent = incomingMarket;
         document.getElementById('incoming-market-desc').textContent = `'${incomingMarket}'의 한정 수량 장날 라이브 드롭 및 입점 상점관입니다.`;
         searchQuery = incomingMarket;
+      }
+
+      if (authParam === 'seller' || authParam === 'admin') {
+        openAuthModal(authParam);
       }
 
       if (viewParam && ['mall', 'stores', 'requests', 'seller', 'admin'].includes(viewParam)) {
@@ -2159,6 +2633,7 @@
     }
 
     function renderAll() {
+      renderAuthUI();
       renderHeroCard();
       renderProducts();
       renderStores();
