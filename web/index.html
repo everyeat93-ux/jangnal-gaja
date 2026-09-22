@@ -135,8 +135,13 @@
           </div>
         </div>
 
-        <!-- User Actions & Cart Button -->
-        <div class="flex items-center space-x-3">
+        <!-- User Actions, Apply Button & Cart Button -->
+        <div class="flex items-center space-x-2.5">
+          <button onclick="openApplyModal()" class="hidden sm:flex items-center space-x-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 px-3 py-2 rounded-2xl text-xs font-black transition shadow-sm">
+            <i data-lucide="store" class="w-4 h-4 text-amber-700"></i>
+            <span>무료 입점 신청</span>
+          </button>
+
           <button onclick="toggleMobileSearch()" class="p-2 text-gray-700 hover:text-orange-600 md:hidden">
             <i data-lucide="search" class="w-6 h-6"></i>
           </button>
@@ -169,6 +174,9 @@
           </button>
           <button onclick="switchView('requests')" class="text-amber-700 hover:text-amber-800 h-full flex items-center px-1 shrink-0">
             📢 드롭 펀딩 요청
+          </button>
+          <button onclick="openApplyModal()" class="text-orange-700 hover:text-orange-800 h-full flex items-center px-1 shrink-0">
+            ✍️ 상점 입점 신청
           </button>
           <button onclick="openOnnuriModal()" class="text-emerald-700 hover:text-emerald-800 h-full flex items-center px-1 shrink-0 ml-auto">
             🎫 온누리 결제 가맹점
@@ -401,9 +409,9 @@
           <p class="text-xs sm:text-sm text-gray-500 mt-1">전국 5일장 및 전통시장에서 신뢰받는 진짜 사장님들의 매장과 상품을 만나보세요.</p>
         </div>
 
-        <button onclick="openAuthModal('seller')" class="bg-orange-600 text-white text-xs font-bold px-4 py-3 rounded-2xl hover:bg-orange-700 transition flex items-center space-x-1.5 shadow">
+        <button onclick="openApplyModal()" class="bg-orange-600 text-white text-xs font-bold px-4 py-3 rounded-2xl hover:bg-orange-700 transition flex items-center space-x-1.5 shadow">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          <span>내 매장 입점 신청 / 로그인</span>
+          <span>내 매장 입점 신청하기</span>
         </button>
       </div>
 
@@ -508,7 +516,7 @@
             <span class="text-xs text-gray-400">장날가자 본사 총괄 관리자</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">👑 장날가자 플랫폼 총괄 센터</h2>
-          <p class="text-xs sm:text-sm text-gray-500 mt-1">신규 상점 입점 심사 승인, 장날 드롭 큐레이션 검수, 전국 주문 CS 및 정산 대시보드를 총괄합니다.</p>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1">신규 상점 입점 심사 승인, 전국 상점별 종합 상세 관리, 장날 드롭 검수 및 정산 대시보드를 총괄합니다.</p>
         </div>
         <div class="flex items-center space-x-2">
           <button onclick="resetDataToDemo()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition">
@@ -521,22 +529,26 @@
       </div>
 
       <!-- Admin Sub-tabs -->
-      <div class="flex border-b border-gray-200 mb-6 text-xs font-bold">
-        <button onclick="setAdminTab('merchants')" id="atab-merchants" class="admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5">
-          <i data-lucide="store" class="w-4 h-4"></i>
+      <div class="flex border-b border-gray-200 mb-6 text-xs font-bold overflow-x-auto custom-scrollbar">
+        <button onclick="setAdminTab('merchants')" id="atab-merchants" class="admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5 shrink-0">
+          <i data-lucide="clipboard-check" class="w-4 h-4"></i>
           <span>입점 심사 관리 (<span id="admin-pending-merchant-count">0</span>건 대기)</span>
         </button>
-        <button onclick="setAdminTab('drops')" id="atab-drops" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
-          <i data-lucide="flame" class="w-4 h-4"></i>
-          <span>드롭 승인/큐레이션</span>
+        <button onclick="setAdminTab('stores')" id="atab-stores" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 shrink-0">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>상점별 종합 관리 (<span id="admin-total-store-count">0</span>개)</span>
         </button>
-        <button onclick="setAdminTab('orders')" id="atab-orders" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <button onclick="setAdminTab('drops')" id="atab-drops" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 shrink-0">
+          <i data-lucide="flame" class="w-4 h-4"></i>
+          <span>전국 LIVE DROP</span>
+        </button>
+        <button onclick="setAdminTab('orders')" id="atab-orders" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 shrink-0">
           <i data-lucide="shopping-cart" class="w-4 h-4"></i>
           <span>전국 주문 모니터링</span>
         </button>
-        <button onclick="setAdminTab('settlement')" id="atab-settlement" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <button onclick="setAdminTab('settlement')" id="atab-settlement" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 shrink-0">
           <i data-lucide="wallet" class="w-4 h-4"></i>
-          <span>정산 대시보드</span>
+          <span>통합 정산 대시보드</span>
         </button>
       </div>
 
@@ -584,9 +596,15 @@
           <h4 class="text-stone-200 font-bold mb-3 text-xs">파트너스 & 관리자</h4>
           <ul class="space-y-2 text-[11px]">
             <li>
-              <button onclick="openAuthModal('seller')" class="text-orange-400 hover:text-orange-300 font-bold transition flex items-center space-x-1">
+              <button onclick="openApplyModal()" class="text-orange-400 hover:text-orange-300 font-bold transition flex items-center space-x-1">
                 <i data-lucide="store" class="w-3.5 h-3.5"></i>
-                <span>🧑‍🍳 사장님(셀러) 로그인 / 입점</span>
+                <span>🏪 무료 입점 신청하기</span>
+              </button>
+            </li>
+            <li>
+              <button onclick="openAuthModal('seller')" class="text-stone-400 hover:text-stone-200 transition flex items-center space-x-1">
+                <i data-lucide="chef-hat" class="w-3.5 h-3.5"></i>
+                <span>🧑‍🍳 사장님(셀러) 로그인</span>
               </button>
             </li>
             <li>
@@ -594,9 +612,6 @@
                 <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
                 <span>👑 총괄 마스터 관리자</span>
               </button>
-            </li>
-            <li class="pt-2">
-              <span class="text-[10px] text-stone-500">전통시장 상인회 및 지자체 제휴 문의 환영</span>
             </li>
           </ul>
         </div>
@@ -698,6 +713,14 @@
             </button>
           </div>
         </div>
+
+        <!-- Apply Link Banner -->
+        <div class="pt-2 border-t border-gray-100 text-center">
+          <button onclick="closeAuthModal(); openApplyModal();" class="text-orange-600 hover:text-orange-700 text-xs font-bold underline flex items-center justify-center space-x-1 mx-auto">
+            <i data-lucide="store" class="w-3.5 h-3.5"></i>
+            <span>아직 장날가자에 입점 전이신가요? 무료 입점 신청하기 &rarr;</span>
+          </button>
+        </div>
       </div>
 
       <!-- Master Admin Login Tab Content -->
@@ -726,7 +749,179 @@
     </div>
   </div>
 
-  <!-- 2. CART DRAWER -->
+  <!-- 2. MERCHANT APPLICATION MODAL (입점 신청) -->
+  <div id="merchant-apply-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-5 relative">
+      <button onclick="closeApplyModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="bg-orange-100 text-orange-700 text-xs font-black px-2.5 py-1 rounded-md">Partner Onboarding</span>
+          <span class="text-xs text-gray-400">전국 전통시장·5일장 상점 입점 신청</span>
+        </div>
+        <h3 class="text-xl font-black text-gray-900 mt-1">🏪 장날가자 파트너스 공식 입점 신청</h3>
+        <p class="text-xs text-gray-500 mt-1">
+          신청서를 제출하시면 장날가자 총괄 관리팀의 확인 및 온누리 가맹 검수 후 공식 상점으로 등록됩니다.
+        </p>
+      </div>
+
+      <!-- Quick Demo Auto-fill Buttons for Testing -->
+      <div class="bg-amber-50 rounded-2xl p-3.5 border border-amber-200/80 space-y-2">
+        <div class="flex items-center justify-between text-xs font-black text-amber-900">
+          <span>⚡ 빠른 테스트를 위한 예시 데이터 자동 입력:</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <button type="button" onclick="fillApplyForm('gangneung')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-2.5 rounded-xl border border-amber-200 text-left transition shadow-sm">
+            🐔 [강릉 중앙시장] 배니 닭강정 본점 입력
+          </button>
+          <button type="button" onclick="fillApplyForm('daegu')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-2.5 rounded-xl border border-amber-200 text-left transition shadow-sm">
+            🥟 [대구 서문시장] 50년 미성당 납작만두 입력
+          </button>
+        </div>
+      </div>
+
+      <form onsubmit="submitMerchantApplication(event)" class="space-y-4 text-xs">
+        <!-- 1. Basic Store Info -->
+        <div class="space-y-2.5">
+          <h4 class="font-black text-gray-900 text-xs flex items-center space-x-1.5">
+            <i data-lucide="store" class="w-4 h-4 text-orange-600"></i>
+            <span>상점 기본 정보</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">상점 상호명 <span class="text-red-500">*</span></label>
+              <input type="text" id="app-storeName" required placeholder="예: 원조 배니 닭강정" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">소속 전통시장 / 5일장 이름 <span class="text-red-500">*</span></label>
+              <input type="text" id="app-marketName" required placeholder="예: 강릉 중앙시장" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">대표자 성함 <span class="text-red-500">*</span></label>
+              <input type="text" id="app-ownerName" required placeholder="예: 김배니" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">대표자 연락처 <span class="text-red-500">*</span></label>
+              <input type="tel" id="app-phone" required placeholder="예: 010-9876-5432" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">사업자등록번호 <span class="text-red-500">*</span></label>
+              <input type="text" id="app-bizNum" required placeholder="예: 224-09-88123" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Category & Location & Onnuri -->
+        <div class="space-y-2.5 pt-2 border-t">
+          <h4 class="font-black text-gray-900 text-xs flex items-center space-x-1.5">
+            <i data-lucide="tag" class="w-4 h-4 text-orange-600"></i>
+            <span>업종 및 결제 가맹 정보</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">주력 판매 카테고리</label>
+              <select id="app-category" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none">
+                <option value="맛집 밀키트">전통 맛집 밀키트</option>
+                <option value="간식/먹거리">가마솥 닭강정·먹거리</option>
+                <option value="농축수산/특산물">당일 채취 햇특산물/수산</option>
+                <option value="기타 가공식품">기타 전통 가공식품</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">매장 상세 위치</label>
+              <input type="text" id="app-location" placeholder="예: 닭전골목 15호, 만남의 광장 앞" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none">
+            </div>
+          </div>
+
+          <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-200 flex items-center space-x-3">
+            <input type="checkbox" id="app-isOnnuri" checked class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
+            <label for="app-isOnnuri" class="font-bold text-emerald-900 cursor-pointer">
+              🎫 온누리상품권(카드형/디지털/지류) 공식 결제 가맹점입니다.
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. Story & Photo -->
+        <div class="space-y-2.5 pt-2 border-t">
+          <h4 class="font-black text-gray-900 text-xs flex items-center space-x-1.5">
+            <i data-lucide="image" class="w-4 h-4 text-orange-600"></i>
+            <span>상점 소개 및 대표 사진</span>
+          </h4>
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">매장 및 대표 메뉴 소개글 <span class="text-red-500">*</span></label>
+            <textarea id="app-desc" required rows="2" placeholder="예: 30년간 가마솥에서 튀겨낸 바삭한 닭강정으로, 식어도 눅눅하지 않은 비법 조청 소스를 사용합니다." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none"></textarea>
+          </div>
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">대표 이미지 URL</label>
+            <input type="text" id="app-image" placeholder="https://images.unsplash.com/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none">
+          </div>
+        </div>
+
+        <!-- 4. Desired Seller Account -->
+        <div class="space-y-2.5 pt-2 border-t">
+          <h4 class="font-black text-gray-900 text-xs flex items-center space-x-1.5">
+            <i data-lucide="key" class="w-4 h-4 text-orange-600"></i>
+            <span>사장님 셀러 관리자 계정 생성</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">희망 로그인 아이디 <span class="text-red-500">*</span></label>
+              <input type="text" id="app-loginId" required placeholder="예: baeni_gangneung" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none">
+            </div>
+            <div>
+              <label class="font-bold text-gray-700 block mb-1">비밀번호 <span class="text-red-500">*</span></label>
+              <input type="password" id="app-password" required placeholder="비밀번호 입력" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition text-sm flex items-center justify-center space-x-2">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>장날가자 매장 입점 신청서 제출하기</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. ADMIN STORE 360 DETAIL MODAL (총괄 관리자 상점별 상세 관리) -->
+  <div id="admin-store-detail-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-5 relative">
+      <button onclick="closeAdminStoreDetail()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div id="admin-store-detail-header">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- Store Detail Sub-tabs -->
+      <div class="grid grid-cols-4 bg-gray-100 p-1 rounded-2xl text-xs font-bold">
+        <button onclick="setAdminStoreSubTab('info')" id="astab-info" class="py-2 rounded-xl bg-white text-purple-700 shadow-sm font-bold transition">
+          📋 기본 정보
+        </button>
+        <button onclick="setAdminStoreSubTab('products')" id="astab-products" class="py-2 rounded-xl text-gray-500 hover:text-gray-900 font-bold transition">
+          📦 등록 상품
+        </button>
+        <button onclick="setAdminStoreSubTab('orders')" id="astab-orders" class="py-2 rounded-xl text-gray-500 hover:text-gray-900 font-bold transition">
+          📑 주문 내역
+        </button>
+        <button onclick="setAdminStoreSubTab('settlement')" id="astab-settlement" class="py-2 rounded-xl text-gray-500 hover:text-gray-900 font-bold transition">
+          💰 정산 관리
+        </button>
+      </div>
+
+      <div id="admin-store-subtab-content" class="min-h-[220px]">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. CART DRAWER -->
   <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden transition-all">
     <div class="fixed right-0 top-0 bottom-0 max-w-md w-full bg-white shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
       <div>
@@ -769,7 +964,7 @@
     </div>
   </div>
 
-  <!-- 3. PRODUCT / DROP DETAIL MODAL -->
+  <!-- 5. PRODUCT / DROP DETAIL MODAL -->
   <div id="detail-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
       <button onclick="closeProductDetail()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 z-10">
@@ -779,7 +974,7 @@
     </div>
   </div>
 
-  <!-- 4. CHECKOUT MODAL -->
+  <!-- 6. CHECKOUT MODAL -->
   <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 p-6">
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -880,7 +1075,7 @@
     </div>
   </div>
 
-  <!-- 5. ORDER SUCCESS MODAL -->
+  <!-- 7. ORDER SUCCESS MODAL -->
   <div id="success-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
       <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl mx-auto flex items-center justify-center text-3xl shadow-inner">
@@ -916,7 +1111,7 @@
     </div>
   </div>
 
-  <!-- 6. ONNURI INFO MODAL -->
+  <!-- 8. ONNURI INFO MODAL -->
   <div id="onnuri-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b border-gray-100">
@@ -953,7 +1148,7 @@
     </div>
   </div>
 
-  <!-- 7. ADD PRODUCT MODAL (SELLER) -->
+  <!-- 9. ADD PRODUCT MODAL (SELLER) -->
   <div id="add-product-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b">
@@ -1013,7 +1208,7 @@
     </div>
   </div>
 
-  <!-- 8. CREATE DROP MODAL (SELLER) -->
+  <!-- 10. CREATE DROP MODAL (SELLER) -->
   <div id="create-drop-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b">
@@ -1054,7 +1249,7 @@
     </div>
   </div>
 
-  <!-- 9. REQUEST NEW DROP MODAL (USER FUNDING) -->
+  <!-- 11. REQUEST NEW DROP MODAL (USER FUNDING) -->
   <div id="request-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b">
@@ -1308,6 +1503,9 @@
     let selectedPayMethod = 'onnuri';
     let currentSellerTab = 'orders';
     let currentAdminTab = 'merchants';
+    let currentAdminStoreTab = 'info';
+    let selectedAdminStoreId = null;
+    let adminMerchantFilter = 'ALL'; // 'ALL' | 'PENDING' | 'APPROVED'
     let currentUser = null; // { role: 'seller' | 'admin', merchantId, ownerName, storeName, marketName }
 
     // Init App State
@@ -1448,6 +1646,10 @@
 
       const merchant = merchants.find(m => m.loginId === id || m.id === id || m.ownerName === id);
       if (merchant) {
+        if (merchant.status === 'PENDING') {
+          alert(`'${merchant.storeName}' 상점은 현재 입점 심사 대기 중입니다.\n장날가자 총괄 관리자의 승인 완료 후 이용하실 수 있습니다.`);
+          return;
+        }
         setLoggedInUser({
           role: 'seller',
           merchantId: merchant.id,
@@ -1512,6 +1714,89 @@
       renderAuthUI();
       switchView('mall');
       alert('로그아웃되었습니다. 일반 쇼핑몰 화면으로 이동합니다.');
+    }
+
+    // ==========================================
+    // MERCHANT ONBOARDING APPLICATION (입점 신청)
+    // ==========================================
+    function openApplyModal() {
+      document.getElementById('merchant-apply-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeApplyModal() {
+      document.getElementById('merchant-apply-modal').classList.add('hidden');
+    }
+
+    function fillApplyForm(preset) {
+      if (preset === 'gangneung') {
+        document.getElementById('app-storeName').value = '원조 배니 닭강정 본점';
+        document.getElementById('app-marketName').value = '강릉 중앙시장';
+        document.getElementById('app-ownerName').value = '김배니';
+        document.getElementById('app-phone').value = '010-9876-5432';
+        document.getElementById('app-bizNum').value = '224-09-88123';
+        document.getElementById('app-category').value = '간식/먹거리';
+        document.getElementById('app-location').value = '닭전골목 15호';
+        document.getElementById('app-isOnnuri').checked = true;
+        document.getElementById('app-desc').value = '50년 전통의 강릉 중앙시장 대표 닭강정으로, 바삭한 튀김옷과 비법 양념장으로 전국적인 인기를 얻고 있습니다.';
+        document.getElementById('app-image').value = 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=600&q=80';
+        document.getElementById('app-loginId').value = 'baeni_gangneung';
+        document.getElementById('app-password').value = '1234';
+      } else if (preset === 'daegu') {
+        document.getElementById('app-storeName').value = '50년 원조 미성당 납작만두';
+        document.getElementById('app-marketName').value = '대구 서문시장 (동문 3가)';
+        document.getElementById('app-ownerName').value = '박만두';
+        document.getElementById('app-phone').value = '010-5432-1098';
+        document.getElementById('app-bizNum').value = '502-12-39481';
+        document.getElementById('app-category').value = '맛집 밀키트';
+        document.getElementById('app-location').value = '서문시장 2지구 만두골목 7호';
+        document.getElementById('app-isOnnuri').checked = true;
+        document.getElementById('app-desc').value = '1963년부터 이어져 온 대구 10미 중 하나인 얇고 고소한 납작만두와 특제 파간장 소스 밀키트 세트입니다.';
+        document.getElementById('app-image').value = 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80';
+        document.getElementById('app-loginId').value = 'miseongdang';
+        document.getElementById('app-password').value = '1234';
+      }
+    }
+
+    function submitMerchantApplication(e) {
+      e.preventDefault();
+      const storeName = document.getElementById('app-storeName').value.trim();
+      const marketName = document.getElementById('app-marketName').value.trim();
+      const ownerName = document.getElementById('app-ownerName').value.trim();
+      const phone = document.getElementById('app-phone').value.trim();
+      const bizNum = document.getElementById('app-bizNum').value.trim();
+      const cat = document.getElementById('app-category').value;
+      const location = document.getElementById('app-location').value.trim() || '시장 내 위치';
+      const isOnnuri = document.getElementById('app-isOnnuri').checked;
+      const desc = document.getElementById('app-desc').value.trim();
+      const img = document.getElementById('app-image').value.trim() || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80';
+      const loginId = document.getElementById('app-loginId').value.trim();
+      const password = document.getElementById('app-password').value.trim();
+
+      const newId = 'm-' + Date.now();
+      merchants.unshift({
+        id: newId,
+        storeName: storeName,
+        marketName: marketName,
+        ownerName: ownerName,
+        businessNumber: bizNum,
+        phone: phone,
+        category: cat,
+        isOnnuri: isOnnuri,
+        image: img,
+        description: desc,
+        locationHint: location,
+        loginId: loginId || ('seller_' + Date.now().toString().slice(-4)),
+        password: password || '1234',
+        status: 'PENDING',
+        appliedAt: Date.now()
+      });
+
+      saveAll();
+      closeApplyModal();
+      renderAll();
+
+      alert(`🎉 [${storeName}] 입점 신청서가 성공적으로 접수되었습니다!\n\n장날가자 총괄 관리팀의 확인 및 승인 후(약 1일 소요) 공식 상점관에 등록되며, 등록하신 아이디로 로그인하실 수 있습니다.`);
     }
 
     // ==========================================
@@ -2191,11 +2476,11 @@
     function setAdminTab(tab) {
       currentAdminTab = tab;
       document.querySelectorAll('.admin-tab').forEach(el => {
-        el.className = 'admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 font-bold';
+        el.className = 'admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 font-bold shrink-0';
       });
       const active = document.getElementById(`atab-${tab}`);
       if (active) {
-        active.className = 'admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5 font-bold';
+        active.className = 'admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5 font-bold shrink-0';
       }
       renderAdminTabContent();
     }
@@ -2203,48 +2488,166 @@
     function renderAdminView() {
       const pending = merchants.filter(m => m.status === 'PENDING').length;
       document.getElementById('admin-pending-merchant-count').textContent = pending;
+      document.getElementById('admin-total-store-count').textContent = merchants.length;
       setAdminTab(currentAdminTab);
+    }
+
+    function setAdminMerchantFilter(filter) {
+      adminMerchantFilter = filter;
+      renderAdminTabContent();
     }
 
     function renderAdminTabContent() {
       const container = document.getElementById('admin-tab-content');
 
+      // TAB 1: 입점 심사 관리
       if (currentAdminTab === 'merchants') {
+        const pendingList = merchants.filter(m => m.status === 'PENDING');
+        const approvedList = merchants.filter(m => m.status === 'APPROVED');
+        let displayedList = merchants;
+
+        if (adminMerchantFilter === 'PENDING') displayedList = pendingList;
+        if (adminMerchantFilter === 'APPROVED') displayedList = approvedList;
+
         container.innerHTML = `
-          <div class="space-y-4">
-            ${merchants.map(m => `
-              <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="flex items-start space-x-3.5">
-                  <img src="${m.image}" class="w-16 h-16 rounded-2xl object-cover border" alt="">
-                  <div>
-                    <div class="flex items-center space-x-2">
-                      <span class="text-xs font-black text-gray-900">${m.storeName}</span>
-                      <span class="text-[10px] font-bold px-2 py-0.5 rounded ${m.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                        ${m.status === 'APPROVED' ? '승인완료' : '심사대기'}
-                      </span>
+          <div class="space-y-5">
+            <!-- Filter Pills -->
+            <div class="flex items-center justify-between gap-3 flex-wrap bg-white p-3.5 rounded-2xl border border-gray-200">
+              <div class="flex items-center space-x-2">
+                <button onclick="setAdminMerchantFilter('ALL')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${adminMerchantFilter === 'ALL' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+                  전체 상점 (${merchants.length})
+                </button>
+                <button onclick="setAdminMerchantFilter('PENDING')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${adminMerchantFilter === 'PENDING' ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-800 hover:bg-amber-100'}">
+                  ⏳ 심사 대기 (${pendingList.length})
+                </button>
+                <button onclick="setAdminMerchantFilter('APPROVED')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${adminMerchantFilter === 'APPROVED' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}">
+                  ✅ 승인 완료 (${approvedList.length})
+                </button>
+              </div>
+
+              <button onclick="openApplyModal()" class="bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-orange-200 transition flex items-center space-x-1">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>신규 상점 직접 등록</span>
+              </button>
+            </div>
+
+            <!-- List Cards -->
+            <div class="space-y-4">
+              ${displayedList.map(m => `
+                <div class="bg-white rounded-3xl p-5 border ${m.status === 'PENDING' ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-gray-200'} shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div class="flex items-start space-x-4">
+                    <img src="${m.image}" class="w-20 h-20 rounded-2xl object-cover border shrink-0" alt="${m.storeName}">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-black text-gray-900">${m.storeName}</span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded ${m.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800 animate-pulse'}">
+                          ${m.status === 'APPROVED' ? '공식 승인됨' : '⏳ 심사 대기중'}
+                        </span>
+                        ${m.isOnnuri ? `<span class="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded">🎫 온누리 가맹</span>` : ''}
+                      </div>
+
+                      <div class="text-xs text-gray-600">
+                        소속 시장: <strong>${m.marketName}</strong> (${m.locationHint}) · 대표자: <strong>${m.ownerName}</strong> (${m.phone})
+                      </div>
+                      <div class="text-xs text-gray-500">
+                        사업자번호: <span class="font-mono">${m.businessNumber}</span> · 계정 ID: <span class="font-mono text-purple-600 font-bold">${m.loginId}</span>
+                      </div>
+                      <p class="text-xs text-gray-600 bg-gray-50 p-2 rounded-xl mt-1 line-clamp-2">${m.description}</p>
                     </div>
-                    <div class="text-xs text-gray-500 mt-0.5">시장: <strong>${m.marketName}</strong> · 사업자: ${m.businessNumber} · 연락처: ${m.phone}</div>
-                    <div class="text-xs text-gray-400 mt-0.5">${m.description}</div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center space-x-2 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0">
+                    ${m.status === 'PENDING' ? `
+                      <button onclick="approveMerchant('${m.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-4 py-2.5 rounded-xl transition shadow flex items-center space-x-1">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>입점 승인</span>
+                      </button>
+                      <button onclick="rejectMerchant('${m.id}')" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-2.5 rounded-xl transition">
+                        반려
+                      </button>
+                    ` : `
+                      <button onclick="revokeMerchant('${m.id}')" class="bg-gray-100 hover:bg-amber-100 text-gray-600 hover:text-amber-800 text-xs font-bold px-3 py-2 rounded-xl transition">
+                        승인 취소
+                      </button>
+                    `}
+                    <button onclick="openAdminStoreDetail('${m.id}')" class="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold px-3.5 py-2.5 rounded-xl transition flex items-center space-x-1">
+                      <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+                      <span>상점 종합 관리</span>
+                    </button>
                   </div>
                 </div>
-
-                <div class="flex items-center space-x-2">
-                  ${m.status === 'PENDING' ? `
-                    <button onclick="approveMerchant('${m.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition">
-                      입점 승인
-                    </button>
-                    <button onclick="rejectMerchant('${m.id}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition">
-                      반려
-                    </button>
-                  ` : `
-                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl">공식 입점 활성화됨</span>
-                  `}
-                </div>
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
           </div>
         `;
-      } else if (currentAdminTab === 'drops') {
+      } 
+      // TAB 2: 상점별 종합 관리 (Stores Directory & 360 Drill-Down)
+      else if (currentAdminTab === 'stores') {
+        container.innerHTML = `
+          <div class="space-y-5">
+            <div class="bg-white p-4 rounded-3xl border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div>
+                <h4 class="font-black text-gray-900 text-sm">전통시장별 입점 상점 디렉토리 (${merchants.length}개소)</h4>
+                <p class="text-xs text-gray-500">상점별 상품 등록, 주문 현황, 정산 수수료를 한눈에 확인하고 제어합니다.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              ${merchants.map(m => {
+                const storeDrops = drops.filter(d => d.merchantId === m.id);
+                const storeOrders = orders.filter(o => o.merchantId === m.id);
+                const storeSales = storeOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+
+                return `
+                  <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+                    <div>
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded bg-orange-100 text-orange-800">${m.marketName}</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded ${m.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                          ${m.status === 'APPROVED' ? '승인완료' : '심사대기'}
+                        </span>
+                      </div>
+
+                      <div class="flex items-center space-x-3">
+                        <img src="${m.image}" class="w-14 h-14 rounded-2xl object-cover border shrink-0" alt="${m.storeName}">
+                        <div class="flex-1 min-w-0">
+                          <h4 class="font-black text-gray-900 text-sm truncate">${m.storeName}</h4>
+                          <div class="text-xs text-gray-500">대표: ${m.ownerName} · ${m.phone}</div>
+                          <div class="text-[11px] font-mono text-gray-400 truncate">${m.businessNumber}</div>
+                        </div>
+                      </div>
+
+                      <!-- Quick Stats -->
+                      <div class="grid grid-cols-3 gap-2 bg-gray-50 p-3 rounded-2xl border border-gray-100 mt-3 text-center">
+                        <div>
+                          <span class="text-[10px] text-gray-400 block">진행드롭</span>
+                          <span class="text-xs font-black text-gray-800">${storeDrops.length}개</span>
+                        </div>
+                        <div>
+                          <span class="text-[10px] text-gray-400 block">누적주문</span>
+                          <span class="text-xs font-black text-gray-800">${storeOrders.length}건</span>
+                        </div>
+                        <div>
+                          <span class="text-[10px] text-gray-400 block">총 매출</span>
+                          <span class="text-xs font-black text-orange-600">${storeSales > 0 ? (storeSales/10000).toFixed(1)+'만' : '0원'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button onclick="openAdminStoreDetail('${m.id}')" class="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 font-black text-xs py-2.5 rounded-xl border border-purple-200 transition flex items-center justify-center space-x-1">
+                      <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+                      <span>상점 종합 상세 & 정산 관리 &rarr;</span>
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+      // TAB 3: 전국 LIVE DROP
+      else if (currentAdminTab === 'drops') {
         container.innerHTML = `
           <div class="space-y-4">
             <h4 class="font-black text-sm text-gray-900">전국 활성 LIVE DROP 목록 (${drops.length}건)</h4>
@@ -2259,7 +2662,9 @@
             `).join('')}
           </div>
         `;
-      } else if (currentAdminTab === 'orders') {
+      }
+      // TAB 4: 전국 주문 모니터링
+      else if (currentAdminTab === 'orders') {
         container.innerHTML = `
           <div class="space-y-4">
             <h4 class="font-black text-sm text-gray-900">전국 통합 주문 모니터링 (${orders.length}건)</h4>
@@ -2275,7 +2680,9 @@
             `).join('')}
           </div>
         `;
-      } else if (currentAdminTab === 'settlement') {
+      }
+      // TAB 5: 정산 대시보드
+      else if (currentAdminTab === 'settlement') {
         const totalSales = orders.reduce((sum, o) => sum + o.totalPrice, 0);
         const fee = Math.round(totalSales * 0.05); // 5% fee
         const settlement = totalSales - fee;
@@ -2283,7 +2690,7 @@
         container.innerHTML = `
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="bg-white rounded-2xl p-5 border border-gray-200">
-              <span class="text-xs text-gray-400 font-bold block">총 결제 대금</span>
+              <span class="text-xs text-gray-400 font-bold block">전국 총 결제 대금</span>
               <span class="text-2xl font-black text-gray-900 mt-1 block">${totalSales.toLocaleString()}원</span>
             </div>
             <div class="bg-white rounded-2xl p-5 border border-gray-200">
@@ -2291,7 +2698,7 @@
               <span class="text-2xl font-black text-purple-600 mt-1 block">${fee.toLocaleString()}원</span>
             </div>
             <div class="bg-white rounded-2xl p-5 border border-gray-200">
-              <span class="text-xs text-gray-400 font-bold block">상점 사장님 정산 지급액</span>
+              <span class="text-xs text-gray-400 font-bold block">전국 상점 사장님 정산 지급액</span>
               <span class="text-2xl font-black text-emerald-600 mt-1 block">${settlement.toLocaleString()}원</span>
             </div>
           </div>
@@ -2305,16 +2712,242 @@
       if (m) {
         m.status = 'APPROVED';
         saveAll();
-        renderAdminView();
-        alert(`'${m.storeName}' 입점 승인이 완료되었습니다!`);
+        renderAll();
+        alert(`'${m.storeName}' 상점의 입점 승인이 완료되었습니다!\n이제 공식 입점관에 노출되며, 점주 계정으로 로그인할 수 있습니다.`);
+      }
+    }
+
+    function revokeMerchant(id) {
+      const m = merchants.find(item => item.id === id);
+      if (m) {
+        m.status = 'PENDING';
+        saveAll();
+        renderAll();
+        alert(`'${m.storeName}' 상점이 심사 대기 상태로 변경되었습니다.`);
       }
     }
 
     function rejectMerchant(id) {
-      merchants = merchants.filter(item => item.id !== id);
-      saveAll();
-      renderAdminView();
-      alert('입점 신청이 반려되었습니다.');
+      if (confirm('해당 입점 신청을 반려하고 삭제하시겠습니까?')) {
+        merchants = merchants.filter(item => item.id !== id);
+        saveAll();
+        renderAll();
+        alert('입점 신청이 반려 처리되었습니다.');
+      }
+    }
+
+    // ==========================================
+    // ADMIN STORE 360 DRILL-DOWN MODAL LOGIC
+    // ==========================================
+    function openAdminStoreDetail(merchantId) {
+      selectedAdminStoreId = merchantId;
+      const m = merchants.find(item => item.id === merchantId);
+      if (!m) return;
+
+      const header = document.getElementById('admin-store-detail-header');
+      header.innerHTML = `
+        <div class="flex items-start space-x-4">
+          <img src="${m.image}" class="w-16 h-16 rounded-2xl object-cover border shrink-0" alt="${m.storeName}">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2">
+              <h3 class="text-lg font-black text-gray-900">${m.storeName}</h3>
+              <span class="text-[10px] font-black px-2 py-0.5 rounded ${m.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                ${m.status === 'APPROVED' ? '공식 승인 상점' : '심사 대기중'}
+              </span>
+              ${m.isOnnuri ? `<span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded border border-emerald-200">🎫 온누리</span>` : ''}
+            </div>
+            <div class="text-xs text-gray-500 mt-1">소속: <strong>${m.marketName}</strong> · 대표자: ${m.ownerName} (${m.phone})</div>
+          </div>
+        </div>
+      `;
+
+      setAdminStoreSubTab('info');
+      document.getElementById('admin-store-detail-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeAdminStoreDetail() {
+      document.getElementById('admin-store-detail-modal').classList.add('hidden');
+    }
+
+    function setAdminStoreSubTab(tab) {
+      currentAdminStoreTab = tab;
+      ['info', 'products', 'orders', 'settlement'].forEach(t => {
+        const btn = document.getElementById(`astab-${t}`);
+        if (btn) {
+          if (t === tab) {
+            btn.className = 'py-2 rounded-xl bg-white text-purple-700 shadow-sm font-bold transition';
+          } else {
+            btn.className = 'py-2 rounded-xl text-gray-500 hover:text-gray-900 font-bold transition';
+          }
+        }
+      });
+
+      renderAdminStoreSubTabContent();
+    }
+
+    function renderAdminStoreSubTabContent() {
+      const container = document.getElementById('admin-store-subtab-content');
+      const m = merchants.find(item => item.id === selectedAdminStoreId);
+      if (!m) return;
+
+      const storeDrops = drops.filter(d => d.merchantId === m.id);
+      const storeOrders = orders.filter(o => o.merchantId === m.id);
+      const storeSales = storeOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+      const fee = Math.round(storeSales * 0.05);
+      const settlement = storeSales - fee;
+
+      if (currentAdminStoreTab === 'info') {
+        container.innerHTML = `
+          <div class="space-y-3.5 text-xs">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="font-bold text-gray-600 block mb-1">상점 상호명</label>
+                <input type="text" id="adm-edit-store" value="${m.storeName}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+              <div>
+                <label class="font-bold text-gray-600 block mb-1">소속 전통시장</label>
+                <input type="text" id="adm-edit-market" value="${m.marketName}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="font-bold text-gray-600 block mb-1">대표자 성함</label>
+                <input type="text" id="adm-edit-owner" value="${m.ownerName}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+              <div>
+                <label class="font-bold text-gray-600 block mb-1">연락처</label>
+                <input type="text" id="adm-edit-phone" value="${m.phone}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+              <div>
+                <label class="font-bold text-gray-600 block mb-1">사업자등록번호</label>
+                <input type="text" id="adm-edit-biz" value="${m.businessNumber}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+            </div>
+
+            <div>
+              <label class="font-bold text-gray-600 block mb-1">매장 상세 위치</label>
+              <input type="text" id="adm-edit-loc" value="${m.locationHint}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+            </div>
+
+            <div>
+              <label class="font-bold text-gray-600 block mb-1">상점 소개글</label>
+              <textarea id="adm-edit-desc" rows="2" class="w-full bg-gray-50 border rounded-xl p-2.5">${m.description}</textarea>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t">
+              <button onclick="adminSaveStoreInfo('${m.id}')" class="bg-purple-600 hover:bg-purple-700 text-white font-black px-4 py-2.5 rounded-xl transition shadow text-xs">
+                상점 정보 수정 저장
+              </button>
+
+              ${m.status === 'PENDING' ? `
+                <button onclick="approveMerchant('${m.id}'); closeAdminStoreDetail();" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs">
+                  입점 최종 승인
+                </button>
+              ` : `
+                <button onclick="revokeMerchant('${m.id}'); closeAdminStoreDetail();" class="bg-gray-100 hover:bg-amber-100 text-gray-600 hover:text-amber-800 font-bold px-4 py-2.5 rounded-xl text-xs">
+                  입점 일시 정지
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      } else if (currentAdminStoreTab === 'products') {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex justify-between items-center text-xs font-bold text-gray-600">
+              <span>이 상점에 등록된 라이브 드롭 (${storeDrops.length}건)</span>
+            </div>
+            ${storeDrops.length === 0 ? `
+              <div class="text-center py-8 text-gray-400 text-xs">등록된 드롭/상품이 없습니다.</div>
+            ` : `
+              <div class="space-y-2 max-h-60 overflow-y-auto">
+                ${storeDrops.map(d => `
+                  <div class="bg-gray-50 p-3 rounded-2xl border flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-2.5">
+                      <img src="${d.image}" class="w-10 h-10 rounded-xl object-cover border" alt="">
+                      <div>
+                        <h5 class="font-bold text-gray-900">${d.title}</h5>
+                        <span class="text-[11px] text-gray-500">${d.category} · ${d.dropPrice.toLocaleString()}원</span>
+                      </div>
+                    </div>
+                    <span class="font-mono font-bold text-orange-600">${d.currentCount}/${d.targetCount}세트</span>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      } else if (currentAdminStoreTab === 'orders') {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex justify-between items-center text-xs font-bold text-gray-600">
+              <span>이 상점의 주문 접수 내역 (${storeOrders.length}건)</span>
+            </div>
+            ${storeOrders.length === 0 ? `
+              <div class="text-center py-8 text-gray-400 text-xs">접수된 주문 내역이 없습니다.</div>
+            ` : `
+              <div class="space-y-2 max-h-60 overflow-y-auto">
+                ${storeOrders.map(o => `
+                  <div class="bg-gray-50 p-3 rounded-2xl border text-xs space-y-1">
+                    <div class="flex justify-between items-center">
+                      <span class="font-mono font-bold text-purple-700">${o.id}</span>
+                      <span class="font-bold ${o.status === 'SHIPPED' ? 'text-emerald-600' : 'text-orange-600'}">
+                        ${o.status === 'SHIPPED' ? '🚚 배송중' : '📦 결제완료'}
+                      </span>
+                    </div>
+                    <div class="font-bold text-gray-900">${o.productTitle} (${o.qty}세트)</div>
+                    <div class="text-gray-500 text-[11px]">구매자: ${o.buyerName} (${o.buyerPhone}) · ${o.totalPrice.toLocaleString()}원</div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      } else if (currentAdminStoreTab === 'settlement') {
+        container.innerHTML = `
+          <div class="space-y-4 text-xs">
+            <div class="grid grid-cols-3 gap-2.5 text-center">
+              <div class="bg-gray-50 p-3 rounded-2xl border">
+                <span class="text-[10px] text-gray-400 block">누적 매출액</span>
+                <span class="text-sm font-black text-gray-900 mt-1 block">${storeSales.toLocaleString()}원</span>
+              </div>
+              <div class="bg-purple-50 p-3 rounded-2xl border border-purple-100">
+                <span class="text-[10px] text-purple-600 block">플랫폼 수수료 (5%)</span>
+                <span class="text-sm font-black text-purple-700 mt-1 block">${fee.toLocaleString()}원</span>
+              </div>
+              <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                <span class="text-[10px] text-emerald-700 block">정산 지급액</span>
+                <span class="text-sm font-black text-emerald-800 mt-1 block">${settlement.toLocaleString()}원</span>
+              </div>
+            </div>
+
+            <button onclick="alert('정산 송금 확인 처리가 완료되었습니다.')" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-black py-3 rounded-xl transition text-xs shadow">
+              💰 상점 정산 송금 완료 처리
+            </button>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function adminSaveStoreInfo(id) {
+      const m = merchants.find(item => item.id === id);
+      if (m) {
+        m.storeName = document.getElementById('adm-edit-store').value.trim() || m.storeName;
+        m.marketName = document.getElementById('adm-edit-market').value.trim() || m.marketName;
+        m.ownerName = document.getElementById('adm-edit-owner').value.trim() || m.ownerName;
+        m.phone = document.getElementById('adm-edit-phone').value.trim() || m.phone;
+        m.businessNumber = document.getElementById('adm-edit-biz').value.trim() || m.businessNumber;
+        m.locationHint = document.getElementById('adm-edit-loc').value.trim() || m.locationHint;
+        m.description = document.getElementById('adm-edit-desc').value.trim() || m.description;
+
+        saveAll();
+        renderAll();
+        openAdminStoreDetail(id);
+        alert('상점 정보가 성공적으로 수정되었습니다! ✨');
+      }
     }
 
     // ==========================================
@@ -2599,12 +3232,17 @@
       const incomingMarket = params.get('market');
       const viewParam = params.get('view');
       const authParam = params.get('auth');
+      const applyParam = params.get('apply');
 
       if (incomingMarket) {
         document.getElementById('app-incoming-banner').classList.remove('hidden');
         document.getElementById('incoming-market-name').textContent = incomingMarket;
         document.getElementById('incoming-market-desc').textContent = `'${incomingMarket}'의 한정 수량 장날 라이브 드롭 및 입점 상점관입니다.`;
         searchQuery = incomingMarket;
+      }
+
+      if (applyParam) {
+        openApplyModal();
       }
 
       if (authParam === 'seller' || authParam === 'admin') {
