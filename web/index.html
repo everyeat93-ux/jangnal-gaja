@@ -102,7 +102,7 @@
       </div>
     </div>
 
-    <!-- 2. MAIN HEADER (100% MOBILE RESPONSIVE, ZERO CLIPPING) -->
+    <!-- 2. MAIN HEADER -->
     <header class="sticky top-0 z-40 glass-nav border-b border-gray-200/80 shadow-sm transition-all">
       <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-18 flex items-center justify-between gap-2">
         
@@ -148,26 +148,22 @@
           </div>
         </div>
 
-        <!-- Header Action Icons (Aligned, No Overlap, No Overflow) -->
+        <!-- Header Action Icons -->
         <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-          <!-- Mobile Search Toggle -->
           <button onclick="toggleMobileSearch()" class="p-2 text-gray-700 hover:text-orange-600 md:hidden rounded-xl hover:bg-gray-100 transition" title="검색">
             <i data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </button>
 
-          <!-- Order & Tracking Button -->
           <button onclick="openUserOrdersModal()" class="flex items-center space-x-1 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-200/80 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition shadow-sm" title="주문 및 배송조회">
             <i data-lucide="package" class="w-4 h-4 text-orange-600"></i>
             <span class="hidden sm:inline">배송조회</span>
           </button>
 
-          <!-- Free Apply Onboarding Button (Desktop Only) -->
           <button onclick="openApplyModal()" class="hidden md:flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 px-3 py-2 rounded-xl text-xs font-black transition shadow-sm">
             <i data-lucide="store" class="w-4 h-4 text-amber-700"></i>
             <span>입점 신청</span>
           </button>
 
-          <!-- Cart Drawer Button -->
           <button onclick="openCartDrawer()" class="relative flex items-center space-x-1 bg-orange-50 hover:bg-orange-100 text-orange-700 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-orange-200 transition" title="장바구니">
             <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-5 sm:h-5"></i>
             <span class="text-xs font-black hidden sm:inline">장바구니</span>
@@ -176,7 +172,7 @@
         </div>
       </div>
 
-      <!-- Category Filter Chips Bar (Mall View) -->
+      <!-- Category Filter Chips Bar -->
       <div id="mall-category-nav" class="bg-white border-t border-gray-100 px-3 sm:px-4 py-2 overflow-x-auto no-scrollbar">
         <div class="max-w-7xl mx-auto flex items-center space-x-1.5 text-xs font-bold whitespace-nowrap">
           <button onclick="setCategory('all')" id="tab-all" class="nav-chip px-3 py-1.5 rounded-xl bg-orange-600 text-white shadow-sm transition shrink-0">
@@ -220,19 +216,18 @@
     <!-- ========================================================================= -->
     <div id="view-mall" class="view-section">
       
-      <!-- HERO SECTION: MODERN FOOD VISUAL & LIVE DROP SHOWCASE -->
+      <!-- HERO SECTION -->
       <section class="max-w-7xl mx-auto px-3 sm:px-6 pt-3 sm:pt-6 pb-2">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
           <!-- Main Hero Featured Card (2 Cols) -->
           <div id="hero-main-card" class="lg:col-span-2 bg-white rounded-3xl overflow-hidden shadow-md border border-gray-200/80 flex flex-col justify-between">
             
-            <!-- Top Visual Image Area with Floating Badges -->
             <div class="relative w-full h-48 sm:h-64 md:h-72 overflow-hidden bg-stone-900">
               <img id="hero-img" src="https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover" alt="라이브 드롭 대표 음식">
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
               
-              <!-- Floating Header Badges -->
+              <!-- Floating Badges -->
               <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5">
                 <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
                   <span class="bg-orange-600 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-full shadow-md flex items-center space-x-1">
@@ -249,7 +244,7 @@
                 </span>
               </div>
 
-              <!-- Floating Countdown Timer Badge at Bottom of Image -->
+              <!-- Floating Countdown Timer Badge -->
               <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
                 <div class="bg-black/70 backdrop-blur-md text-white rounded-xl px-2.5 py-1 border border-white/20 flex items-center space-x-1.5">
                   <span class="text-[10px] text-amber-300 font-bold">⏳ 장날 마감까지</span>
@@ -261,7 +256,7 @@
               </div>
             </div>
 
-            <!-- Bottom Content & Ordering Area -->
+            <!-- Content Area -->
             <div class="p-3.5 sm:p-5 space-y-3">
               <div>
                 <h1 id="hero-title" class="text-base sm:text-xl font-black text-gray-900 leading-snug break-keep">
@@ -292,7 +287,7 @@
                 </div>
               </div>
 
-              <!-- Action Buttons (Responsive Layout with NO Text Break) -->
+              <!-- Actions -->
               <div class="flex items-center gap-2">
                 <button onclick="heroDirectOrder()" class="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black py-3 sm:py-3.5 rounded-2xl shadow active:scale-95 transition text-xs sm:text-sm flex items-center justify-center space-x-1.5">
                   <i data-lucide="zap" class="w-4 h-4 shrink-0"></i>
@@ -308,7 +303,7 @@
             </div>
           </div>
 
-          <!-- Side Quick Drop List (1 Col - Fixed Layout, Zero Image Expansion) -->
+          <!-- Side Quick Drop List -->
           <div class="flex flex-col justify-between gap-2.5">
             <div class="text-xs font-black text-gray-900 flex items-center justify-between px-1">
               <span class="flex items-center space-x-1">
@@ -415,7 +410,6 @@
               마감 시간 전까지 한정 수량으로 진행되는 전통시장 직송 상품입니다.
             </p>
           </div>
-          <!-- Sort Options -->
           <div class="flex items-center space-x-2.5 text-xs font-bold text-gray-500 self-end sm:self-auto">
             <button onclick="sortProducts('popular')" id="sort-popular" class="text-orange-600 font-black">인기순</button>
             <span>·</span>
@@ -496,10 +490,9 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- VIEW 4: SELLER CONSOLE VIEW (사장님 전용 관리자 콘솔) -->
+    <!-- VIEW 4: SELLER CONSOLE VIEW -->
     <!-- ========================================================================= -->
     <div id="view-seller" class="view-section hidden max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
-      <!-- Seller Header Profile -->
       <div class="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-3xl p-4 sm:p-7 shadow-lg mb-5">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div class="flex items-center space-x-3">
@@ -525,7 +518,6 @@
         </div>
       </div>
 
-      <!-- Seller Quick Stats Card -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-5">
         <div class="bg-white rounded-2xl p-3 sm:p-4 border border-gray-200 shadow-sm">
           <div class="text-[10px] sm:text-[11px] font-bold text-gray-500">오늘 들어온 주문</div>
@@ -545,7 +537,6 @@
         </div>
       </div>
 
-      <!-- Seller Sub-tabs -->
       <div class="flex items-center space-x-1.5 mb-4 border-b border-gray-200 pb-2 overflow-x-auto no-scrollbar">
         <button onclick="setSellerTab('orders')" id="stab-orders" class="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-orange-600 text-white font-bold text-xs shadow-sm transition whitespace-nowrap">
           📦 주문 관리 & 운송장 발송
@@ -558,13 +549,11 @@
         </button>
       </div>
 
-      <div id="seller-tab-content">
-        <!-- Dynamically rendered -->
-      </div>
+      <div id="seller-tab-content"></div>
     </div>
 
     <!-- ========================================================================= -->
-    <!-- VIEW 5: MASTER ADMIN CONSOLE VIEW (콜코 총괄 운영진 마스터 콘솔) -->
+    <!-- VIEW 5: MASTER ADMIN CONSOLE VIEW (WITH 3-DOCUMENT INSPECTION & DOWNLOAD) -->
     <!-- ========================================================================= -->
     <div id="view-admin" class="view-section hidden max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
       <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-950 text-white rounded-3xl p-4 sm:p-7 shadow-lg mb-5">
@@ -687,7 +676,7 @@
   </footer>
 
   <!-- ========================================================================= -->
-  <!-- MOBILE BOTTOM NAVIGATION (ROLE-BASED ADAPTIVE, ZERO OVERFLOW) -->
+  <!-- MOBILE BOTTOM NAVIGATION -->
   <!-- ========================================================================= -->
   <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 py-1.5 px-1 flex justify-around items-center md:hidden shadow-lg" id="mobile-bottom-nav">
     <!-- Dynamically rendered via renderBottomNav() -->
@@ -710,7 +699,6 @@
         <p class="text-[11px] text-gray-500">사장님 콘솔 또는 총괄 관리자 계정으로 접속합니다.</p>
       </div>
 
-      <!-- Switch Tabs -->
       <div class="grid grid-cols-2 bg-gray-100 p-1 rounded-2xl text-xs font-bold">
         <button onclick="switchAuthTab('seller')" id="authtab-seller" class="py-2 rounded-xl bg-white text-orange-600 shadow-sm transition font-bold">
           🧑‍🍳 사장님(셀러)
@@ -720,7 +708,6 @@
         </button>
       </div>
 
-      <!-- Seller Login Form -->
       <div id="auth-seller-content" class="space-y-3">
         <div class="bg-orange-50 rounded-2xl p-2.5 border border-orange-200 text-xs text-orange-900">
           <div class="font-black mb-1">⚡ 데모 간편 로그인:</div>
@@ -749,7 +736,6 @@
         </form>
       </div>
 
-      <!-- Admin Login Form -->
       <div id="auth-admin-content" class="space-y-3 hidden">
         <div class="bg-purple-50 rounded-2xl p-2.5 border border-purple-200 text-xs text-purple-900">
           <div class="font-black mb-0.5">👑 총괄 마스터 관리자:</div>
@@ -776,9 +762,9 @@
     </div>
   </div>
 
-  <!-- 2. MERCHANT APPLICATION MODAL -->
-  <div id="merchant-apply-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-7 shadow-2xl space-y-4 relative">
+  <!-- 2. MERCHANT APPLICATION MODAL (WITH REAL IMAGE/FILE ATTACHMENTS & PREVIEWS) -->
+  <div id="merchant-apply-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto p-4 sm:p-7 shadow-2xl space-y-4 relative">
       <button onclick="closeApplyModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
@@ -791,24 +777,24 @@
             <span class="text-[11px] text-gray-400">전통시장 상점 입점</span>
           </div>
           <h3 class="text-base sm:text-lg font-black text-gray-900 mt-0.5">🏪 전통시장 상점 무료 입점 신청서</h3>
-          <p class="text-[11px] text-gray-500 mt-0.5">소진공 온누리 가맹 검수 및 3대 필수 서류 확인 후 정식 승인됩니다.</p>
+          <p class="text-[11px] text-gray-500 mt-0.5">3대 필수 서류(이미지 첨부) 및 온누리 가맹 검수 후 정식 승인됩니다.</p>
         </div>
       </div>
 
       <!-- Quick Auto-Fill for Testing -->
       <div class="bg-amber-50 rounded-2xl p-2.5 border border-amber-200 space-y-1 text-xs">
-        <div class="font-black text-amber-900">⚡ 빠른 테스트용 예시 데이터 입력:</div>
+        <div class="font-black text-amber-900">⚡ 빠른 테스트용 예시 데이터 & 서류 자동 첨부:</div>
         <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-          <button type="button" onclick="fillApplyForm('gangneung')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-1.5 rounded-xl border border-amber-200 text-left transition truncate">
-            🐔 [강릉] 배니 닭강정
+          <button type="button" onclick="fillApplyForm('gangneung')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-2 rounded-xl border border-amber-200 text-left transition truncate">
+            🐔 [강릉] 배니 닭강정 (서류 3종 포함)
           </button>
-          <button type="button" onclick="fillApplyForm('daegu')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-1.5 rounded-xl border border-amber-200 text-left transition truncate">
-            🥟 [대구] 미성당 납작만두
+          <button type="button" onclick="fillApplyForm('daegu')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-2 rounded-xl border border-amber-200 text-left transition truncate">
+            🥟 [대구] 미성당 납작만두 (서류 3종 포함)
           </button>
         </div>
       </div>
 
-      <form onsubmit="submitMerchantApplication(event)" class="space-y-3 text-xs">
+      <form onsubmit="submitMerchantApplication(event)" class="space-y-3.5 text-xs">
         <!-- 1. Store Basic Info -->
         <div class="space-y-2">
           <h4 class="font-black text-gray-900 flex items-center space-x-1">
@@ -837,25 +823,92 @@
           </div>
         </div>
 
-        <!-- 2. Legal 3-Document Compliance -->
-        <div class="space-y-2 pt-2 border-t">
-          <h4 class="font-black text-gray-900 flex items-center space-x-1">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
-            <span>3대 필수 서류 및 온누리 가맹 정보</span>
-          </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <label class="font-bold text-gray-700 block mb-1">① 사업자등록번호 <span class="text-red-500">*</span></label>
-              <input type="text" id="app-bizNum" required placeholder="예: 224-09-88123" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:outline-none">
+        <!-- 2. 3 ESSENTIAL DOCUMENTS WITH FILE UPLOAD / CAMERA -->
+        <div class="space-y-3 pt-2.5 border-t">
+          <div class="flex items-center justify-between">
+            <h4 class="font-black text-gray-900 flex items-center space-x-1.5 text-xs sm:text-sm">
+              <i data-lucide="file-check" class="w-4 h-4 text-emerald-600"></i>
+              <span>3대 필수 서류 등록 (이미지/사진 첨부)</span>
+            </h4>
+            <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">운영팀 정밀 심사용</span>
+          </div>
+
+          <!-- Document 1: Business Registration -->
+          <div class="bg-gray-50 rounded-2xl p-3 border border-gray-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-black text-gray-900 text-xs">① 사업자등록증 사본 첨부 <span class="text-red-500">*</span></label>
+              <span class="text-[10px] text-gray-500">사진/스캔본 (JPG, PNG)</span>
             </div>
-            <div>
-              <label class="font-bold text-gray-700 block mb-1">② 온누리 가맹점 고유코드 <span class="text-red-500">*</span></label>
-              <input type="text" id="app-onnuriCode" required placeholder="예: ON-2240-8812" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input type="text" id="app-bizNum" required placeholder="사업자등록번호 (예: 224-09-88123)" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none text-xs">
+              <div class="relative">
+                <input type="file" id="app-bizFile" accept="image/*,.pdf" onchange="handleFileSelect(event, 'biz')" class="hidden">
+                <button type="button" onclick="document.getElementById('app-bizFile').click()" class="w-full bg-white hover:bg-orange-50 text-gray-700 hover:text-orange-700 border border-dashed border-gray-300 rounded-xl px-3 py-2 text-xs font-bold flex items-center justify-center space-x-1 transition">
+                  <i data-lucide="camera" class="w-3.5 h-3.5 text-orange-600"></i>
+                  <span id="label-bizFile">📷 사업자등록증 사진 첨부</span>
+                </button>
+              </div>
+            </div>
+            <div id="preview-bizFile" class="hidden flex items-center space-x-2 bg-emerald-50 p-2 rounded-xl border border-emerald-200 text-[11px]">
+              <img id="img-bizFile" src="" class="w-10 h-10 rounded-lg object-cover border border-emerald-300">
+              <div class="flex-1 min-w-0">
+                <span class="font-bold text-emerald-950 truncate block" id="name-bizFile">사업자등록증.jpg</span>
+                <span class="text-emerald-700 text-[10px]">✓ 파일 업로드 준비 완료</span>
+              </div>
+              <button type="button" onclick="clearFile('biz')" class="text-red-500 hover:text-red-700 font-bold px-2 py-1 text-xs">삭제</button>
             </div>
           </div>
-          <div>
-            <label class="font-bold text-gray-700 block mb-1">③ 식품영업신고증 / 인허가번호</label>
-            <input type="text" id="app-foodLicense" placeholder="예: 제2024-강원강릉-0129호" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:outline-none">
+
+          <!-- Document 2: Onnuri Verification / QR -->
+          <div class="bg-gray-50 rounded-2xl p-3 border border-gray-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-black text-gray-900 text-xs">② 온누리상품권 가맹점 확인서 / QR 사진 <span class="text-red-500">*</span></label>
+              <span class="text-[10px] text-gray-500">소진공 등록 증빙</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input type="text" id="app-onnuriCode" required placeholder="가맹점 번호 (예: ON-2240-8812)" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none text-xs">
+              <div class="relative">
+                <input type="file" id="app-onnuriFile" accept="image/*,.pdf" onchange="handleFileSelect(event, 'onnuri')" class="hidden">
+                <button type="button" onclick="document.getElementById('app-onnuriFile').click()" class="w-full bg-white hover:bg-orange-50 text-gray-700 hover:text-orange-700 border border-dashed border-gray-300 rounded-xl px-3 py-2 text-xs font-bold flex items-center justify-center space-x-1 transition">
+                  <i data-lucide="qr-code" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span id="label-onnuriFile">📷 온누리 QR/확인서 사진 첨부</span>
+                </button>
+              </div>
+            </div>
+            <div id="preview-onnuriFile" class="hidden flex items-center space-x-2 bg-emerald-50 p-2 rounded-xl border border-emerald-200 text-[11px]">
+              <img id="img-onnuriFile" src="" class="w-10 h-10 rounded-lg object-cover border border-emerald-300">
+              <div class="flex-1 min-w-0">
+                <span class="font-bold text-emerald-950 truncate block" id="name-onnuriFile">온누리가맹증빙.jpg</span>
+                <span class="text-emerald-700 text-[10px]">✓ 파일 업로드 준비 완료</span>
+              </div>
+              <button type="button" onclick="clearFile('onnuri')" class="text-red-500 hover:text-red-700 font-bold px-2 py-1 text-xs">삭제</button>
+            </div>
+          </div>
+
+          <!-- Document 3: Food License / Hygiene Permit -->
+          <div class="bg-gray-50 rounded-2xl p-3 border border-gray-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-black text-gray-900 text-xs">③ 식품영업신고증 / 인허가증 사본</label>
+              <span class="text-[10px] text-gray-500">밀키트/조리식품</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input type="text" id="app-foodLicense" placeholder="인허가번호 (예: 제2024-강릉-0129호)" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none text-xs">
+              <div class="relative">
+                <input type="file" id="app-foodLicenseFile" accept="image/*,.pdf" onchange="handleFileSelect(event, 'food')" class="hidden">
+                <button type="button" onclick="document.getElementById('app-foodLicenseFile').click()" class="w-full bg-white hover:bg-orange-50 text-gray-700 hover:text-orange-700 border border-dashed border-gray-300 rounded-xl px-3 py-2 text-xs font-bold flex items-center justify-center space-x-1 transition">
+                  <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i>
+                  <span id="label-foodLicenseFile">📷 영업신고증 사진 첨부</span>
+                </button>
+              </div>
+            </div>
+            <div id="preview-foodLicenseFile" class="hidden flex items-center space-x-2 bg-emerald-50 p-2 rounded-xl border border-emerald-200 text-[11px]">
+              <img id="img-foodLicenseFile" src="" class="w-10 h-10 rounded-lg object-cover border border-emerald-300">
+              <div class="flex-1 min-w-0">
+                <span class="font-bold text-emerald-950 truncate block" id="name-foodLicenseFile">영업신고증.jpg</span>
+                <span class="text-emerald-700 text-[10px]">✓ 파일 업로드 준비 완료</span>
+              </div>
+              <button type="button" onclick="clearFile('food')" class="text-red-500 hover:text-red-700 font-bold px-2 py-1 text-xs">삭제</button>
+            </div>
           </div>
 
           <div class="bg-emerald-50 rounded-xl p-2.5 border border-emerald-200">
@@ -919,26 +972,54 @@
 
         <button type="submit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black py-3 rounded-2xl shadow active:scale-95 transition text-xs sm:text-sm flex items-center justify-center space-x-2">
           <i data-lucide="send" class="w-4 h-4"></i>
-          <span>입점 신청서 제출하기</span>
+          <span>서류 첨부 및 입점 신청서 제출하기</span>
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 3. STORE 360 DETAIL MODAL FOR CONSUMERS -->
+  <!-- 3. DOCUMENT VIEWER & LIGHTBOX MODAL (FOR MASTER ADMIN AUDIT & DOWNLOAD) -->
+  <div id="doc-viewer-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-6">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-3 relative text-center">
+      <button onclick="closeDocViewer()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="text-left">
+        <div class="flex items-center space-x-2">
+          <span class="bg-purple-100 text-purple-800 text-[10px] font-black px-2 py-0.5 rounded">Document Inspection</span>
+          <h4 id="doc-viewer-title" class="font-black text-gray-900 text-sm sm:text-base">사업자등록증 원본 확인</h4>
+        </div>
+        <p id="doc-viewer-desc" class="text-xs text-gray-500 mt-0.5">첨부된 필수 서류 원본 고화질 뷰어 및 다운로드</p>
+      </div>
+
+      <div class="bg-stone-950 rounded-2xl p-2 sm:p-4 flex items-center justify-center min-h-[260px] max-h-[60vh] overflow-hidden border border-stone-800">
+        <img id="doc-viewer-img" src="" class="max-w-full max-h-[55vh] object-contain rounded-lg shadow-md" alt="서류 원본">
+      </div>
+
+      <div class="flex items-center justify-between pt-1">
+        <button onclick="closeDocViewer()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-bold text-xs">
+          닫기
+        </button>
+        <button id="doc-viewer-download-btn" onclick="triggerCurrentDocDownload()" class="bg-purple-900 hover:bg-purple-950 text-white font-black text-xs px-5 py-2.5 rounded-xl shadow flex items-center space-x-1.5">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>💾 원본 파일 PC에 저장 (다운로드)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. STORE 360 DETAIL MODAL FOR CONSUMERS -->
   <div id="store-detail-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-3 relative">
       <button onclick="closeStoreDetailModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
-
-      <div id="store-detail-body">
-        <!-- Dynamically rendered -->
-      </div>
+      <div id="store-detail-body"></div>
     </div>
   </div>
 
-  <!-- 4. PRODUCT DETAIL MODAL -->
+  <!-- 5. PRODUCT DETAIL MODAL -->
   <div id="detail-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative space-y-3">
       <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -948,7 +1029,7 @@
     </div>
   </div>
 
-  <!-- 5. CHECKOUT ORDER MODAL (3 PAYMENT BRANCHES) -->
+  <!-- 6. CHECKOUT ORDER MODAL (3 PAYMENT BRANCHES) -->
   <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 p-4 sm:p-6 space-y-3.5">
       <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
@@ -1067,7 +1148,6 @@
         </div>
       </div>
 
-      <!-- Submit Order Button -->
       <button onclick="submitOrder()" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black py-3 rounded-2xl shadow active:scale-95 transition text-xs sm:text-sm flex items-center justify-center space-x-1.5">
         <i data-lucide="check-circle" class="w-4 h-4"></i>
         <span id="order-submit-text">결제 및 주문 완료하기</span>
@@ -1075,7 +1155,7 @@
     </div>
   </div>
 
-  <!-- 6. PG SIMULATOR MODAL -->
+  <!-- 7. PG SIMULATOR MODAL -->
   <div id="pg-simulator-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-gray-200 space-y-3.5">
       <div class="flex items-center justify-between border-b pb-2.5">
@@ -1122,7 +1202,7 @@
     </div>
   </div>
 
-  <!-- 7. ONNURI QR POPUP MODAL -->
+  <!-- 8. ONNURI QR POPUP MODAL -->
   <div id="onnuri-qr-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-emerald-200 space-y-3 text-center">
       <div class="flex items-center justify-between border-b border-gray-100 pb-2">
@@ -1165,7 +1245,7 @@
     </div>
   </div>
 
-  <!-- 8. ORDER SUCCESS MODAL -->
+  <!-- 9. ORDER SUCCESS MODAL -->
   <div id="success-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 text-center space-y-3 shadow-2xl">
       <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto text-xl">
@@ -1190,7 +1270,7 @@
     </div>
   </div>
 
-  <!-- 9. USER ORDERS & TRACKING MODAL -->
+  <!-- 10. USER ORDERS & TRACKING MODAL -->
   <div id="user-orders-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-3 relative">
       <button onclick="closeUserOrdersModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -1201,13 +1281,13 @@
         <i data-lucide="package" class="w-5 h-5 text-orange-600"></i>
         <h3 class="text-sm sm:text-base font-black text-gray-900">내 주문 및 실시간 배송조회</h3>
       </div>
-      <p class="text-[11px] text-gray-500">주문하신 상품의 결제 및 전국 택배사(우체국, CJ대한통운 등) 실시간 화물추적 현황입니다.</p>
+      <p class="text-[11px] text-gray-500">주문하신 상품의 결제 및 전국 택배사 실시간 화물추적 현황입니다.</p>
 
       <div id="user-orders-list" class="space-y-2.5 pt-1"></div>
     </div>
   </div>
 
-  <!-- 10. ONNURI BENEFIT GUIDE MODAL -->
+  <!-- 11. ONNURI BENEFIT GUIDE MODAL -->
   <div id="onnuri-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm sm:max-w-md w-full p-5 space-y-3 shadow-2xl relative">
       <button onclick="closeOnnuriModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -1251,7 +1331,7 @@
     </div>
   </div>
 
-  <!-- 11. RESTOCK NOTIFICATION ALARM MODAL -->
+  <!-- 12. RESTOCK ALARM MODAL -->
   <div id="restock-alarm-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-xs sm:max-w-sm w-full p-5 space-y-3 shadow-2xl relative text-center">
       <button onclick="closeRestockModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -1282,7 +1362,7 @@
     </div>
   </div>
 
-  <!-- 12. WRITE REVIEW MODAL -->
+  <!-- 13. WRITE REVIEW MODAL -->
   <div id="write-review-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-2xl relative">
       <button onclick="closeWriteReviewModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -1322,7 +1402,7 @@
     </div>
   </div>
 
-  <!-- 13. SELLER SHIPPING INPUT MODAL -->
+  <!-- 14. SELLER SHIPPING INPUT MODAL -->
   <div id="shipping-input-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-3 relative">
       <button onclick="closeShippingInputModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -1362,7 +1442,7 @@
     </div>
   </div>
 
-  <!-- 14. CREATE DROP MODAL -->
+  <!-- 15. CREATE DROP MODAL -->
   <div id="create-drop-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 shadow-2xl space-y-3 relative">
       <button onclick="closeCreateDropModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -1418,7 +1498,7 @@
     </div>
   </div>
 
-  <!-- 15. REQUEST CROWDFUNDING MODAL -->
+  <!-- 16. REQUEST CROWDFUNDING MODAL -->
   <div id="request-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-2xl relative">
       <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100">
@@ -1450,7 +1530,7 @@
     </div>
   </div>
 
-  <!-- 16. CART DRAWER -->
+  <!-- 17. CART DRAWER -->
   <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden justify-end">
     <div class="bg-white w-full max-w-sm sm:max-w-md h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto">
       <div>
@@ -1492,6 +1572,13 @@
     const STORAGE_KEY_AUTH = 'jg_auth_user_v2';
     const STORAGE_KEY_REVIEWS = 'jg_reviews_v2';
 
+    // Sample Document Image URLs for Demo Inspection & Download
+    const SAMPLE_DOCS = {
+      bizDoc: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80', // Business license sample
+      onnuriDoc: 'https://images.unsplash.com/photo-1595079672139-545c03f56b46?auto=format&fit=crop&w=800&q=80', // Onnuri certificate / QR sticker
+      foodDoc: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80' // Food license sample
+    };
+
     // Seed Data
     const INITIAL_MERCHANTS = [
       {
@@ -1507,6 +1594,9 @@
         isOnnuri: true,
         onnuriCode: 'ON-1190-8291',
         foodLicense: '제2021-서울관악-0038호',
+        bizDocUrl: SAMPLE_DOCS.bizDoc,
+        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
+        foodDocUrl: SAMPLE_DOCS.foodDoc,
         image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=600&q=80',
         description: '30년 전통 비법 양념장과 당일 새벽 손질 곱창으로 현장의 불맛을 재현합니다.',
         locationHint: '순대타운 3층 301호',
@@ -1525,6 +1615,9 @@
         isOnnuri: true,
         onnuriCode: 'ON-2201-9382',
         foodLicense: '제2020-강원속초-0112호',
+        bizDocUrl: SAMPLE_DOCS.bizDoc,
+        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
+        foodDocUrl: SAMPLE_DOCS.foodDoc,
         image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=600&q=80',
         description: '물엿 대신 100% 쌀조청으로 가마솥에서 갓 튀겨내어 식어도 바삭합니다.',
         locationHint: '닭전골목 12호',
@@ -1543,6 +1636,9 @@
         isOnnuri: true,
         onnuriCode: 'ON-3128-1029',
         foodLicense: '제2023-강원정선-0019호',
+        bizDocUrl: SAMPLE_DOCS.bizDoc,
+        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
+        foodDocUrl: SAMPLE_DOCS.foodDoc,
         image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
         description: '해발 700m 정선 고랭지에서 장날 아침 수확한 햇생곤드레와 시골 방앗간 햇들기름 세트입니다.',
         locationHint: '정선 5일장 2번 게이트 앞',
@@ -1561,6 +1657,9 @@
         isOnnuri: true,
         onnuriCode: 'ON-1012-3849',
         foodLicense: '제2019-서울종로-0245호',
+        bizDocUrl: SAMPLE_DOCS.bizDoc,
+        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
+        foodDocUrl: SAMPLE_DOCS.foodDoc,
         image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
         description: '100% 녹두를 맷돌로 직접 갈아 만든 겉바속촉 빈대떡 반죽과 겨자소스 마약김밥 세트입니다.',
         locationHint: '광장시장 만남의 광장 중앙',
@@ -1765,7 +1864,20 @@
     let activeShippingOrderId = null;
     let currentSellerTab = 'orders';
     let currentAdminTab = 'audits';
-    let currentUser = null; // { role: 'seller'|'admin', merchantId, ownerName, storeName, marketName }
+    let currentUser = null;
+
+    // Active upload buffer for the 3 documents
+    let uploadedDocs = {
+      biz: null,
+      onnuri: null,
+      food: null
+    };
+
+    // Active doc viewer download payload
+    let currentViewerDoc = {
+      url: '',
+      filename: ''
+    };
 
     // Init App State
     function initData() {
@@ -1868,7 +1980,7 @@
       lucide.createIcons();
     }
 
-    // Role-based Adaptive Mobile Bottom Navigation Bar (Snug & Clean)
+    // Role-based Adaptive Mobile Bottom Navigation Bar
     function renderBottomNav() {
       const mobNav = document.getElementById('mobile-bottom-nav');
       if (!currentUser) {
@@ -2373,6 +2485,50 @@
       alert('맛집 드롭 요청 펀딩이 등록되었습니다! 30명 달성 시 콜코가 섭외에 나섭니다.');
     }
 
+    // File Upload & Preview Handler
+    function handleFileSelect(e, docType) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const dataUrl = evt.target.result;
+        uploadedDocs[docType] = {
+          dataUrl: dataUrl,
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB'
+        };
+
+        const previewContainer = document.getElementById(`preview-${docType}File`);
+        const imgEl = document.getElementById(`img-${docType}File`);
+        const nameEl = document.getElementById(`name-${docType}File`);
+        const labelEl = document.getElementById(`label-${docType}File`);
+
+        if (previewContainer && imgEl && nameEl) {
+          imgEl.src = dataUrl;
+          nameEl.textContent = `${file.name} (${uploadedDocs[docType].size})`;
+          previewContainer.classList.remove('hidden');
+          if (labelEl) labelEl.textContent = `✓ ${file.name} (선택됨)`;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearFile(docType) {
+      uploadedDocs[docType] = null;
+      const previewContainer = document.getElementById(`preview-${docType}File`);
+      const fileInput = document.getElementById(`app-${docType === 'food' ? 'foodLicenseFile' : docType + 'File'}`);
+      const labelEl = document.getElementById(`label-${docType === 'food' ? 'foodLicenseFile' : docType + 'File'}`);
+
+      if (previewContainer) previewContainer.classList.add('hidden');
+      if (fileInput) fileInput.value = '';
+      if (labelEl) {
+        if (docType === 'biz') labelEl.textContent = '📷 사업자등록증 사진 첨부';
+        else if (docType === 'onnuri') labelEl.textContent = '📷 온누리 QR/확인서 사진 첨부';
+        else if (docType === 'food') labelEl.textContent = '📷 영업신고증 사진 첨부';
+      }
+    }
+
     // Onboarding Form Auto-fill & Submit
     function fillApplyForm(preset) {
       if (preset === 'gangneung') {
@@ -2388,6 +2544,23 @@
         document.getElementById('app-image').value = 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=600&q=80';
         document.getElementById('app-loginId').value = 'baeni_gangneung';
         document.getElementById('app-password').value = '1234';
+
+        // Set Sample Attached Documents
+        uploadedDocs.biz = { dataUrl: SAMPLE_DOCS.bizDoc, name: '사업자등록증_배니닭강정.jpg', size: '245.2 KB' };
+        uploadedDocs.onnuri = { dataUrl: SAMPLE_DOCS.onnuriDoc, name: '온누리가맹확인서_배니.jpg', size: '189.5 KB' };
+        uploadedDocs.food = { dataUrl: SAMPLE_DOCS.foodDoc, name: '식품영업신고증_배니.jpg', size: '312.0 KB' };
+
+        document.getElementById('img-bizFile').src = SAMPLE_DOCS.bizDoc;
+        document.getElementById('name-bizFile').textContent = '사업자등록증_배니닭강정.jpg (245.2 KB)';
+        document.getElementById('preview-bizFile').classList.remove('hidden');
+
+        document.getElementById('img-onnuriFile').src = SAMPLE_DOCS.onnuriDoc;
+        document.getElementById('name-onnuriFile').textContent = '온누리가맹확인서_배니.jpg (189.5 KB)';
+        document.getElementById('preview-onnuriFile').classList.remove('hidden');
+
+        document.getElementById('img-foodLicenseFile').src = SAMPLE_DOCS.foodDoc;
+        document.getElementById('name-foodLicenseFile').textContent = '식품영업신고증_배니.jpg (312.0 KB)';
+        document.getElementById('preview-foodLicenseFile').classList.remove('hidden');
       } else if (preset === 'daegu') {
         document.getElementById('app-storeName').value = '50년 미성당 납작만두';
         document.getElementById('app-marketName').value = '대구 서문시장 (4지구)';
@@ -2401,6 +2574,22 @@
         document.getElementById('app-image').value = 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80';
         document.getElementById('app-loginId').value = 'miseongdang';
         document.getElementById('app-password').value = '1234';
+
+        uploadedDocs.biz = { dataUrl: SAMPLE_DOCS.bizDoc, name: '사업자등록증_미성당.jpg', size: '220.1 KB' };
+        uploadedDocs.onnuri = { dataUrl: SAMPLE_DOCS.onnuriDoc, name: '온누리가맹_미성당.jpg', size: '195.4 KB' };
+        uploadedDocs.food = { dataUrl: SAMPLE_DOCS.foodDoc, name: '식품영업신고증_미성당.jpg', size: '280.0 KB' };
+
+        document.getElementById('img-bizFile').src = SAMPLE_DOCS.bizDoc;
+        document.getElementById('name-bizFile').textContent = '사업자등록증_미성당.jpg (220.1 KB)';
+        document.getElementById('preview-bizFile').classList.remove('hidden');
+
+        document.getElementById('img-onnuriFile').src = SAMPLE_DOCS.onnuriDoc;
+        document.getElementById('name-onnuriFile').textContent = '온누리가맹_미성당.jpg (195.4 KB)';
+        document.getElementById('preview-onnuriFile').classList.remove('hidden');
+
+        document.getElementById('img-foodLicenseFile').src = SAMPLE_DOCS.foodDoc;
+        document.getElementById('name-foodLicenseFile').textContent = '식품영업신고증_미성당.jpg (280.0 KB)';
+        document.getElementById('preview-foodLicenseFile').classList.remove('hidden');
       }
     }
 
@@ -2437,6 +2626,9 @@
         businessNumber: bizNum,
         onnuriCode,
         foodLicense,
+        bizDocUrl: uploadedDocs.biz ? uploadedDocs.biz.dataUrl : SAMPLE_DOCS.bizDoc,
+        onnuriDocUrl: uploadedDocs.onnuri ? uploadedDocs.onnuri.dataUrl : SAMPLE_DOCS.onnuriDoc,
+        foodDocUrl: uploadedDocs.food ? uploadedDocs.food.dataUrl : SAMPLE_DOCS.foodDoc,
         category: document.getElementById('app-category').value,
         isOnnuri: true,
         locationHint,
@@ -2451,8 +2643,60 @@
       saveAll();
       closeApplyModal();
 
-      alert(`🎉 [${storeName}] 입점 신청서가 접수되었습니다!\n총괄 관리자 심사(3대 서류 및 온누리 가맹 검수) 완료 후 사장님 로그인이 활성화됩니다.`);
+      alert(`🎉 [${storeName}] 입점 신청서 및 3대 필수 서류가 성공적으로 접수되었습니다!\n총괄 관리자 심사(서류 검수 및 다운로드 보관) 완료 후 사장님 로그인이 활성화됩니다.`);
       updateAdminBadge();
+    }
+
+    // Document Viewer & Direct Download Handlers
+    function viewDocument(url, title, filename) {
+      if (!url) {
+        alert('등록된 서류 이미지가 없습니다.');
+        return;
+      }
+      currentViewerDoc = { url, filename: filename || `${title}.jpg` };
+
+      document.getElementById('doc-viewer-title').textContent = title;
+      document.getElementById('doc-viewer-desc').textContent = `파일명: ${currentViewerDoc.filename} (클릭하여 확대 또는 PC에 저장)`;
+      document.getElementById('doc-viewer-img').src = url;
+
+      document.getElementById('doc-viewer-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeDocViewer() {
+      document.getElementById('doc-viewer-modal').classList.add('hidden');
+    }
+
+    function triggerCurrentDocDownload() {
+      downloadFile(currentViewerDoc.url, currentViewerDoc.filename);
+    }
+
+    function downloadFile(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'document.jpg';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function downloadAllMerchantDocs(merchantId) {
+      const m = merchants.find(item => item.id === merchantId);
+      if (!m) return;
+
+      const safeStoreName = m.storeName.replace(/[^a-zA-Z0-9가-힣_-]/g, '_');
+      
+      // Trigger individual downloads with meaningful filenames
+      if (m.bizDocUrl) downloadFile(m.bizDocUrl, `${safeStoreName}_1_사업자등록증.jpg`);
+      setTimeout(() => {
+        if (m.onnuriDocUrl) downloadFile(m.onnuriDocUrl, `${safeStoreName}_2_온누리가맹확인서.jpg`);
+      }, 300);
+      setTimeout(() => {
+        if (m.foodDocUrl) downloadFile(m.foodDocUrl, `${safeStoreName}_3_식품영업신고증.jpg`);
+      }, 600);
+
+      alert(`📁 [${m.storeName}] 의 3대 필수 서류 3종이 PC에 순차적으로 다운로드 저장됩니다.`);
     }
 
     // Checkout & 3 Payment Branches Logic
@@ -2662,7 +2906,6 @@
 
       orders.unshift(newOrder);
 
-      // Increase Drop Sold Count
       const targetDrop = drops.find(d => d.id === pendingOrderPayload.product.id);
       if (targetDrop) {
         targetDrop.currentCount = Math.min(targetDrop.targetCount, targetDrop.currentCount + pendingOrderPayload.qty);
@@ -2672,7 +2915,6 @@
       saveAll();
       renderProducts();
 
-      // Show Success Modal
       document.getElementById('success-order-id').textContent = `주문번호: ${newOrder.id}`;
       document.getElementById('success-pay-notice').innerHTML = payNotice;
       document.getElementById('success-modal').classList.remove('hidden');
@@ -2689,7 +2931,7 @@
       openUserOrdersModal();
     }
 
-    // User Orders & Tracking Modal
+    // User Orders Modal
     function openUserOrdersModal() {
       const container = document.getElementById('user-orders-list');
       if (orders.length === 0) {
@@ -2762,7 +3004,7 @@
       alert(`[${phone}] 번호로 다음 장날 오픈 및 재입고 알림이 등록되었습니다!`);
     }
 
-    // Cart Management
+    // Cart
     function addToCart(productId) {
       const p = drops.find(d => d.id === productId);
       if (!p) return;
@@ -2840,7 +3082,7 @@
       openCheckoutModal(cart[0].id);
     }
 
-    // Seller Console Tab & Operations
+    // Seller View
     function renderSellerView() {
       if (!currentUser || currentUser.role !== 'seller') return;
       const m = merchants.find(item => item.id === currentUser.merchantId) || merchants[0];
@@ -3050,7 +3292,7 @@
       alert(`[${title}] 장날 LIVE DROP이 성공적으로 런칭되었습니다!`);
     }
 
-    // Master Admin Console
+    // Master Admin Console (With 3-Document Full Gallery, Direct Viewer & Download)
     function renderAdminView() {
       setAdminTab(currentAdminTab);
       updateAdminBadge();
@@ -3084,43 +3326,119 @@
           `;
         } else {
           container.innerHTML = `
-            <div class="space-y-3">
-              <div class="text-xs font-black text-gray-900">📋 신규 입점 신청 및 3대 서류 심사 (${pending.length}건)</div>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="text-xs font-black text-gray-900">📋 신규 입점 신청 및 3대 필수 서류 심사 (${pending.length}건)</div>
+                <span class="text-[10px] text-purple-700 font-bold bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                  💡 각 서류 썸네일을 클릭하면 원본 확인 및 PC 저장이 가능합니다.
+                </span>
+              </div>
+
               ${pending.map(m => `
-                <div class="bg-white rounded-3xl p-4 sm:p-5 border border-purple-200 shadow-sm space-y-2.5 text-xs">
-                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2.5">
+                <div class="bg-white rounded-3xl p-4 sm:p-6 border border-purple-200 shadow-md space-y-4 text-xs">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
                     <div>
-                      <span class="bg-purple-100 text-purple-800 text-[9px] font-black px-1.5 py-0.5 rounded">${m.marketName}</span>
-                      <h3 class="text-sm sm:text-base font-black text-gray-900 mt-0.5">${m.storeName}</h3>
-                      <span class="text-gray-500 text-[10px] sm:text-[11px]">대표: ${m.ownerName} | ${m.phone}</span>
+                      <div class="flex items-center space-x-2">
+                        <span class="bg-purple-100 text-purple-800 text-[10px] font-black px-2 py-0.5 rounded">${m.marketName}</span>
+                        <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">심사 대기중</span>
+                      </div>
+                      <h3 class="text-base sm:text-lg font-black text-gray-900 mt-1">${m.storeName}</h3>
+                      <span class="text-gray-500 text-[11px]">대표: <strong>${m.ownerName}</strong> | 연락처: ${m.phone} | 위치: ${m.locationHint}</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                      <button onclick="approveMerchant('${m.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow">
-                        ✅ 입점 승인 (활성화)
+                      <button onclick="downloadAllMerchantDocs('${m.id}')" class="bg-purple-50 hover:bg-purple-100 text-purple-900 font-black text-xs px-3.5 py-2 rounded-xl border border-purple-300 flex items-center space-x-1 transition shadow-sm" title="서류 3종 전체 다운로드">
+                        <i data-lucide="folder-down" class="w-3.5 h-3.5 text-purple-700"></i>
+                        <span>📁 서류 3종 일괄 저장</span>
+                      </button>
+                      <button onclick="approveMerchant('${m.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-4 py-2 rounded-xl shadow transition">
+                        ✅ 입점 최종 승인
                       </button>
                     </div>
                   </div>
 
-                  <!-- 3 Essential Documents Verification Cards -->
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div class="bg-gray-50 p-2 rounded-xl border">
-                      <div class="text-[9px] text-gray-400 font-bold">① 사업자등록번호</div>
-                      <div class="font-bold text-gray-900 mt-0.5">${m.businessNumber}</div>
-                      <span class="text-[9px] text-emerald-600 font-bold">✓ 소상공인 식별</span>
-                    </div>
-                    <div class="bg-emerald-50/60 p-2 rounded-xl border border-emerald-200">
-                      <div class="text-[9px] text-emerald-800 font-bold">② 온누리 가맹 코드</div>
-                      <div class="font-bold text-emerald-950 mt-0.5">${m.onnuriCode || 'ON-0000-0000'}</div>
-                      <span class="text-[9px] text-emerald-700 font-bold">✓ 1:1 직정산 연동</span>
-                    </div>
-                    <div class="bg-gray-50 p-2 rounded-xl border">
-                      <div class="text-[9px] text-gray-400 font-bold">③ 식품영업신고증</div>
-                      <div class="font-bold text-gray-900 mt-0.5 truncate">${m.foodLicense || '확인 완료'}</div>
-                      <span class="text-[9px] text-emerald-600 font-bold">✓ 식품위생법 준수</span>
+                  <!-- 3 Essential Documents Gallery with Preview & Download Buttons -->
+                  <div>
+                    <h4 class="font-bold text-gray-700 text-xs mb-2 flex items-center space-x-1">
+                      <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                      <span>첨부된 3대 필수 서류 검수 (클릭 시 원본 확대 & 저장)</span>
+                    </h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <!-- Doc 1 -->
+                      <div class="bg-gray-50 rounded-2xl p-3 border border-gray-200 flex flex-col justify-between space-y-2">
+                        <div>
+                          <div class="flex items-center justify-between text-[11px] font-black text-gray-900 mb-1">
+                            <span>① 사업자등록증</span>
+                            <span class="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">소상공인 식별</span>
+                          </div>
+                          <div class="text-[10px] text-gray-500">등록번호: <strong class="text-gray-800">${m.businessNumber}</strong></div>
+                          
+                          <div onclick="viewDocument('${m.bizDocUrl || SAMPLE_DOCS.bizDoc}', '[${m.storeName}] 사업자등록증', '${m.storeName}_사업자등록증.jpg')" class="relative h-28 rounded-xl overflow-hidden mt-2 bg-stone-800 cursor-pointer group border border-gray-200">
+                            <img src="${m.bizDocUrl || SAMPLE_DOCS.bizDoc}" class="w-full h-full object-cover group-hover:scale-105 transition" alt="사업자등록증">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white font-bold text-[11px] space-x-1">
+                              <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                              <span>원본 보기</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button onclick="downloadFile('${m.bizDocUrl || SAMPLE_DOCS.bizDoc}', '${m.storeName}_사업자등록증.jpg')" class="w-full bg-white hover:bg-gray-100 text-gray-800 font-bold py-1.5 rounded-lg border text-[11px] flex items-center justify-center space-x-1 shadow-sm">
+                          <i data-lucide="download" class="w-3 h-3 text-purple-700"></i>
+                          <span>PC에 파일 저장</span>
+                        </button>
+                      </div>
+
+                      <!-- Doc 2 -->
+                      <div class="bg-emerald-50/50 rounded-2xl p-3 border border-emerald-200 flex flex-col justify-between space-y-2">
+                        <div>
+                          <div class="flex items-center justify-between text-[11px] font-black text-emerald-950 mb-1">
+                            <span>② 온누리 가맹 확인서</span>
+                            <span class="text-[9px] text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">1:1 직정산</span>
+                          </div>
+                          <div class="text-[10px] text-emerald-800">가맹코드: <strong class="text-emerald-950 font-mono">${m.onnuriCode || 'ON-1190-8291'}</strong></div>
+                          
+                          <div onclick="viewDocument('${m.onnuriDocUrl || SAMPLE_DOCS.onnuriDoc}', '[${m.storeName}] 온누리 가맹 확인서', '${m.storeName}_온누리가맹증빙.jpg')" class="relative h-28 rounded-xl overflow-hidden mt-2 bg-stone-800 cursor-pointer group border border-emerald-200">
+                            <img src="${m.onnuriDocUrl || SAMPLE_DOCS.onnuriDoc}" class="w-full h-full object-cover group-hover:scale-105 transition" alt="온누리 가맹 증빙">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white font-bold text-[11px] space-x-1">
+                              <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                              <span>원본 보기</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button onclick="downloadFile('${m.onnuriDocUrl || SAMPLE_DOCS.onnuriDoc}', '${m.storeName}_온누리가맹증빙.jpg')" class="w-full bg-white hover:bg-emerald-50 text-emerald-900 font-bold py-1.5 rounded-lg border border-emerald-200 text-[11px] flex items-center justify-center space-x-1 shadow-sm">
+                          <i data-lucide="download" class="w-3 h-3 text-emerald-700"></i>
+                          <span>PC에 파일 저장</span>
+                        </button>
+                      </div>
+
+                      <!-- Doc 3 -->
+                      <div class="bg-gray-50 rounded-2xl p-3 border border-gray-200 flex flex-col justify-between space-y-2">
+                        <div>
+                          <div class="flex items-center justify-between text-[11px] font-black text-gray-900 mb-1">
+                            <span>③ 식품영업신고증</span>
+                            <span class="text-[9px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">식품위생법</span>
+                          </div>
+                          <div class="text-[10px] text-gray-500 truncate">인허가: <strong class="text-gray-800">${m.foodLicense || '제2024-인허가-012호'}</strong></div>
+                          
+                          <div onclick="viewDocument('${m.foodDocUrl || SAMPLE_DOCS.foodDoc}', '[${m.storeName}] 식품영업신고증', '${m.storeName}_식품영업신고증.jpg')" class="relative h-28 rounded-xl overflow-hidden mt-2 bg-stone-800 cursor-pointer group border border-gray-200">
+                            <img src="${m.foodDocUrl || SAMPLE_DOCS.foodDoc}" class="w-full h-full object-cover group-hover:scale-105 transition" alt="식품영업신고증">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white font-bold text-[11px] space-x-1">
+                              <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                              <span>원본 보기</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button onclick="downloadFile('${m.foodDocUrl || SAMPLE_DOCS.foodDoc}', '${m.storeName}_식품영업신고증.jpg')" class="w-full bg-white hover:bg-gray-100 text-gray-800 font-bold py-1.5 rounded-lg border text-[11px] flex items-center justify-center space-x-1 shadow-sm">
+                          <i data-lucide="download" class="w-3 h-3 text-purple-700"></i>
+                          <span>PC에 파일 저장</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <p class="text-gray-600 text-[11px] bg-gray-50 p-2 rounded-xl">${m.description}</p>
+                  <p class="text-gray-600 text-[11px] bg-gray-50 p-3 rounded-2xl leading-relaxed">${m.description}</p>
                 </div>
               `).join('')}
             </div>
@@ -3132,17 +3450,23 @@
             <h3 class="font-black text-gray-900 text-xs sm:text-sm">🏪 전국 입점 상점 360 관제 (${merchants.length}개)</h3>
             <div class="divide-y divide-gray-100">
               ${merchants.map(m => `
-                <div class="py-2.5 flex items-center justify-between">
+                <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div class="flex items-center space-x-2.5">
-                    <img src="${m.image}" class="w-9 h-9 rounded-xl object-cover">
+                    <img src="${m.image}" class="w-10 h-10 rounded-xl object-cover">
                     <div>
-                      <div class="font-black text-gray-900">${m.storeName} (${m.marketName})</div>
-                      <div class="text-[10px] text-gray-500">대표: ${m.ownerName} | 온누리: ${m.onnuriCode || '미연동'}</div>
+                      <div class="font-black text-gray-900 text-sm">${m.storeName} (${m.marketName})</div>
+                      <div class="text-[10px] sm:text-[11px] text-gray-500">대표: ${m.ownerName} | 사업자: ${m.businessNumber} | 온누리: ${m.onnuriCode || '미연동'}</div>
                     </div>
                   </div>
-                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black ${m.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                    ${m.status === 'APPROVED' ? '정상 운영' : '심사 대기'}
-                  </span>
+                  <div class="flex items-center space-x-2 self-end sm:self-auto">
+                    <button onclick="downloadAllMerchantDocs('${m.id}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-bold px-2.5 py-1 rounded-lg border flex items-center space-x-1" title="상점 서류 3종 다운로드">
+                      <i data-lucide="download" class="w-3 h-3"></i>
+                      <span>서류 저장</span>
+                    </button>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black ${m.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                      ${m.status === 'APPROVED' ? '정상 운영' : '심사 대기'}
+                    </span>
+                  </div>
                 </div>
               `).join('')}
             </div>
