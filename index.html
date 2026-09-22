@@ -451,16 +451,7 @@
               조회
             </button>
           </div>
-          <!-- Quick Demo Buttons -->
-          <div class="pt-1 flex items-center space-x-1.5 text-[10px]">
-            <span class="text-gray-500 font-bold">💡 예시 번호 자동입력:</span>
-            <button onclick="quickSearchOrder('010-3849-2910')" class="bg-white text-orange-800 px-2 py-0.5 rounded-lg border border-orange-200 font-bold hover:bg-orange-100 transition">
-              김민준님 (010-3849-2910)
-            </button>
-            <button onclick="quickSearchOrder('010-8291-0022')" class="bg-white text-orange-800 px-2 py-0.5 rounded-lg border border-orange-200 font-bold hover:bg-orange-100 transition">
-              이수진님 (010-8291-0022)
-            </button>
-          </div>
+
         </div>
 
         <!-- Orders Result Area -->
@@ -483,17 +474,7 @@
 
       <!-- TAB 2: Seller Login -->
       <div id="myhub-content-seller" class="space-y-3 hidden">
-        <div class="bg-orange-50 rounded-2xl p-2.5 border border-orange-200 text-xs text-orange-900">
-          <div class="font-black mb-1">⚡ 데모 점주 계정 빠른 선택:</div>
-          <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-            <button onclick="quickFillSeller('soondae', '1234')" class="bg-white hover:bg-orange-100 text-orange-800 p-1.5 rounded-lg border border-orange-200 font-bold truncate text-left">
-              신림 백순대점
-            </button>
-            <button onclick="quickFillSeller('sokcho', '1234')" class="bg-white hover:bg-orange-100 text-orange-800 p-1.5 rounded-lg border border-orange-200 font-bold truncate text-left">
-              속초 닭강정점
-            </button>
-          </div>
-        </div>
+
 
         <form onsubmit="handleSellerLogin(event)" class="space-y-2.5 text-xs">
           <div>
@@ -512,13 +493,7 @@
 
       <!-- TAB 3: Admin Login -->
       <div id="myhub-content-admin" class="space-y-3 hidden">
-        <div class="bg-purple-50 rounded-2xl p-2.5 border border-purple-200 text-xs text-purple-900">
-          <div class="font-black mb-0.5">👑 콜코 총괄 마스터 관리자:</div>
-          <div class="text-[11px] text-purple-700">계정: <strong>admin</strong> / <strong>admin1234</strong></div>
-          <button onclick="quickFillAdmin('admin', 'admin1234')" class="mt-1.5 w-full bg-white hover:bg-purple-100 text-purple-800 p-1 rounded-lg border border-purple-200 font-bold text-center">
-            총괄 관리자 자동 입력
-          </button>
-        </div>
+
 
         <form onsubmit="handleAdminLogin(event)" class="space-y-2.5 text-xs">
           <div>
@@ -770,20 +745,7 @@
         <p class="text-[11px] text-gray-500">온누리상품권 합법 연동 및 3대 필수 서류를 제출하여 원스톱으로 입점하세요.</p>
       </div>
 
-      <!-- Demo Auto-Fill Shortcuts -->
-      <div class="bg-amber-50 rounded-2xl p-3 border border-amber-200 text-xs text-amber-950 space-y-1.5">
-        <div class="font-black flex items-center space-x-1 text-amber-800">
-          <span>💡 원클릭 예시 서류 자동완성 테스트:</span>
-        </div>
-        <div class="grid grid-cols-2 gap-1.5">
-          <button type="button" onclick="fillApplyForm('gangneung')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-2 rounded-xl border border-amber-200 text-left transition truncate">
-            🐔 [강릉] 배니 닭강정 (서류 3종)
-          </button>
-          <button type="button" onclick="fillApplyForm('daegu')" class="bg-white hover:bg-amber-100 text-amber-900 font-bold p-2 rounded-xl border border-amber-200 text-left transition truncate">
-            🥟 [대구] 미성당 납작만두 (서류 3종)
-          </button>
-        </div>
-      </div>
+
 
       <form onsubmit="submitMerchantApplication(event)" class="space-y-3.5 text-xs">
         <!-- 1. Store Basic Info -->
@@ -2259,7 +2221,7 @@
 
       const merchant = merchants.find(m => (m.loginId === id || m.businessNumber === id) && (m.password === pw || pw === '1234'));
       if (!merchant) {
-        alert('❌ 일치하는 사장님 계정 정보가 없습니다. (데모 비밀번호: 1234)');
+        alert('❌ 일치하는 사장님 계정 정보가 없습니다. 아이디와 비밀번호를 확인해 주세요.');
         return;
       }
 
@@ -2281,7 +2243,7 @@
         showView('admin');
         alert('👑 콜코 총괄 관리자 콘솔에 접속되었습니다.');
       } else {
-        alert('❌ 관리자 아이디 또는 비밀번호가 올바르지 않습니다. (admin / admin1234)');
+        alert('❌ 관리자 아이디 또는 비밀번호가 올바르지 않습니다.');
       }
     }
 
