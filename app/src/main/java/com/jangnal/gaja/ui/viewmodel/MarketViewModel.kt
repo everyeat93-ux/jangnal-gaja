@@ -202,7 +202,9 @@ class MarketViewModel(
                 market.id,
                 market.marketName,
                 market.latitude,
-                market.longitude
+                market.longitude,
+                market.addressRoad,
+                market.addressJibun
             )
             // 2. Observe changes in real time (local Room DB)
             launch {
@@ -242,7 +244,14 @@ class MarketViewModel(
                         
                         if (firestoreShops.isNotEmpty()) {
                             viewModelScope.launch(Dispatchers.IO) {
-                                val localList = repository.getShopsForMarketWithPrepopulate(market.id, market.marketName, market.latitude, market.longitude)
+                                val localList = repository.getShopsForMarketWithPrepopulate(
+                                    market.id,
+                                    market.marketName,
+                                    market.latitude,
+                                    market.longitude,
+                                    market.addressRoad,
+                                    market.addressJibun
+                                )
                                 firestoreShops.forEach { fShop ->
                                     val matchedLocal = localList.find { it.shopName == fShop.shopName }
                                     if (matchedLocal != null) {

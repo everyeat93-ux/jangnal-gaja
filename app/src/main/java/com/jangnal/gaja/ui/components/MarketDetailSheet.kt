@@ -541,39 +541,106 @@ fun MarketDetailSheet(
                 val displayOpenVotes = if (isVoteToday) market.voteOpenTodayCount else 0
                 val displayClosedVotes = if (isVoteToday) market.voteClosedTodayCount else 0
 
+                var localVotedType by remember(market.id) { mutableStateOf<Boolean?>(null) }
+                var optimisticOpenDelta by remember(market.id) { mutableIntStateOf(0) }
+                var optimisticClosedDelta by remember(market.id) { mutableIntStateOf(0) }
+
+                val totalOpenVotes = displayOpenVotes + optimisticOpenDelta
+                val totalClosedVotes = displayClosedVotes + optimisticClosedDelta
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = { onVoteClick(market.id, true) },
+                    val isOpenVoted = localVotedType == true
+                    Button(
+                        onClick = {
+                            if (localVotedType != null) {
+                                android.widget.Toast.makeText(context, "오늘 이미 시장 현장 제보를 완료하셨습니다 😊", android.widget.Toast.LENGTH_SHORT).show()
+                            } else {
+                                localVotedType = true
+                                optimisticOpenDelta = 1
+                                onVoteClick(market.id, true)
+                                android.widget.Toast.makeText(context, "✅ 소중한 제보 감사합니다! '오늘 열렸어요'가 즉시 반영되었습니다 👏", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
+                        colors = if (isOpenVoted) {
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        } else {
+                            ButtonDefaults.outlinedButtonColors()
+                        },
+                        border = BorderStroke(
+                            if (isOpenVoted) 2.dp else 1.5.dp,
+                            if (isOpenVoted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        )
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(vertical = 4.dp)
                         ) {
-                            Text("👍 오늘 열렸어요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 13.sp)
+                            Text(
+                                text = if (isOpenVoted) "✓ 오늘 열렸어요 (제보됨)" else "👍 오늘 열렸어요",
+                                fontWeight = FontWeight.Bold,
+                                color = if (isOpenVoted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
+                                fontSize = 13.sp
+                            )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text("${displayOpenVotes}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                text = "${totalOpenVotes}명 제보",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                     
-                    OutlinedButton(
-                        onClick = { onVoteClick(market.id, false) },
+                    val isClosedVoted = localVotedType == false
+                    Button(
+                        onClick = {
+                            if (localVotedType != null) {
+                                android.widget.Toast.makeText(context, "오늘 이미 시장 현장 제보를 완료하셨습니다 😊", android.widget.Toast.LENGTH_SHORT).show()
+                            } else {
+                                localVotedType = false
+                                optimisticClosedDelta = 1
+                                onVoteClick(market.id, false)
+                                android.widget.Toast.makeText(context, "✅ 소중한 제보 감사합니다! '닫혔어요'가 즉시 반영되었습니다 👏", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline)
+                        colors = if (isClosedVoted) {
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        } else {
+                            ButtonDefaults.outlinedButtonColors()
+                        },
+                        border = BorderStroke(
+                            if (isClosedVoted) 2.dp else 1.5.dp,
+                            if (isClosedVoted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
+                        )
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(vertical = 4.dp)
                         ) {
-                            Text("👎 닫혔어요/안열려요", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
+                            Text(
+                                text = if (isClosedVoted) "✓ 닫혔어요 (제보됨)" else "👎 닫혔어요/안열려요",
+                                fontWeight = FontWeight.Bold,
+                                color = if (isClosedVoted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.error,
+                                fontSize = 13.sp
+                            )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text("${displayClosedVotes}명 제보", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                text = "${totalClosedVotes}명 제보",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -636,6 +703,7 @@ fun MarketDetailSheet(
                                 Button(
                                     onClick = {
                                         onReportAmenity(amenityType, true)
+                                        android.widget.Toast.makeText(context, "✅ '${label}' 있음 정보가 제보되었습니다! 감사합니다 👏", android.widget.Toast.LENGTH_SHORT).show()
                                         activeAmenityReport = null
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -646,6 +714,7 @@ fun MarketDetailSheet(
                                 OutlinedButton(
                                     onClick = {
                                         onReportAmenity(amenityType, false)
+                                        android.widget.Toast.makeText(context, "✅ '${label}' 없음/정보없음 제보가 등록되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
                                         activeAmenityReport = null
                                     },
                                     modifier = Modifier.fillMaxWidth()
@@ -1839,6 +1908,7 @@ fun ShopQueueSection(
                                 } else ""
                                 val finalContent = (tagPrefix + textContent).trim()
                                 onSubmitReview(targetShop.shopName, ratingVal, finalContent, selectedImageUri)
+                                android.widget.Toast.makeText(reviewTargetContext, "✅ '${targetShop.shopName}' 한줄평 제보가 등록되었습니다! 📝", android.widget.Toast.LENGTH_SHORT).show()
                                 activeReviewShop = null
                             },
                             enabled = canSubmit,
@@ -1959,6 +2029,7 @@ fun ShopQueueSection(
                                             if (customName.isNotEmpty()) {
                                                 val fullShopName = if (locationHint.isNotBlank()) "$customName (${locationHint.trim()})" else customName
                                                 onAddShop(fullShopName, directCategory)
+                                                android.widget.Toast.makeText(context, "✅ '${fullShopName}' 상점이 등록되었습니다! 🏪", android.widget.Toast.LENGTH_SHORT).show()
                                                 showAddShopDialog = false
                                                 onClearSearchShops()
                                             }
@@ -1982,6 +2053,7 @@ fun ShopQueueSection(
                                             .clickable {
                                                 val fullShopName = if (locationHint.isNotBlank()) "${shop.shopName} (${locationHint.trim()})" else shop.shopName
                                                 onAddShop(fullShopName, shop.category)
+                                                android.widget.Toast.makeText(context, "✅ '${fullShopName}' 상점이 등록되었습니다! 🏪", android.widget.Toast.LENGTH_SHORT).show()
                                                 showAddShopDialog = false
                                                 onClearSearchShops()
                                             },
@@ -2074,6 +2146,7 @@ fun ShopQueueSection(
                     Button(
                         onClick = {
                             onReportQueue(shop.id, 0)
+                            android.widget.Toast.makeText(context, "✅ '${shop.shopName}' 대기줄 [한산함] 제보가 반영되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
                             activeVotingShop = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
@@ -2084,6 +2157,7 @@ fun ShopQueueSection(
                     Button(
                         onClick = {
                             onReportQueue(shop.id, 1)
+                            android.widget.Toast.makeText(context, "✅ '${shop.shopName}' 대기줄 [보통] 제보가 반영되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
                             activeVotingShop = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
@@ -2094,6 +2168,7 @@ fun ShopQueueSection(
                     Button(
                         onClick = {
                             onReportQueue(shop.id, 2)
+                            android.widget.Toast.makeText(context, "✅ '${shop.shopName}' 대기줄 [혼잡함] 제보가 반영되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
                             activeVotingShop = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),

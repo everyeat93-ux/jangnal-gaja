@@ -339,8 +339,19 @@ class MarketRepository(
         }
     }
 
-    suspend fun getShopsForMarketWithPrepopulate(marketId: Long, marketName: String, latitude: Double, longitude: Double): List<Shop> {
+    suspend fun getShopsForMarketWithPrepopulate(
+        marketId: Long,
+        marketName: String,
+        latitude: Double,
+        longitude: Double,
+        roadAddress: String = "",
+        jibunAddress: String = ""
+    ): List<Shop> {
         return withContext(Dispatchers.IO) {
+            val market = if (roadAddress.isBlank()) marketDao.getMarketById(marketId) else null
+            val effectiveRoad = roadAddress.ifEmpty { market?.addressRoad ?: "" }
+            val effectiveJibun = jibunAddress.ifEmpty { market?.addressJibun ?: "" }
+
             val cleanName = marketName
                 .replace(Regex("^\\s*\\(유\\)"), "")
                 .replace(Regex("^\\s*\\(주\\)"), "")
@@ -361,7 +372,15 @@ class MarketRepository(
             val realExisting = existing.filter { !isMockOrLegacy(it) }
 
             // 1. 소진공 79,500+ 전국 온누리 가맹점 공식 공공데이터 확인
-            val onnuriShops = OnnuriAssetLoader.getShopsForMarket(context, marketId, latitude, longitude)
+            val onnuriShops = OnnuriAssetLoader.getShopsForMarket(
+                context = context,
+                marketId = marketId,
+                marketName = cleanName,
+                roadAddress = effectiveRoad,
+                jibunAddress = effectiveJibun,
+                latitude = latitude,
+                longitude = longitude
+            )
             val curated = CuratedShopsData.getCuratedShops(marketId, cleanName, latitude, longitude)
 
             val baseShops = when {
