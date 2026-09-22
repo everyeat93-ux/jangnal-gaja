@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>장날가자 몰 | 전국 5일장 명물·산지직송 장날 LIVE DROP & 입점 스토어</title>
+  <meta name="description" content="전국 5일장/전통시장 줄 서는 맛집 밀키트와 당일 채취 산지직송 특산물을 장날 한정 수량으로 만나보세요. 디지털/카드형 온누리상품권 결제 공식 가맹점!">
+  <!-- Open Graph -->
+  <meta property="og:title" content="장날가자 몰 - 5일장 맛집·특산물 라이브 드롭">
+  <meta property="og:description" content="전국 5일장 명물 먹거리를 집에서 신선하게! 온누리상품권 결제 가맹점 연동">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Pretendard -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              200: '#fed7aa',
+              300: '#fdba74',
+              400: '#fb923c',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+              800: '#9a3412',
+              900: '#7c2d12',
+              dark: '#1e1b18'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #faf9f6;
+      color: #191919;
+      -webkit-font-smoothing: antialiased;
+    }
+    .badge-pulse {
+      animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.04); }
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="font-sans min-h-screen pb-20 md:pb-0">
+
+  <!-- 1. TOP GLOBAL NOTICE BAR -->
+  <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white text-xs px-4 py-2 flex items-center justify-between shadow-sm">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+      <div class="flex items-center space-x-2 font-medium">
+        <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[10px] font-black tracking-wider">장날가자 MALL</span>
+        <span class="hidden sm:inline">전국 5일장·전통시장 상점 입점몰 & 장날 LIVE DROP</span>
+        <span class="sm:hidden text-[11px]">전국 전통시장 라이브 직송</span>
+      </div>
+      <div class="flex items-center space-x-3 text-xs">
+        <span class="text-orange-100 hidden md:inline">🎫 충전식 온누리상품권 결제 가맹점 지원</span>
+        <button onclick="openOnnuriModal()" class="underline font-bold text-white hover:text-amber-200">온누리 사용안내 &rarr;</button>
+        <span class="text-white/40">|</span>
+        <button onclick="switchView('seller')" class="font-bold bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded">
+          🧑‍🍳 사장님 입점/관리자
+        </button>
+        <button onclick="switchView('admin')" class="text-white/70 hover:text-white text-[11px]">
+          👑 총괄 어드민
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MAIN HEADER -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-gray-200/80 shadow-sm transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-4">
+        <a href="javascript:void(0)" onclick="switchView('mall')" class="flex items-center space-x-2.5 group">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black shadow-md text-xl group-hover:scale-105 transition">
+            장
+          </div>
+          <div>
+            <div class="flex items-center space-x-1.5 leading-none">
+              <span class="font-black text-xl sm:text-2xl tracking-tight text-gray-900">장날가자 <span class="text-orange-600">몰</span></span>
+              <span class="bg-orange-100 text-orange-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">LIVE DROP</span>
+            </div>
+            <span class="text-[10px] font-bold text-gray-400 tracking-wider">전국 5일장 로컬 상점 입점 & 드롭 플랫폼</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Main Navigation Menu (쌤카페 & 피카플레이 벤치마킹 상단 GNB) -->
+      <nav class="hidden lg:flex items-center space-x-1 bg-gray-100/80 p-1.5 rounded-2xl border border-gray-200/60 text-xs font-bold">
+        <button onclick="switchView('mall')" id="gnb-mall" class="gnb-tab bg-white text-orange-600 px-4 py-2 rounded-xl shadow-sm transition flex items-center space-x-1.5">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>장날 LIVE DROP</span>
+        </button>
+        <button onclick="switchView('stores')" id="gnb-stores" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
+          <i data-lucide="store" class="w-3.5 h-3.5"></i>
+          <span>입점 상점 둘러보기</span>
+        </button>
+        <button onclick="switchView('requests')" id="gnb-requests" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
+          <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i>
+          <span>드롭 요청 펀딩</span>
+        </button>
+        <button onclick="switchView('seller')" id="gnb-seller" class="gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5">
+          <i data-lucide="chef-hat" class="w-3.5 h-3.5"></i>
+          <span>사장님 셀러 어드민</span>
+        </button>
+        <button onclick="switchView('admin')" id="gnb-admin" class="gnb-tab text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl transition flex items-center space-x-1">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span>총괄 어드민</span>
+        </button>
+      </nav>
+
+      <!-- Integrated Search Bar -->
+      <div class="flex-1 max-w-md hidden md:block" id="header-search-container">
+        <div class="relative">
+          <input type="text" id="desktop-search" onkeyup="handleSearchInput(event)" placeholder="시장명, 상호명, 밀키트(순대, 닭강정, 곤드레) 검색..." class="w-full bg-gray-100 border border-transparent focus:border-orange-500 focus:bg-white text-sm rounded-2xl px-5 py-2.5 pl-11 focus:outline-none focus:ring-4 focus:ring-orange-500/10 transition">
+          <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+          <button onclick="executeSearch()" class="absolute right-2 top-1.5 bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-orange-700 transition">
+            검색
+          </button>
+        </div>
+      </div>
+
+      <!-- User Actions & Cart Button -->
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleMobileSearch()" class="p-2 text-gray-700 hover:text-orange-600 md:hidden">
+          <i data-lucide="search" class="w-6 h-6"></i>
+        </button>
+
+        <button onclick="openCartDrawer()" class="relative flex items-center space-x-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3.5 py-2.5 rounded-2xl border border-orange-200 transition">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span class="text-xs font-black hidden sm:inline">장바구니</span>
+          <span id="header-cart-badge" class="bg-orange-600 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Mega Menu Bar (Only on Mall View) -->
+    <div id="mall-category-nav" class="bg-white border-t border-gray-100 px-4">
+      <div class="max-w-7xl mx-auto flex items-center space-x-6 overflow-x-auto custom-scrollbar h-11 text-xs sm:text-sm font-bold">
+        <button onclick="setCategory('all')" id="tab-all" class="nav-tab text-orange-600 border-b-2 border-orange-600 h-full flex items-center px-1 shrink-0">
+          🔥 전체 라이브 드롭
+        </button>
+        <button onclick="setCategory('mealkit')" id="tab-mealkit" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🍲 전통 맛집 밀키트
+        </button>
+        <button onclick="setCategory('fresh')" id="tab-fresh" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🌿 당일 채취 햇특산물
+        </button>
+        <button onclick="setCategory('snack')" id="tab-snack" class="nav-tab text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🍗 가마솥 닭강정·먹거리
+        </button>
+        <button onclick="switchView('stores')" class="text-gray-600 hover:text-orange-600 h-full flex items-center px-1 shrink-0">
+          🏪 입점 상점 목록
+        </button>
+        <button onclick="switchView('requests')" class="text-amber-700 hover:text-amber-800 h-full flex items-center px-1 shrink-0">
+          📢 드롭 펀딩 요청
+        </button>
+        <button onclick="openOnnuriModal()" class="text-emerald-700 hover:text-emerald-800 h-full flex items-center px-1 shrink-0 ml-auto">
+          🎫 온누리 결제 가맹점
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Expandable Search Bar -->
+    <div id="mobile-search-bar" class="hidden px-4 py-3 bg-white border-t border-gray-100 md:hidden">
+      <div class="relative">
+        <input type="text" id="mobile-search-input" onkeyup="handleSearchInput(event)" placeholder="시장명, 상호명, 품목 검색..." class="w-full bg-gray-100 text-sm rounded-xl px-4 py-2.5 pl-10 focus:outline-none focus:ring-2 focus:ring-orange-500">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 1: 소비자를 위한 메인 장날 LIVE DROP 쇼핑몰 (MALL VIEW) -->
+  <!-- ========================================================================= -->
+  <div id="view-mall" class="view-section">
+    <!-- APP INCOMING MARKET NOTICE -->
+    <div id="app-incoming-banner" class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+      <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-orange-400/40">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
+            📍
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="bg-black/30 text-white text-[10px] font-black px-2 py-0.5 rounded">장날가자 앱 전용관</span>
+              <span id="incoming-market-name" class="font-black text-sm sm:text-base">신림중앙시장</span>
+            </div>
+            <p id="incoming-market-desc" class="text-xs text-orange-100 mt-0.5">
+              조회하신 시장의 [한정 수량 장날 LIVE DROP]이 준비되었습니다!
+            </p>
+          </div>
+        </div>
+        <button onclick="scrollToTargetItem()" class="bg-white text-orange-700 text-xs font-extrabold px-4 py-2.5 rounded-xl hover:bg-orange-50 transition shadow shrink-0">
+          해당 상품 바로보기 &darr;
+        </button>
+      </div>
+    </div>
+
+    <!-- HERO CAROUSEL / BRAND SHOWCASE -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
+        <!-- Main Featured Hero (2 Cols) -->
+        <div id="hero-main-card" class="lg:col-span-2 relative bg-gradient-to-br from-gray-950 via-stone-900 to-amber-950 text-white rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden border border-amber-500/30 flex flex-col justify-between min-h-[380px]">
+          <div class="relative z-10 max-w-xl">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class="bg-orange-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full flex items-center space-x-1">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 inline"></i>
+                <span id="hero-market-badge">신림 순대타운</span>
+              </span>
+              <span class="bg-red-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full badge-pulse flex items-center space-x-1">
+                <i data-lucide="users" class="w-3.5 h-3.5 inline"></i>
+                <span id="hero-waiting-badge">실시간 대기 38명</span>
+              </span>
+              <span id="hero-sample-badge" class="bg-amber-400/20 text-amber-300 text-[11px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
+                ⭐ 장날 공식 드롭
+              </span>
+            </div>
+
+            <h1 id="hero-title" class="text-2xl sm:text-4xl font-black tracking-tight leading-snug mb-3 text-white">
+              [원조 신림 순대타운] 3분 완성 백순대·곱창볶음 밀키트 (2인분)
+            </h1>
+            <p id="hero-desc" class="text-xs sm:text-sm text-gray-300 mb-6 leading-relaxed">
+              30년 전통 비법 양념장과 당일 손질 곱창! 고소한 들깨가루와 깻잎까지 모두 담아 집에서 3분 만에 현장의 맛을 재현합니다.
+            </p>
+
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span id="hero-orig-price" class="text-xs text-gray-400 line-through block">정상가 21,000원</span>
+                <div class="flex items-baseline space-x-2">
+                  <span id="hero-price" class="text-2xl sm:text-3xl font-black text-orange-400">18,900원</span>
+                  <span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-500/40">
+                    🎫 온누리 결제 가능
+                  </span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[11px] text-amber-300 font-bold block mb-1">⏳ 장날 마감 카운트다운</span>
+                <div id="hero-timer" class="font-mono text-sm sm:text-base font-black text-white bg-black/50 px-3 py-1.5 rounded-xl border border-amber-500/40">
+                  03:42:18 남음
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <button onclick="heroDirectOrder()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-6 py-4 rounded-2xl shadow-xl hover:from-orange-600 hover:to-amber-600 active:scale-95 transition text-sm flex items-center space-x-2">
+                <i data-lucide="zap" class="w-4 h-4"></i>
+                <span>오늘 드롭 즉시 주문하기 (택배비 무료)</span>
+              </button>
+              <button onclick="heroAddToCart()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-4 rounded-2xl transition border border-white/20">
+                장바구니 담기
+              </button>
+            </div>
+          </div>
+
+          <div id="hero-bg-img" class="absolute right-0 top-0 bottom-0 w-3/5 opacity-30 bg-cover bg-center hidden md:block" style="background-image: url('https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1000&q=80')"></div>
+          <div class="absolute right-0 top-0 bottom-0 w-3/5 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent hidden md:block"></div>
+        </div>
+
+        <!-- Side Live Drops (1 Col) -->
+        <div class="flex flex-col justify-between gap-4">
+          <!-- Quick Pick 1 -->
+          <div onclick="selectHeroProduct('sokcho-chicken')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
+            <img src="https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="속초 닭강정">
+            <div class="flex-1">
+              <div class="flex items-center space-x-1.5">
+                <span class="bg-orange-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">속초관광수산</span>
+                <span class="text-[10px] text-red-600 font-bold">1시간 대기</span>
+              </div>
+              <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">속초 30년 본점 수제 조청 닭강정</h4>
+              <div class="mt-1 flex items-baseline space-x-1.5">
+                <span class="text-xs font-black text-gray-900">21,000원</span>
+                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">🎫 온누리 가맹</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Pick 2 -->
+          <div onclick="selectHeroProduct('jeongseon-gondre')" class="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-orange-300 cursor-pointer transition flex items-center space-x-3.5">
+            <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="정선 곤드레">
+            <div class="flex-1">
+              <div class="flex items-center space-x-1.5">
+                <span class="bg-orange-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">정선아리랑시장</span>
+                <span class="text-[10px] text-emerald-600 font-bold">새벽 채취</span>
+              </div>
+              <h4 class="text-xs font-extrabold text-gray-900 mt-1 line-clamp-1">정선 햇생곤드레 & 저온압착 들기름</h4>
+              <div class="mt-1 flex items-baseline space-x-1.5">
+                <span class="text-xs font-black text-gray-900">25,900원</span>
+                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">🎫 온누리 가맹</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Onnuri Voucher Notice Banner -->
+          <div onclick="openOnnuriModal()" class="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-3xl p-4.5 shadow-sm cursor-pointer hover:opacity-95 transition flex items-center justify-between">
+            <div>
+              <span class="bg-emerald-700 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">공식 가맹점 인증</span>
+              <h4 class="text-sm font-black mt-1">충전식 온누리상품권 사용처</h4>
+              <p class="text-[10px] text-emerald-100/80 mt-0.5">정부 10% 할인 충전 잔액 그대로 결제</p>
+            </div>
+            <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-lg">
+              🎫
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PRODUCT CATALOG GRID -->
+    <main id="catalog-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-orange-600 animate-ping"></span>
+            <h2 class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+              ⚡ 장날 LIVE DROP & 한정 수량 주문
+            </h2>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">전통시장 사장님이 장날 갓 생산하여 당일 택배 직송하는 명물 라인업입니다.</p>
+        </div>
+
+        <div class="flex items-center space-x-2 text-xs font-bold">
+          <span class="text-gray-400">정렬:</span>
+          <button onclick="sortProducts('popular')" id="sort-popular" class="text-orange-600 font-black">인기순</button>
+          <span class="text-gray-300">·</span>
+          <button onclick="sortProducts('stock')" id="sort-stock" class="text-gray-500 hover:text-gray-800">마감임박순</button>
+          <span class="text-gray-300">·</span>
+          <button onclick="sortProducts('price')" id="sort-price" class="text-gray-500 hover:text-gray-800">낮은가격순</button>
+        </div>
+      </div>
+
+      <!-- Product Grid Container -->
+      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Injected via JavaScript -->
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 2: 입점 상점 둘러보기 (STORES VIEW) -->
+  <!-- ========================================================================= -->
+  <div id="view-stores" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
+      <div>
+        <span class="text-orange-600 font-black text-xs tracking-wider uppercase">Traditional Market Storefronts</span>
+        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">전통시장 공식 입점 상점관 🏪</h2>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">전국 5일장 및 전통시장에서 신뢰받는 진짜 사장님들의 매장과 상품을 만나보세요.</p>
+      </div>
+
+      <button onclick="switchView('seller')" class="bg-orange-600 text-white text-xs font-bold px-4 py-3 rounded-2xl hover:bg-orange-700 transition flex items-center space-x-1.5 shadow">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>내 매장도 입점 신청하기</span>
+      </button>
+    </div>
+
+    <!-- Stores Grid -->
+    <div id="stores-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 3: 드롭 요청 펀딩 (REQUESTS VIEW - 피카플레이 벤치마킹) -->
+  <!-- ========================================================================= -->
+  <div id="view-requests" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="bg-gradient-to-br from-amber-900 to-stone-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl mb-8">
+      <div class="max-w-2xl">
+        <span class="bg-amber-400 text-stone-900 text-[10px] font-black px-2 py-0.5 rounded">유저 참여형 드롭 펀딩</span>
+        <h2 class="text-2xl sm:text-3xl font-black mt-2">"우리 동네 시장 맛집도 드롭 열어주세요!" 📢</h2>
+        <p class="text-xs sm:text-sm text-amber-100 mt-2 leading-relaxed">
+          내가 사랑하는 단골 시장 가게의 메뉴를 제안해 주세요. <strong>추천 50표</strong>를 달성하면 장날가자 운영팀이 사장님을 직접 찾아가 장날 택배 드롭을 섭외합니다!
+        </p>
+        <button onclick="openRequestModal()" class="mt-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-xs sm:text-sm px-5 py-3 rounded-2xl shadow hover:brightness-105 transition flex items-center space-x-2">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>새로운 시장 맛집 드롭 제안하기</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-6 flex items-center justify-between">
+      <h3 class="font-black text-gray-900 text-lg">🔥 실시간 드롭 요청 랭킹</h3>
+      <span class="text-xs text-gray-500">투표수가 많은 상점부터 순차적으로 입점 섭외가 진행됩니다.</span>
+    </div>
+
+    <!-- Drop Requests Grid -->
+    <div id="requests-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 4: 사장님 셀러 어드민 (SELLER VIEW - 쌤카페/게토 벤치마킹 점주 콘솔) -->
+  <!-- ========================================================================= -->
+  <div id="view-seller" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="bg-orange-100 text-orange-700 text-xs font-black px-2.5 py-1 rounded-md">Merchant Admin Console</span>
+          <span class="text-xs text-gray-400">점주 전용 포털</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">🧑‍🍳 사장님 매장 & 주문 관리 센터</h2>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">매장 프로필, 상품 및 밀키트 등록, 장날 LIVE DROP 개설, 실시간 주문 접수 및 배송을 관리하세요.</p>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="openAddProductModal()" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow flex items-center space-x-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>새 상품/밀키트 등록</span>
+        </button>
+        <button onclick="openCreateDropModal()" class="bg-stone-900 hover:bg-black text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow flex items-center space-x-1.5">
+          <i data-lucide="flame" class="w-4 h-4"></i>
+          <span>장날 DROP 개설</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Seller Sub-tabs -->
+    <div class="flex border-b border-gray-200 mb-6 text-xs font-bold">
+      <button onclick="setSellerTab('orders')" id="stab-orders" class="seller-tab text-orange-600 border-b-2 border-orange-600 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="package-check" class="w-4 h-4"></i>
+        <span>실시간 주문/배송 관리 (<span id="seller-order-count">0</span>)</span>
+      </button>
+      <button onclick="setSellerTab('products')" id="stab-products" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="boxes" class="w-4 h-4"></i>
+        <span>등록 상품 관리 (<span id="seller-prod-count">0</span>)</span>
+      </button>
+      <button onclick="setSellerTab('drops')" id="stab-drops" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="zap" class="w-4 h-4"></i>
+        <span>내 장날 드롭 캠페인 (<span id="seller-drop-count">0</span>)</span>
+      </button>
+      <button onclick="setSellerTab('profile')" id="stab-profile" class="seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="store" class="w-4 h-4"></i>
+        <span>매장 정보 설정</span>
+      </button>
+    </div>
+
+    <!-- Seller Tab Contents -->
+    <div id="seller-tab-content">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 5: 장날가자 총괄 마스터 어드민 (MASTER ADMIN VIEW) -->
+  <!-- ========================================================================= -->
+  <div id="view-admin" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="bg-purple-100 text-purple-700 text-xs font-black px-2.5 py-1 rounded-md">Master Control Center</span>
+          <span class="text-xs text-gray-400">장날가자 본사 총괄 관리자</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">👑 장날가자 플랫폼 총괄 센터</h2>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">신규 상점 입점 심사 승인, 장날 드롭 큐레이션 검수, 전국 주문 CS 및 정산 대시보드를 총괄합니다.</p>
+      </div>
+      <button onclick="resetDataToDemo()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition">
+        🔄 데이터 초기화
+      </button>
+    </div>
+
+    <!-- Admin Sub-tabs -->
+    <div class="flex border-b border-gray-200 mb-6 text-xs font-bold">
+      <button onclick="setAdminTab('merchants')" id="atab-merchants" class="admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="store" class="w-4 h-4"></i>
+        <span>입점 심사 관리 (<span id="admin-pending-merchant-count">0</span>건 대기)</span>
+      </button>
+      <button onclick="setAdminTab('drops')" id="atab-drops" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="flame" class="w-4 h-4"></i>
+        <span>드롭 승인/큐레이션</span>
+      </button>
+      <button onclick="setAdminTab('orders')" id="atab-orders" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+        <span>전국 주문 모니터링</span>
+      </button>
+      <button onclick="setAdminTab('settlement')" id="atab-settlement" class="admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5">
+        <i data-lucide="wallet" class="w-4 h-4"></i>
+        <span>정산 대시보드</span>
+      </button>
+    </div>
+
+    <!-- Admin Tab Contents -->
+    <div id="admin-tab-content">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS & DRAWERS -->
+  <!-- ========================================================================= -->
+
+  <!-- 1. CART DRAWER -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden transition-all">
+    <div class="fixed right-0 top-0 bottom-0 max-w-md w-full bg-white shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-orange-600"></i>
+            <h3 class="text-base font-black text-gray-900">장바구니 (<span id="cart-drawer-count">0</span>)</h3>
+          </div>
+          <button onclick="closeCartDrawer()" class="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div id="cart-items-container" class="py-4 space-y-3">
+          <!-- Cart Items Injected via JS -->
+        </div>
+      </div>
+
+      <div id="cart-footer-summary" class="border-t border-gray-100 pt-4 space-y-3">
+        <div class="bg-orange-50 rounded-2xl p-3.5 space-y-1.5 text-xs">
+          <div class="flex justify-between text-gray-600">
+            <span>주문 금액</span>
+            <span id="cart-subtotal">0원</span>
+          </div>
+          <div class="flex justify-between text-gray-600">
+            <span>배송비</span>
+            <span class="text-orange-600 font-bold">무료 (장날 특가)</span>
+          </div>
+          <div class="border-t border-orange-200 pt-1.5 flex justify-between text-sm font-black text-gray-900">
+            <span>최종 결제 금액</span>
+            <span id="cart-total" class="text-orange-600">0원</span>
+          </div>
+        </div>
+
+        <button onclick="proceedToCheckoutFromCart()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3.5 rounded-2xl shadow-lg active:scale-95 transition text-sm flex items-center justify-center space-x-2">
+          <span>주문서 작성 및 결제하기</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. PRODUCT / DROP DETAIL MODAL -->
+  <div id="detail-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
+      <button onclick="closeProductDetail()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 z-10">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div id="detail-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 3. CHECKOUT MODAL -->
+  <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 p-6">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
+          <h3 class="font-black text-gray-900 text-base">⚡ 장날 드롭 주문서</h3>
+        </div>
+        <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4">
+        <!-- Selected Item Info -->
+        <div class="bg-orange-50/80 rounded-2xl p-3.5 border border-orange-100 flex items-start space-x-3">
+          <img id="modal-item-img" src="" class="w-16 h-16 rounded-xl object-cover border border-orange-200" alt="상품 이미지">
+          <div class="flex-1">
+            <span id="modal-item-market" class="text-[10px] font-black bg-orange-600 text-white px-1.5 py-0.5 rounded">신림중앙시장</span>
+            <h4 id="modal-item-title" class="text-xs font-extrabold text-gray-900 mt-1 leading-tight">신림 백순대 3분 밀키트</h4>
+            <div class="mt-1 flex items-baseline space-x-2">
+              <span id="modal-item-price" class="text-sm font-black text-orange-600">18,900원</span>
+              <span id="modal-item-onnuri" class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">🎫 온누리 가맹</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantity Selector -->
+        <div class="flex items-center justify-between bg-gray-50 rounded-2xl p-3 border border-gray-100">
+          <span class="text-xs font-bold text-gray-700">주문 수량 (1인 최대 3세트)</span>
+          <div class="flex items-center space-x-3">
+            <button onclick="changeQty(-1)" class="w-7 h-7 bg-white rounded-lg border border-gray-200 font-bold text-sm hover:bg-gray-100 flex items-center justify-center">-</button>
+            <span id="modal-qty" class="text-sm font-black text-gray-900 w-4 text-center">1</span>
+            <button onclick="changeQty(1)" class="w-7 h-7 bg-white rounded-lg border border-gray-200 font-bold text-sm hover:bg-gray-100 flex items-center justify-center">+</button>
+          </div>
+        </div>
+
+        <!-- Buyer & Shipping Form -->
+        <div class="space-y-2.5">
+          <div class="text-xs font-black text-gray-900 flex items-center space-x-1">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-orange-600"></i>
+            <span>배송지 정보 입력</span>
+          </div>
+          <div>
+            <input type="text" id="order-name" placeholder="받는 분 성함" class="w-full bg-gray-50 border border-gray-200 text-xs rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <input type="tel" id="order-phone" placeholder="휴대폰 번호 (예: 010-1234-5678)" class="w-full bg-gray-50 border border-gray-200 text-xs rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <input type="text" id="order-address" placeholder="도로명 주소 및 상세 주소 (동/호수)" class="w-full bg-gray-50 border border-gray-200 text-xs rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+          </div>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="space-y-2">
+          <div class="text-xs font-black text-gray-900 flex items-center space-x-1">
+            <i data-lucide="credit-card" class="w-3.5 h-3.5 text-orange-600"></i>
+            <span>결제 수단 선택</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="selectPay('onnuri')" id="pay-onnuri" class="pay-method-btn border-2 border-emerald-600 bg-emerald-50 text-emerald-900 rounded-xl p-2.5 text-left font-bold text-xs flex flex-col justify-between">
+              <div class="flex items-center space-x-1">
+                <span>🎫 온누리상품권 결제</span>
+              </div>
+              <span class="text-[10px] text-emerald-700 font-medium mt-1">디지털/카드 잔액 사용</span>
+            </button>
+            <button type="button" onclick="selectPay('card')" id="pay-card" class="pay-method-btn border border-gray-200 bg-gray-50 text-gray-800 rounded-xl p-2.5 text-left font-bold text-xs flex flex-col justify-between">
+              <div class="flex items-center space-x-1">
+                <span>💳 신용/체크카드/간편결제</span>
+              </div>
+              <span class="text-[10px] text-gray-500 font-medium mt-1">일반 카드 결제</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="bg-gray-50 rounded-2xl p-3 space-y-1.5 text-xs">
+          <div class="flex justify-between text-gray-600">
+            <span>주문 금액</span>
+            <span id="price-subtotal">18,900원</span>
+          </div>
+          <div class="flex justify-between text-gray-600">
+            <span>배송비</span>
+            <span class="text-orange-600 font-bold">무료 (장날 특가)</span>
+          </div>
+          <div class="border-t border-gray-200 pt-1 flex justify-between font-black text-sm text-gray-900">
+            <span>최종 결제 금액</span>
+            <span id="price-total" class="text-orange-600">18,900원</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button onclick="submitOrder()" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black py-3.5 rounded-2xl shadow-lg active:scale-95 transition text-sm flex items-center justify-center space-x-1.5">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span id="order-submit-text">즉시 결제 및 장날 드롭 신청</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ORDER SUCCESS MODAL -->
+  <div id="success-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl mx-auto flex items-center justify-center text-3xl shadow-inner">
+        🎉
+      </div>
+      <div>
+        <h3 class="text-lg font-black text-gray-900">장날 드롭 주문 완료!</h3>
+        <p class="text-xs text-gray-500 mt-1">장날 당일 갓 생산하여 신선하게 직송해 드립니다.</p>
+      </div>
+
+      <div class="bg-gray-50 rounded-2xl p-3.5 text-left text-xs space-y-2 border border-gray-100">
+        <div class="flex justify-between text-gray-500">
+          <span>주문번호</span>
+          <span id="succ-order-id" class="font-mono font-bold text-gray-800">JN-20260922-8392</span>
+        </div>
+        <div class="flex justify-between text-gray-500">
+          <span>주문상품</span>
+          <span id="succ-item-name" class="font-bold text-gray-800 truncate max-w-[180px]">신림 백순대 2인분</span>
+        </div>
+        <div class="flex justify-between text-gray-500">
+          <span>결제방식</span>
+          <span id="succ-pay-method" class="font-bold text-emerald-700">온누리상품권</span>
+        </div>
+        <div class="border-t border-gray-200 pt-1 flex justify-between font-black text-gray-900">
+          <span>결제금액</span>
+          <span id="succ-final-price" class="text-orange-600">18,900원</span>
+        </div>
+      </div>
+
+      <button onclick="closeSuccessModal()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition text-xs">
+        확인
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. ONNURI INFO MODAL -->
+  <div id="onnuri-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">🎫</span>
+          <h3 class="font-black text-gray-900 text-base">온누리상품권 결제 안내</h3>
+        </div>
+        <button onclick="closeOnnuriModal()" class="text-gray-400 hover:text-gray-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <div class="text-xs text-gray-600 space-y-3 leading-relaxed">
+        <div class="bg-emerald-50 rounded-2xl p-3.5 border border-emerald-100 space-y-1">
+          <div class="font-black text-emerald-800">💡 정부 지원 10% 할인 충전 혜택</div>
+          <p class="text-emerald-700 text-[11px]">
+            온누리상품권(카드형/디지털)은 정부/소진공을 통해 10% 할인된 금액으로 충전하여 사용하는 전통시장 전용 결제 수단입니다.
+          </p>
+        </div>
+
+        <div class="space-y-1.5">
+          <h4 class="font-bold text-gray-900">💳 장날가자 몰에서 온누리상품권 사용법</h4>
+          <ol class="list-decimal list-inside space-y-1 text-gray-600 pl-1 text-[11px]">
+            <li>온누리 앱에서 등록해 둔 신용/체크카드에 금액을 10% 할인 충전합니다.</li>
+            <li>장날가자 몰의 <strong>[온누리 공식 가맹]</strong> 상점 상품을 주문합니다.</li>
+            <li>결제 시 해당 카드로 결제하시면 온누리 충전 잔액에서 자동 차감됩니다!</li>
+          </ol>
+        </div>
+      </div>
+
+      <button onclick="closeOnnuriModal()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl transition text-xs">
+        확인했습니다
+      </button>
+    </div>
+  </div>
+
+  <!-- 6. ADD PRODUCT MODAL (SELLER) -->
+  <div id="add-product-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b">
+        <h3 class="font-black text-gray-900 text-base">➕ 새 상품/밀키트 등록</h3>
+        <button onclick="closeAddProductModal()" class="text-gray-400 hover:text-gray-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">상품명 (대표 메뉴명)</label>
+          <input type="text" id="p-name" placeholder="예: [원조 30년] 손칼국수 밀키트 2인분" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">카테고리</label>
+            <select id="p-category" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+              <option value="mealkit">맛집 밀키트</option>
+              <option value="fresh">농축수산/특산물</option>
+              <option value="snack">간식/먹거리</option>
+              <option value="etc">기타 가공식품</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">보관 방식</label>
+            <select id="p-storage" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+              <option value="냉장">냉장 (신선)</option>
+              <option value="냉동">냉동</option>
+              <option value="실온">실온</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">판매 가격 (원)</label>
+            <input type="number" id="p-price" placeholder="18000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">재고 수량</label>
+            <input type="number" id="p-stock" placeholder="50" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">상품 사진 이미지 URL</label>
+          <input type="text" id="p-img" placeholder="https://images.unsplash.com/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">상품 핵심 설명 & 비법 스토리</label>
+          <textarea id="p-desc" rows="3" placeholder="30년간 매일 아침 직접 반죽한 쫄깃한 면발과 진한 육수 세트입니다." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none"></textarea>
+        </div>
+      </div>
+
+      <button onclick="saveNewProduct()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition text-xs shadow">
+        등록 완료하기
+      </button>
+    </div>
+  </div>
+
+  <!-- 7. CREATE DROP MODAL (SELLER) -->
+  <div id="create-drop-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b">
+        <h3 class="font-black text-gray-900 text-base">🔥 장날 LIVE DROP 개설</h3>
+        <button onclick="closeCreateDropModal()" class="text-gray-400 hover:text-gray-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">드롭 타이틀</label>
+          <input type="text" id="d-title" placeholder="예: [속초 장날 당일 튀김] 가마솥 조청 닭강정 한정 50박스" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">한정 목표 수량 (세트)</label>
+            <input type="number" id="d-target" placeholder="40" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="font-bold text-gray-700 block mb-1">드롭 특가 (원)</label>
+            <input type="number" id="d-price" placeholder="19000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">일괄 발송일 (장날 출고일)</label>
+          <input type="text" id="d-shipdate" placeholder="예: 이번 주 토요일(27일) 장날 새벽 제조 당일 발송" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">대표 이미지 URL</label>
+          <input type="text" id="d-img" placeholder="https://images.unsplash.com/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <button onclick="saveNewDrop()" class="w-full bg-stone-900 hover:bg-black text-white font-bold py-3 rounded-xl transition text-xs shadow">
+        드롭 개설 신청하기 (관리자 승인 후 노출)
+      </button>
+    </div>
+  </div>
+
+  <!-- 8. REQUEST NEW DROP MODAL (USER FUNDING) -->
+  <div id="request-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b">
+        <h3 class="font-black text-gray-900 text-base">📢 시장 맛집 드롭 제안하기</h3>
+        <button onclick="closeRequestModal()" class="text-gray-400 hover:text-gray-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">전통시장/5일장 이름</label>
+          <input type="text" id="req-market" placeholder="예: 강릉 중앙시장, 대구 서문시장" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">가게 상호명</label>
+          <input type="text" id="req-store" placeholder="예: 할머니 손칼국수, 배니 닭강정" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">추천 대표 메뉴</label>
+          <input type="text" id="req-menu" placeholder="예: 오징어순대 밀키트, 메밀전병" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="font-bold text-gray-700 block mb-1">추천 이유 & 맛 후기</label>
+          <textarea id="req-reason" rows="2" placeholder="줄 서서 먹는 집인데 택배로도 꼭 먹고 싶어요!" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none"></textarea>
+        </div>
+      </div>
+
+      <button onclick="saveNewRequest()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition text-xs shadow">
+        드롭 펀딩 제안 등록하기
+      </button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION CORE ENGINE -->
+  <script>
+    // ==========================================
+    // DATA STORE (LocalStorage + In-Memory Dynamic Engine)
+    // ==========================================
+    const STORAGE_KEY_MERCHANTS = 'jg_merchants_v2';
+    const STORAGE_KEY_PRODUCTS = 'jg_products_v2';
+    const STORAGE_KEY_DROPS = 'jg_drops_v2';
+    const STORAGE_KEY_ORDERS = 'jg_orders_v2';
+    const STORAGE_KEY_REQUESTS = 'jg_requests_v2';
+
+    // Initial Production Seed Data (초기 데이터 - 샘플 뱃지 표기)
+    const INITIAL_MERCHANTS = [
+      {
+        id: 'm-1',
+        marketName: '신림중앙시장 (순대타운)',
+        storeName: '원조 30년 백순대 본점',
+        ownerName: '김옥자',
+        businessNumber: '119-04-82910',
+        phone: '02-888-1234',
+        category: '맛집 밀키트',
+        isOnnuri: true,
+        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=600&q=80',
+        description: '30년 전통 비법 양념장과 당일 새벽 손질 곱창으로 현장의 불맛을 재현합니다.',
+        locationHint: '순대타운 3층 301호',
+        status: 'APPROVED',
+        isSample: false
+      },
+      {
+        id: 'm-2',
+        marketName: '속초관광수산시장',
+        storeName: '속초 수제 조청 닭강정 본점',
+        ownerName: '박성호',
+        businessNumber: '220-11-93820',
+        phone: '033-633-5678',
+        category: '간식/먹거리',
+        isOnnuri: true,
+        image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=600&q=80',
+        description: '물엿 대신 100% 쌀조청으로 가마솥에서 갓 튀겨내어 식어도 바삭합니다.',
+        locationHint: '닭전골목 12호',
+        status: 'APPROVED',
+        isSample: false
+      },
+      {
+        id: 'm-3',
+        marketName: '정선아리랑시장 (2·7일장)',
+        storeName: '정선 고랭지 산나물 방앗간',
+        ownerName: '이순덕',
+        businessNumber: '312-88-10293',
+        phone: '033-562-9988',
+        category: '농축수산/특산물',
+        isOnnuri: true,
+        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+        description: '해발 700m 정선 고랭지에서 장날 아침 수확한 햇생곤드레와 시골 방앗간 햇들기름 세트입니다.',
+        locationHint: '정선 5일장 2번 게이트 앞',
+        status: 'APPROVED',
+        isSample: false
+      },
+      {
+        id: 'm-4',
+        marketName: '서울 광장시장',
+        storeName: '광장 맷돌 빈대떡 & 마약김밥',
+        ownerName: '정영숙',
+        businessNumber: '101-22-38491',
+        phone: '02-2267-0099',
+        category: '맛집 밀키트',
+        isOnnuri: true,
+        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
+        description: '100% 녹두를 맷돌로 직접 갈아 만든 겉바속촉 빈대떡 반죽과 겨자소스 마약김밥 세트입니다.',
+        locationHint: '광장시장 만남의 광장 중앙',
+        status: 'APPROVED',
+        isSample: false
+      }
+    ];
+
+    const INITIAL_DROPS = [
+      {
+        id: 'drop-1',
+        merchantId: 'm-1',
+        marketName: '신림 순대타운',
+        storeName: '원조 30년 백순대 본점',
+        title: '[원조 신림 순대타운] 3분 완성 백순대·곱창볶음 밀키트 (2인분)',
+        badge: '한정 50세트',
+        targetCount: 50,
+        currentCount: 36,
+        originalPrice: 21000,
+        dropPrice: 18900,
+        isOnnuri: true,
+        category: 'mealkit',
+        prepTime: '3분',
+        shelfLife: '냉장 5일',
+        waitingCount: 38,
+        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=800&q=80',
+        story: '30년 전통 비법 양념장과 당일 손질 곱창! 고소한 들깨가루와 깻잎까지 모두 담아 집에서 3분 만에 현장의 맛을 재현합니다.',
+        highlights: ['특수 진공포장 백순대+곱창', '30년 비법 양념장 2팩', '산지직송 깻잎+들깨가루'],
+        shippingDate: '당일 새벽 손질 3중 안심 보랭 출고',
+        status: 'ACTIVE'
+      },
+      {
+        id: 'drop-2',
+        merchantId: 'm-2',
+        marketName: '속초관광수산시장',
+        storeName: '속초 수제 조청 닭강정 본점',
+        title: '[속초 30년 본점] 가마솥 수제 쌀조청 순살 닭강정 (1상자/특대)',
+        badge: '한정 60상자',
+        targetCount: 60,
+        currentCount: 48,
+        originalPrice: 24000,
+        dropPrice: 21000,
+        isOnnuri: true,
+        category: 'snack',
+        prepTime: '즉시취식/에어프라이어 3분',
+        shelfLife: '실온 3일/냉동 1달',
+        waitingCount: 52,
+        image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80',
+        story: '물엿 대신 100% 쌀조청으로 가마솥에서 갓 튀겨내어 식어도 눅눅하지 않고 바삭함이 살아있습니다.',
+        highlights: ['국내산 100% 닭다리살 순살', '가마솥 쌀조청 특제 소스', '장날 당일 제조 즉시 발송'],
+        shippingDate: '장날 갓 튀겨 당일 발송',
+        status: 'ACTIVE'
+      },
+      {
+        id: 'drop-3',
+        merchantId: 'm-3',
+        marketName: '정선아리랑시장 (2·7일)',
+        storeName: '정선 고랭지 산나물 방앗간',
+        title: '[2·7일 정선 장날] 해발 700m 햇생곤드레(1kg) & 저온압착 들기름',
+        badge: '장날 당일 채취',
+        targetCount: 40,
+        currentCount: 31,
+        originalPrice: 29000,
+        dropPrice: 25900,
+        isOnnuri: true,
+        category: 'fresh',
+        prepTime: '간편 데침 5분',
+        shelfLife: '냉장 7일',
+        waitingCount: 24,
+        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+        story: '정선 고랭지에서 장날 새벽 수확한 부드러운 생곤드레와 시골 방앗간에서 갓 짠 햇들기름 세트입니다.',
+        highlights: ['해발 700m 정선 새벽 수확 생곤드레 1kg', '시골 방앗간 저온압착 들기름 1병(180ml)', '특수 냉매 안심 포장'],
+        shippingDate: '장날 새벽 채취 당일 발송',
+        status: 'ACTIVE'
+      },
+      {
+        id: 'drop-4',
+        merchantId: 'm-4',
+        marketName: '서울 광장시장',
+        storeName: '광장 맷돌 빈대떡 & 마약김밥',
+        title: '[광장시장 줄 서는 집] 맷돌 녹두 빈대떡 반죽 3장 + 원조 마약김밥 2팩',
+        badge: '한정 50세트',
+        targetCount: 50,
+        currentCount: 44,
+        originalPrice: 23000,
+        dropPrice: 19900,
+        isOnnuri: true,
+        category: 'mealkit',
+        prepTime: '프라이팬 5분',
+        shelfLife: '냉장 3일',
+        waitingCount: 45,
+        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+        story: '100% 녹두 맷돌 반죽으로 프라이팬에 굽기만 하면 광장시장 전골목 현장의 바삭함을 즐길 수 있습니다.',
+        highlights: ['100% 녹두 맷돌 반죽 3회분', '양파절임 특제 간장 소스', '원조 마약김밥 2팩 + 톡 쏘는 겨자소스'],
+        shippingDate: '당일 새벽 갈아낸 반죽 냉장 발송',
+        status: 'ACTIVE'
+      }
+    ];
+
+    const INITIAL_REQUESTS = [
+      {
+        id: 'req-1',
+        marketName: '강릉 중앙시장',
+        storeName: '원조 배니 닭강정',
+        menuName: '매콤달콤 닭강정 세트',
+        reason: '강릉 갈 때마다 사먹는데 수도권에서도 장날 라이브 드롭으로 꼭 받고 싶습니다!',
+        voteCount: 48,
+        status: 'RECRUITING'
+      },
+      {
+        id: 'req-2',
+        marketName: '대구 서문시장',
+        storeName: '50년 원조 미성당',
+        menuName: '원조 납작만두(30개) & 옛날손국수',
+        reason: '대구 서문시장 납작만두 특유의 얇고 고소한 맛을 집에서 구워먹고 싶어요.',
+        voteCount: 39,
+        status: 'COLLECTING'
+      },
+      {
+        id: 'req-3',
+        marketName: '단양 구경시장 (1·6일장)',
+        storeName: '단양 마늘만두 본점',
+        menuName: '새우마늘만두 & 떡갈비마늘만두 세트',
+        reason: '만두피가 투명하고 마늘향이 예술입니다. 장날 특가로 열어주세요!',
+        voteCount: 42,
+        status: 'COLLECTING'
+      }
+    ];
+
+    // State Variables
+    let merchants = [];
+    let drops = [];
+    let orders = [];
+    let dropRequests = [];
+    let cart = [];
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let heroProduct = null;
+    let selectedProduct = null;
+    let orderQuantity = 1;
+    let selectedPayMethod = 'onnuri';
+    let currentSellerTab = 'orders';
+    let currentAdminTab = 'merchants';
+
+    // Init App State
+    function initData() {
+      merchants = JSON.parse(localStorage.getItem(STORAGE_KEY_MERCHANTS)) || INITIAL_MERCHANTS;
+      drops = JSON.parse(localStorage.getItem(STORAGE_KEY_DROPS)) || INITIAL_DROPS;
+      orders = JSON.parse(localStorage.getItem(STORAGE_KEY_ORDERS)) || [];
+      dropRequests = JSON.parse(localStorage.getItem(STORAGE_KEY_REQUESTS)) || INITIAL_REQUESTS;
+
+      saveAll();
+      heroProduct = drops[0];
+    }
+
+    function saveAll() {
+      localStorage.setItem(STORAGE_KEY_MERCHANTS, JSON.stringify(merchants));
+      localStorage.setItem(STORAGE_KEY_DROPS, JSON.stringify(drops));
+      localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders));
+      localStorage.setItem(STORAGE_KEY_REQUESTS, JSON.stringify(dropRequests));
+    }
+
+    function resetDataToDemo() {
+      if (confirm('모든 데이터를 초기 데모 상태로 리셋하시겠습니까?')) {
+        localStorage.removeItem(STORAGE_KEY_MERCHANTS);
+        localStorage.removeItem(STORAGE_KEY_DROPS);
+        localStorage.removeItem(STORAGE_KEY_ORDERS);
+        localStorage.removeItem(STORAGE_KEY_REQUESTS);
+        initData();
+        renderAll();
+        alert('데이터가 성공적으로 초기화되었습니다.');
+      }
+    }
+
+    // ==========================================
+    // VIEW NAVIGATION
+    // ==========================================
+    function switchView(viewName) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.gnb-tab').forEach(el => {
+        el.className = 'gnb-tab text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition flex items-center space-x-1.5';
+      });
+
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+
+      const activeGnb = document.getElementById(`gnb-${viewName}`);
+      if (activeGnb) {
+        activeGnb.className = 'gnb-tab bg-white text-orange-600 px-4 py-2 rounded-xl shadow-sm transition flex items-center space-x-1.5';
+      }
+
+      const catNav = document.getElementById('mall-category-nav');
+      if (catNav) {
+        catNav.style.display = viewName === 'mall' ? 'block' : 'none';
+      }
+
+      if (viewName === 'mall') renderProducts();
+      if (viewName === 'stores') renderStores();
+      if (viewName === 'requests') renderRequests();
+      if (viewName === 'seller') renderSellerView();
+      if (viewName === 'admin') renderAdminView();
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // CONSUMER MALL VIEW LOGIC
+    // ==========================================
+    function renderHeroCard() {
+      const p = heroProduct || drops[0];
+      if (!p) return;
+
+      document.getElementById('hero-market-badge').textContent = p.marketName;
+      document.getElementById('hero-waiting-badge').textContent = `실시간 대기 ${p.waitingCount}명`;
+      document.getElementById('hero-title').textContent = p.title;
+      document.getElementById('hero-desc').textContent = p.story;
+      document.getElementById('hero-orig-price').textContent = `정상가 ${p.originalPrice.toLocaleString()}원`;
+      document.getElementById('hero-price').textContent = `${p.dropPrice.toLocaleString()}원`;
+      document.getElementById('hero-bg-img').style.backgroundImage = `url('${p.image}')`;
+      lucide.createIcons();
+    }
+
+    function selectHeroProduct(id) {
+      const p = drops.find(item => item.id === id || item.id === `drop-${id}`);
+      if (p) {
+        heroProduct = p;
+        renderHeroCard();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function heroDirectOrder() {
+      openCheckoutModal(heroProduct.id);
+    }
+
+    function heroAddToCart() {
+      addToCart(heroProduct.id);
+      openCartDrawer();
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('product-grid');
+      let filtered = drops;
+
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(p => p.category === currentCategory);
+      }
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(p => 
+          p.title.toLowerCase().includes(q) || 
+          p.marketName.toLowerCase().includes(q) ||
+          p.storeName.toLowerCase().includes(q)
+        );
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const percentSold = Math.min(100, Math.round((p.currentCount / p.targetCount) * 100));
+        const limitLeft = Math.max(0, p.targetCount - p.currentCount);
+
+        return `
+          <div id="item-${p.id}" class="bg-white rounded-3xl border border-gray-200/80 shadow-sm overflow-hidden flex flex-col hover:shadow-lg hover:border-orange-300 transition duration-300 group">
+            <!-- Thumbnail & Badges -->
+            <div class="relative h-52 overflow-hidden bg-gray-100 cursor-pointer" onclick="openProductDetail('${p.id}')">
+              <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+              
+              <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                <span class="bg-orange-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-md shadow">
+                  ${p.marketName}
+                </span>
+                <span class="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/20">
+                  🔥 현장대기 ${p.waitingCount}명
+                </span>
+              </div>
+
+              <div class="absolute top-3 right-3 flex flex-col items-end gap-1">
+                <span class="bg-red-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-md shadow">
+                  한정 ${limitLeft}세트 남음
+                </span>
+                ${p.isOnnuri ? `<span class="bg-emerald-700 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow">🎫 온누리 가맹</span>` : ''}
+              </div>
+
+              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[11px] font-medium">
+                <span>⏱️ 조리: ${p.prepTime}</span>
+                <span>📦 ${p.shelfLife}</span>
+              </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="text-[11px] font-bold text-gray-500">${p.storeName}</div>
+                <h3 onclick="openProductDetail('${p.id}')" class="text-sm sm:text-base font-black text-gray-900 leading-snug line-clamp-2 group-hover:text-orange-600 transition cursor-pointer mt-0.5">
+                  ${p.title}
+                </h3>
+
+                <!-- Highlights -->
+                <div class="mt-3.5 space-y-1">
+                  ${(p.highlights || []).map(h => `
+                    <div class="flex items-center space-x-1.5 text-xs text-gray-600">
+                      <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-orange-500 shrink-0"></i>
+                      <span class="truncate">${h}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Price & Order Action -->
+              <div class="mt-5 pt-4 border-t border-gray-100">
+                <!-- Stock Progress Bar -->
+                <div class="mb-3">
+                  <div class="flex justify-between text-[11px] font-bold text-gray-500 mb-1">
+                    <span>드롭 달성률 (${p.currentCount}/${p.targetCount}세트)</span>
+                    <span class="text-orange-600">${percentSold}%</span>
+                  </div>
+                  <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style="width: ${percentSold}%"></div>
+                  </div>
+                </div>
+
+                <div class="flex items-baseline justify-between mb-3.5">
+                  <div>
+                    <span class="text-xs text-gray-400 line-through">${p.originalPrice.toLocaleString()}원</span>
+                    <div class="text-lg font-black text-gray-900">
+                      ${p.dropPrice.toLocaleString()}원
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                      🎫 온누리 결제 지원
+                    </span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2">
+                  <button onclick="addToCart('${p.id}')" class="col-span-1 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl py-3 flex items-center justify-center transition border border-orange-200" title="장바구니 담기">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="openCheckoutModal('${p.id}')" class="col-span-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md active:scale-95 transition flex items-center justify-center space-x-1.5">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    <span>장날 드롭 주문하기</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.classList.remove('text-orange-600', 'border-b-2', 'border-orange-600');
+        el.classList.add('text-gray-600');
+      });
+      const activeTab = document.getElementById(`tab-${cat}`);
+      if (activeTab) {
+        activeTab.classList.remove('text-gray-600');
+        activeTab.classList.add('text-orange-600', 'border-b-2', 'border-orange-600');
+      }
+      renderProducts();
+    }
+
+    function sortProducts(type) {
+      document.querySelectorAll('#sort-popular, #sort-stock, #sort-price').forEach(el => {
+        el.className = 'text-gray-500 hover:text-gray-800';
+      });
+      document.getElementById(`sort-${type}`).className = 'text-orange-600 font-black';
+
+      if (type === 'popular') {
+        drops.sort((a, b) => b.waitingCount - a.waitingCount);
+      } else if (type === 'stock') {
+        drops.sort((a, b) => (b.currentCount/b.targetCount) - (a.currentCount/a.targetCount));
+      } else if (type === 'price') {
+        drops.sort((a, b) => a.dropPrice - b.dropPrice);
+      }
+      renderProducts();
+    }
+
+    function handleSearchInput(e) {
+      searchQuery = e.target.value;
+      renderProducts();
+    }
+
+    function executeSearch() {
+      searchQuery = document.getElementById('desktop-search').value;
+      renderProducts();
+      document.getElementById('catalog-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function toggleMobileSearch() {
+      document.getElementById('mobile-search-bar').classList.toggle('hidden');
+    }
+
+    function scrollToTargetItem() {
+      if (heroProduct) {
+        const el = document.getElementById(`item-${heroProduct.id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-4', 'ring-orange-500');
+          setTimeout(() => el.classList.remove('ring-4', 'ring-orange-500'), 3000);
+        }
+      }
+    }
+
+    // ==========================================
+    // STORES VIEW LOGIC
+    // ==========================================
+    function renderStores() {
+      const container = document.getElementById('stores-grid');
+      const approvedMerchants = merchants.filter(m => m.status === 'APPROVED');
+
+      container.innerHTML = approvedMerchants.map(m => {
+        const storeDrops = drops.filter(d => d.merchantId === m.id);
+
+        return `
+          <div class="bg-white rounded-3xl p-5 border border-gray-200/80 shadow-sm hover:shadow-lg transition flex flex-col justify-between">
+            <div>
+              <div class="relative h-44 rounded-2xl overflow-hidden mb-4 bg-gray-100">
+                <img src="${m.image}" class="w-full h-full object-cover" alt="${m.storeName}">
+                <div class="absolute top-3 left-3 bg-black/70 text-white text-[10px] font-black px-2.5 py-1 rounded-md backdrop-blur-sm">
+                  ${m.marketName}
+                </div>
+                ${m.isOnnuri ? `<div class="absolute top-3 right-3 bg-emerald-700 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">🎫 온누리 가맹</div>` : ''}
+              </div>
+
+              <div class="flex items-center space-x-2 text-[11px] font-bold text-gray-500">
+                <span>대표: ${m.ownerName}</span>
+                <span>·</span>
+                <span>${m.locationHint}</span>
+              </div>
+              <h3 class="text-lg font-black text-gray-900 mt-1">${m.storeName}</h3>
+              <p class="text-xs text-gray-600 mt-1.5 leading-relaxed line-clamp-2">${m.description}</p>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+              <span class="text-xs font-bold text-orange-600">진행 드롭 ${storeDrops.length}개</span>
+              <button onclick="viewStoreProducts('${m.id}')" class="bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold px-3.5 py-2 rounded-xl border border-orange-200 transition">
+                매장 상품 보기 &rarr;
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function viewStoreProducts(merchantId) {
+      const m = merchants.find(item => item.id === merchantId);
+      if (m) {
+        searchQuery = m.storeName;
+        switchView('mall');
+        document.getElementById('catalog-section').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // ==========================================
+    // REQUESTS (FUNDING) VIEW LOGIC
+    // ==========================================
+    function renderRequests() {
+      const container = document.getElementById('requests-grid');
+      container.innerHTML = dropRequests.map(r => `
+        <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded">${r.marketName}</span>
+              <span class="text-xs font-black ${r.voteCount >= 50 ? 'text-emerald-600' : 'text-orange-600'}">
+                ${r.voteCount >= 50 ? '✅ 50표 달성! 섭외중' : `🔥 ${r.voteCount}명 투표`}
+              </span>
+            </div>
+            <h4 class="text-base font-black text-gray-900">${r.storeName}</h4>
+            <div class="text-xs font-bold text-orange-700 mt-0.5">추천메뉴: ${r.menuName}</div>
+            <p class="text-xs text-gray-600 mt-2 bg-gray-50 p-3 rounded-xl border border-gray-100 italic leading-relaxed">
+              "${r.reason}"
+            </p>
+          </div>
+
+          <div class="mt-5 pt-3 border-t flex items-center justify-between">
+            <span class="text-[11px] text-gray-400">목표 50표 중 ${r.voteCount}표</span>
+            <button onclick="voteRequest('${r.id}')" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow transition flex items-center space-x-1">
+              <span>👍 나도 주문할래요 (+1)</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function voteRequest(reqId) {
+      const item = dropRequests.find(r => r.id === reqId);
+      if (item) {
+        item.voteCount += 1;
+        saveAll();
+        renderRequests();
+        alert(`'${item.storeName}' 드롭 요청에 소중한 1표를 더했습니다! 👏`);
+      }
+    }
+
+    function openRequestModal() { document.getElementById('request-modal').classList.remove('hidden'); }
+    function closeRequestModal() { document.getElementById('request-modal').classList.add('hidden'); }
+
+    function saveNewRequest() {
+      const market = document.getElementById('req-market').value.trim();
+      const store = document.getElementById('req-store').value.trim();
+      const menu = document.getElementById('req-menu').value.trim();
+      const reason = document.getElementById('req-reason').value.trim();
+
+      if (!market || !store || !menu) {
+        alert('시장명, 상호명, 메뉴명을 모두 입력해주세요.');
+        return;
+      }
+
+      dropRequests.unshift({
+        id: 'req-' + Date.now(),
+        marketName: market,
+        storeName: store,
+        menuName: menu,
+        reason: reason || '꼭 장날 드롭으로 먹고 싶어요!',
+        voteCount: 1,
+        status: 'COLLECTING'
+      });
+
+      saveAll();
+      closeRequestModal();
+      renderRequests();
+      alert('신규 맛집 드롭 펀딩 요청이 등록되었습니다! 🎉');
+    }
+
+    // ==========================================
+    // SELLER ADMIN VIEW LOGIC (점주 포털)
+    // ==========================================
+    function setSellerTab(tab) {
+      currentSellerTab = tab;
+      document.querySelectorAll('.seller-tab').forEach(el => {
+        el.className = 'seller-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 font-bold';
+      });
+      const active = document.getElementById(`stab-${tab}`);
+      if (active) {
+        active.className = 'seller-tab text-orange-600 border-b-2 border-orange-600 pb-3 px-4 flex items-center space-x-1.5 font-bold';
+      }
+      renderSellerTabContent();
+    }
+
+    function renderSellerView() {
+      document.getElementById('seller-order-count').textContent = orders.length;
+      document.getElementById('seller-prod-count').textContent = drops.length;
+      document.getElementById('seller-drop-count').textContent = drops.length;
+      setSellerTab(currentSellerTab);
+    }
+
+    function renderSellerTabContent() {
+      const container = document.getElementById('seller-tab-content');
+      
+      if (currentSellerTab === 'orders') {
+        if (orders.length === 0) {
+          container.innerHTML = `
+            <div class="bg-white rounded-3xl p-12 text-center border border-gray-200 text-gray-400">
+              <i data-lucide="package" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+              <h4 class="font-bold text-gray-700 text-sm">아직 접수된 주문이 없습니다.</h4>
+              <p class="text-xs mt-1">소비자가 장날 라이브 드롭을 신청하면 실시간으로 여기에 주문서가 표시됩니다.</p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="space-y-4">
+              ${orders.map(o => `
+                <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                      <span class="font-mono text-xs font-bold text-gray-500">${o.id}</span>
+                      <span class="text-xs font-black px-2.5 py-0.5 rounded-full ${o.status === 'SHIPPED' ? 'bg-emerald-100 text-emerald-800' : 'bg-orange-100 text-orange-800'}">
+                        ${o.status === 'SHIPPED' ? '🚚 배송중' : '📦 상품 준비중'}
+                      </span>
+                    </div>
+                    <h4 class="text-base font-black text-gray-900">${o.productTitle} (${o.qty}세트)</h4>
+                    <div class="text-xs text-gray-600">받는분: <strong>${o.buyerName}</strong> (${o.buyerPhone}) · ${o.address}</div>
+                    <div class="text-xs text-gray-500 font-medium">결제수단: ${o.payMethod === 'onnuri' ? '🎫 온누리상품권' : '💳 일반카드'} · 금액: <strong>${o.totalPrice.toLocaleString()}원</strong></div>
+                  </div>
+
+                  <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                    ${o.trackingNumber ? `
+                      <div class="text-xs text-right sm:text-left bg-gray-50 p-2 rounded-xl border">
+                        <span class="text-gray-400 block text-[10px]">운송장 번호</span>
+                        <span class="font-mono font-bold text-gray-800">${o.courier || 'CJ대한통운'} ${o.trackingNumber}</span>
+                      </div>
+                    ` : `
+                      <button onclick="promptShipping('${o.id}')" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition">
+                        운송장 입력 및 발송완료
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+      } else if (currentSellerTab === 'products') {
+        container.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            ${drops.map(d => `
+              <div class="bg-white rounded-3xl p-4 border border-gray-200 shadow-sm flex space-x-3.5 items-center">
+                <img src="${d.image}" class="w-20 h-20 rounded-2xl object-cover border" alt="">
+                <div class="flex-1">
+                  <div class="flex items-center space-x-1.5">
+                    <span class="bg-orange-100 text-orange-700 text-[9px] font-bold px-1.5 rounded">${d.category}</span>
+                    <span class="text-[10px] text-gray-400">재고 ${d.targetCount}세트</span>
+                  </div>
+                  <h4 class="text-xs font-black text-gray-900 mt-1 line-clamp-1">${d.title}</h4>
+                  <div class="text-xs font-bold text-orange-600 mt-0.5">${d.dropPrice.toLocaleString()}원</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentSellerTab === 'drops') {
+        container.innerHTML = `
+          <div class="space-y-4">
+            ${drops.map(d => `
+              <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span class="bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded">${d.marketName}</span>
+                  <h4 class="text-base font-black text-gray-900 mt-1">${d.title}</h4>
+                  <p class="text-xs text-gray-500 mt-0.5">${d.shippingDate}</p>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-black text-orange-600">달성: ${d.currentCount} / ${d.targetCount}세트 (${Math.round(d.currentCount/d.targetCount*100)}%)</div>
+                  <div class="text-xs text-gray-400 mt-0.5">개당 ${d.dropPrice.toLocaleString()}원</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentSellerTab === 'profile') {
+        const m = merchants[0];
+        container.innerHTML = `
+          <div class="bg-white rounded-3xl p-6 border border-gray-200 max-w-xl space-y-4">
+            <h4 class="font-black text-gray-900 text-sm">매장 프로필 정보 설정</h4>
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="font-bold text-gray-700 block mb-1">상점 상호명</label>
+                <input type="text" value="${m.storeName}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+              <div>
+                <label class="font-bold text-gray-700 block mb-1">소속 시장</label>
+                <input type="text" value="${m.marketName}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+              <div>
+                <label class="font-bold text-gray-700 block mb-1">매장 위치 힌트</label>
+                <input type="text" value="${m.locationHint}" class="w-full bg-gray-50 border rounded-xl p-2.5">
+              </div>
+              <button onclick="alert('매장 정보가 저장되었습니다.')" class="w-full bg-orange-600 text-white font-bold py-2.5 rounded-xl">저장하기</button>
+            </div>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function promptShipping(orderId) {
+      const tracking = prompt('운송장 번호를 입력해주세요 (예: 68392019482):');
+      if (tracking) {
+        const o = orders.find(item => item.id === orderId);
+        if (o) {
+          o.trackingNumber = tracking;
+          o.courier = 'CJ대한통운';
+          o.status = 'SHIPPED';
+          saveAll();
+          renderSellerView();
+          alert('배송 시작 처리가 완료되었습니다!');
+        }
+      }
+    }
+
+    function openAddProductModal() { document.getElementById('add-product-modal').classList.remove('hidden'); }
+    function closeAddProductModal() { document.getElementById('add-product-modal').classList.add('hidden'); }
+
+    function saveNewProduct() {
+      const name = document.getElementById('p-name').value.trim();
+      const price = parseInt(document.getElementById('p-price').value) || 15000;
+      const stock = parseInt(document.getElementById('p-stock').value) || 30;
+      const cat = document.getElementById('p-category').value;
+      const img = document.getElementById('p-img').value.trim() || 'https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=600&q=80';
+      const desc = document.getElementById('p-desc').value.trim();
+
+      if (!name) {
+        alert('상품명을 입력해주세요.');
+        return;
+      }
+
+      drops.unshift({
+        id: 'drop-' + Date.now(),
+        merchantId: 'm-1',
+        marketName: '신림 순대타운',
+        storeName: '원조 30년 백순대 본점',
+        title: name,
+        badge: `한정 ${stock}세트`,
+        targetCount: stock,
+        currentCount: 0,
+        originalPrice: Math.round(price * 1.15),
+        dropPrice: price,
+        isOnnuri: true,
+        category: cat,
+        prepTime: '5분',
+        shelfLife: '냉장 5일',
+        waitingCount: 20,
+        image: img,
+        story: desc || '정성을 담은 전통시장 수제 상품입니다.',
+        highlights: ['당일 신선 포장', '특제 양념 세트 포함'],
+        shippingDate: '주문 즉시 당일 출고',
+        status: 'ACTIVE'
+      });
+
+      saveAll();
+      closeAddProductModal();
+      renderSellerView();
+      alert('신규 상품/밀키트가 등록되어 라이브 드롭에 반영되었습니다! 🎉');
+    }
+
+    function openCreateDropModal() { document.getElementById('create-drop-modal').classList.remove('hidden'); }
+    function closeCreateDropModal() { document.getElementById('create-drop-modal').classList.add('hidden'); }
+
+    function saveNewDrop() {
+      const title = document.getElementById('d-title').value.trim();
+      const target = parseInt(document.getElementById('d-target').value) || 40;
+      const price = parseInt(document.getElementById('d-price').value) || 20000;
+      const shipDate = document.getElementById('d-shipdate').value.trim();
+      const img = document.getElementById('d-img').value.trim() || 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=600&q=80';
+
+      if (!title) {
+        alert('드롭 타이틀을 입력해주세요.');
+        return;
+      }
+
+      drops.unshift({
+        id: 'drop-' + Date.now(),
+        merchantId: 'm-1',
+        marketName: '신림 순대타운',
+        storeName: '원조 30년 백순대 본점',
+        title: title,
+        badge: `장날 한정 ${target}세트`,
+        targetCount: target,
+        currentCount: 0,
+        originalPrice: Math.round(price * 1.2),
+        dropPrice: price,
+        isOnnuri: true,
+        category: 'mealkit',
+        prepTime: '3분',
+        shelfLife: '냉장 5일',
+        waitingCount: 30,
+        image: img,
+        story: '장날 갓 만든 신선함을 집에서 즐기세요.',
+        highlights: ['장날 당일 제조', '특수 보랭 포장'],
+        shippingDate: shipDate || '장날 당일 일괄 발송',
+        status: 'ACTIVE'
+      });
+
+      saveAll();
+      closeCreateDropModal();
+      renderSellerView();
+      alert('장날 LIVE DROP 캠페인이 성공적으로 개설되었습니다! 🔥');
+    }
+
+    // ==========================================
+    // MASTER ADMIN VIEW LOGIC (총괄 관리자)
+    // ==========================================
+    function setAdminTab(tab) {
+      currentAdminTab = tab;
+      document.querySelectorAll('.admin-tab').forEach(el => {
+        el.className = 'admin-tab text-gray-500 hover:text-gray-800 pb-3 px-4 flex items-center space-x-1.5 font-bold';
+      });
+      const active = document.getElementById(`atab-${tab}`);
+      if (active) {
+        active.className = 'admin-tab text-purple-600 border-b-2 border-purple-600 pb-3 px-4 flex items-center space-x-1.5 font-bold';
+      }
+      renderAdminTabContent();
+    }
+
+    function renderAdminView() {
+      const pending = merchants.filter(m => m.status === 'PENDING').length;
+      document.getElementById('admin-pending-merchant-count').textContent = pending;
+      setAdminTab(currentAdminTab);
+    }
+
+    function renderAdminTabContent() {
+      const container = document.getElementById('admin-tab-content');
+
+      if (currentAdminTab === 'merchants') {
+        container.innerHTML = `
+          <div class="space-y-4">
+            ${merchants.map(m => `
+              <div class="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-start space-x-3.5">
+                  <img src="${m.image}" class="w-16 h-16 rounded-2xl object-cover border" alt="">
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xs font-black text-gray-900">${m.storeName}</span>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded ${m.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                        ${m.status === 'APPROVED' ? '승인완료' : '심사대기'}
+                      </span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-0.5">시장: <strong>${m.marketName}</strong> · 사업자: ${m.businessNumber} · 연락처: ${m.phone}</div>
+                    <div class="text-xs text-gray-400 mt-0.5">${m.description}</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                  ${m.status === 'PENDING' ? `
+                    <button onclick="approveMerchant('${m.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition">
+                      입점 승인
+                    </button>
+                    <button onclick="rejectMerchant('${m.id}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition">
+                      반려
+                    </button>
+                  ` : `
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl">공식 입점 활성화됨</span>
+                  `}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentAdminTab === 'drops') {
+        container.innerHTML = `
+          <div class="space-y-4">
+            <h4 class="font-black text-sm text-gray-900">전국 활성 LIVE DROP 목록 (${drops.length}건)</h4>
+            ${drops.map(d => `
+              <div class="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-between text-xs">
+                <div>
+                  <span class="font-bold text-orange-600">[${d.marketName}]</span>
+                  <span class="font-bold text-gray-900 ml-1">${d.title}</span>
+                </div>
+                <div class="font-mono font-bold">${d.dropPrice.toLocaleString()}원 (${d.currentCount}/${d.targetCount}세트)</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentAdminTab === 'orders') {
+        container.innerHTML = `
+          <div class="space-y-4">
+            <h4 class="font-black text-sm text-gray-900">전국 통합 주문 모니터링 (${orders.length}건)</h4>
+            ${orders.map(o => `
+              <div class="bg-white rounded-2xl p-4 border border-gray-200 text-xs flex justify-between items-center">
+                <div>
+                  <span class="font-mono font-bold">${o.id}</span> · ${o.productTitle} (${o.buyerName}님)
+                </div>
+                <div class="font-bold ${o.status === 'SHIPPED' ? 'text-emerald-600' : 'text-orange-600'}">
+                  ${o.status === 'SHIPPED' ? '배송중' : '결제완료'} · ${o.totalPrice.toLocaleString()}원
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentAdminTab === 'settlement') {
+        const totalSales = orders.reduce((sum, o) => sum + o.totalPrice, 0);
+        const fee = Math.round(totalSales * 0.05); // 5% fee
+        const settlement = totalSales - fee;
+
+        container.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-2xl p-5 border border-gray-200">
+              <span class="text-xs text-gray-400 font-bold block">총 결제 대금</span>
+              <span class="text-2xl font-black text-gray-900 mt-1 block">${totalSales.toLocaleString()}원</span>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-gray-200">
+              <span class="text-xs text-gray-400 font-bold block">플랫폼 운영 수수료 (5%)</span>
+              <span class="text-2xl font-black text-purple-600 mt-1 block">${fee.toLocaleString()}원</span>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-gray-200">
+              <span class="text-xs text-gray-400 font-bold block">상점 사장님 정산 지급액</span>
+              <span class="text-2xl font-black text-emerald-600 mt-1 block">${settlement.toLocaleString()}원</span>
+            </div>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function approveMerchant(id) {
+      const m = merchants.find(item => item.id === id);
+      if (m) {
+        m.status = 'APPROVED';
+        saveAll();
+        renderAdminView();
+        alert(`'${m.storeName}' 입점 승인이 완료되었습니다!`);
+      }
+    }
+
+    function rejectMerchant(id) {
+      merchants = merchants.filter(item => item.id !== id);
+      saveAll();
+      renderAdminView();
+      alert('입점 신청이 반려되었습니다.');
+    }
+
+    // ==========================================
+    // CART & CHECKOUT ENGINE
+    // ==========================================
+    function addToCart(productId) {
+      const p = drops.find(item => item.id === productId) || drops[0];
+      if (!p) return;
+      
+      const existing = cart.find(item => item.id === productId);
+      if (existing) {
+        if (existing.qty < 3) {
+          existing.qty += 1;
+        } else {
+          alert('장날 한정 드롭 상품은 1인당 최대 3세트까지만 주문 가능합니다.');
+          return;
+        }
+      } else {
+        cart.push({ ...p, qty: 1 });
+      }
+
+      updateCartBadge();
+      renderCartDrawer();
+    }
+
+    function updateCartBadge() {
+      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('header-cart-badge').textContent = totalQty;
+      document.getElementById('cart-drawer-count').textContent = totalQty;
+    }
+
+    function openCartDrawer() {
+      renderCartDrawer();
+      document.getElementById('cart-drawer').classList.remove('hidden');
+    }
+
+    function closeCartDrawer() {
+      document.getElementById('cart-drawer').classList.add('hidden');
+    }
+
+    function renderCartDrawer() {
+      const container = document.getElementById('cart-items-container');
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-gray-400">
+            <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
+            <p class="text-xs">장바구니가 비어 있습니다.</p>
+          </div>
+        `;
+        document.getElementById('cart-subtotal').textContent = '0원';
+        document.getElementById('cart-total').textContent = '0원';
+        lucide.createIcons();
+        return;
+      }
+
+      let subtotal = 0;
+      container.innerHTML = cart.map(item => {
+        subtotal += item.dropPrice * item.qty;
+        return `
+          <div class="bg-gray-50 rounded-2xl p-3 flex items-center justify-between gap-3 border border-gray-100">
+            <img src="${item.image}" class="w-14 h-14 rounded-xl object-cover border" alt="${item.title}">
+            <div class="flex-1">
+              <span class="text-[9px] font-black text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">${item.marketName}</span>
+              <h4 class="text-xs font-bold text-gray-900 mt-0.5 line-clamp-1">${item.title}</h4>
+              <div class="text-xs font-black text-gray-900 mt-1">${(item.dropPrice * item.qty).toLocaleString()}원</div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="changeCartQty('${item.id}', -1)" class="w-6 h-6 bg-white rounded border font-bold text-xs">-</button>
+              <span class="text-xs font-bold">${item.qty}</span>
+              <button onclick="changeCartQty('${item.id}', 1)" class="w-6 h-6 bg-white rounded border font-bold text-xs">+</button>
+              <button onclick="removeFromCart('${item.id}')" class="text-gray-400 hover:text-red-500 p-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cart-subtotal').textContent = `${subtotal.toLocaleString()}원`;
+      document.getElementById('cart-total').textContent = `${subtotal.toLocaleString()}원`;
+      lucide.createIcons();
+    }
+
+    function changeCartQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (item) {
+        if (item.qty + delta <= 0) {
+          removeFromCart(id);
+        } else if (item.qty + delta > 3) {
+          alert('1인당 최대 3세트까지만 주문 가능합니다.');
+        } else {
+          item.qty += delta;
+          updateCartBadge();
+          renderCartDrawer();
+        }
+      }
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      updateCartBadge();
+      renderCartDrawer();
+    }
+
+    function proceedToCheckoutFromCart() {
+      if (cart.length === 0) {
+        alert('장바구니가 비어 있습니다.');
+        return;
+      }
+      closeCartDrawer();
+      openCheckoutModal(cart[0].id);
+    }
+
+    // Detail Modal Logic
+    function openProductDetail(productId) {
+      const p = drops.find(item => item.id === productId);
+      if (!p) return;
+
+      const body = document.getElementById('detail-modal-body');
+      body.innerHTML = `
+        <div class="space-y-4">
+          <img src="${p.image}" class="w-full h-64 rounded-2xl object-cover shadow-sm" alt="${p.title}">
+          <div class="flex items-center space-x-2">
+            <span class="bg-orange-600 text-white text-xs font-black px-2.5 py-1 rounded-md">${p.marketName}</span>
+            <span class="bg-red-50 text-red-600 text-xs font-bold px-2.5 py-1 rounded-md border border-red-200">🔥 실시간 대기 ${p.waitingCount}명</span>
+            ${p.isOnnuri ? `<span class="bg-emerald-50 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-200">🎫 온누리 결제 가맹점</span>` : ''}
+          </div>
+          <h3 class="text-lg font-black text-gray-900">${p.title}</h3>
+          <p class="text-xs text-gray-600 leading-relaxed">${p.story}</p>
+          
+          <div class="bg-orange-50 rounded-2xl p-4 space-y-2 border border-orange-100">
+            <div class="text-xs font-bold text-gray-800">📌 상품 핵심 구성</div>
+            ${(p.highlights || []).map(h => `<div class="text-xs text-gray-600 flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-orange-600"></i><span>${h}</span></div>`).join('')}
+          </div>
+
+          <div class="flex items-baseline justify-between pt-3 border-t">
+            <div>
+              <span class="text-xs text-gray-400 line-through">정상가 ${p.originalPrice.toLocaleString()}원</span>
+              <div class="text-xl font-black text-orange-600">${p.dropPrice.toLocaleString()}원</div>
+            </div>
+            <div class="text-right">
+              <span class="text-[11px] text-gray-500 font-bold block">${p.shippingDate}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <button onclick="closeProductDetail(); addToCart('${p.id}'); openCartDrawer();" class="bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs py-3 rounded-xl border border-orange-200">
+              장바구니 담기
+            </button>
+            <button onclick="closeProductDetail(); openCheckoutModal('${p.id}');" class="bg-orange-600 hover:bg-orange-700 text-white font-black text-xs py-3 rounded-xl shadow">
+              장날 드롭 주문하기 &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeProductDetail() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    // Checkout Modal Logic
+    function openCheckoutModal(productId) {
+      const p = drops.find(item => item.id === productId) || drops[0];
+      selectedProduct = p;
+      orderQuantity = 1;
+      selectedPayMethod = 'onnuri';
+
+      document.getElementById('modal-item-img').src = p.image;
+      document.getElementById('modal-item-market').textContent = p.marketName;
+      document.getElementById('modal-item-title').textContent = p.title;
+      document.getElementById('modal-item-price').textContent = `${p.dropPrice.toLocaleString()}원`;
+      document.getElementById('modal-qty').textContent = orderQuantity;
+
+      selectPay('onnuri');
+      updatePriceBreakdown();
+
+      document.getElementById('checkout-modal').classList.remove('hidden');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkout-modal').classList.add('hidden');
+    }
+
+    function changeQty(delta) {
+      const next = orderQuantity + delta;
+      if (next >= 1 && next <= 3) {
+        orderQuantity = next;
+        document.getElementById('modal-qty').textContent = orderQuantity;
+        updatePriceBreakdown();
+      } else if (next > 3) {
+        alert('장날 한정 드롭 상품은 1인당 최대 3세트까지만 주문 가능합니다.');
+      }
+    }
+
+    function selectPay(method) {
+      selectedPayMethod = method;
+      const onnuriBtn = document.getElementById('pay-onnuri');
+      const cardBtn = document.getElementById('pay-card');
+
+      if (method === 'onnuri') {
+        onnuriBtn.className = 'pay-method-btn border-2 border-emerald-600 bg-emerald-50 text-emerald-900 rounded-xl p-2.5 text-left font-bold text-xs flex flex-col justify-between';
+        cardBtn.className = 'pay-method-btn border border-gray-200 bg-gray-50 text-gray-800 rounded-xl p-2.5 text-left font-bold text-xs flex flex-col justify-between';
+      } else {
+        cardBtn.className = 'pay-method-btn border-2 border-orange-600 bg-orange-50 text-orange-900 rounded-xl p-2.5 text-left font-bold text-xs flex flex-col justify-between';
+        onnuriBtn.className = 'pay-method-btn border border-gray-200 bg-gray-50 text-gray-800 rounded-xl p-2.5 text-left font-bold text-xs flex flex-col justify-between';
+      }
+      updatePriceBreakdown();
+    }
+
+    function updatePriceBreakdown() {
+      const p = selectedProduct;
+      const total = p.dropPrice * orderQuantity;
+
+      document.getElementById('price-subtotal').textContent = `${total.toLocaleString()}원`;
+      document.getElementById('price-total').textContent = `${total.toLocaleString()}원`;
+      document.getElementById('order-submit-text').textContent = `${total.toLocaleString()}원 즉시 결제 및 장날 드롭 신청`;
+    }
+
+    function submitOrder() {
+      const name = document.getElementById('order-name').value.trim();
+      const phone = document.getElementById('order-phone').value.trim();
+      const addr = document.getElementById('order-address').value.trim();
+
+      if (!name || !phone || !addr) {
+        alert('받는 분 성함, 휴대폰 번호, 배송지 주소를 모두 입력해주세요.');
+        return;
+      }
+
+      closeCheckoutModal();
+
+      const orderId = 'JN-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(1000 + Math.random() * 9000);
+      const total = selectedProduct.dropPrice * orderQuantity;
+
+      // Add to Order Database
+      orders.unshift({
+        id: orderId,
+        productId: selectedProduct.id,
+        merchantId: selectedProduct.merchantId,
+        productTitle: selectedProduct.title,
+        qty: orderQuantity,
+        buyerName: name,
+        buyerPhone: phone,
+        address: addr,
+        payMethod: selectedPayMethod,
+        totalPrice: total,
+        status: 'PAID',
+        createdAt: Date.now()
+      });
+
+      // Update current count in drop
+      selectedProduct.currentCount += orderQuantity;
+      saveAll();
+
+      document.getElementById('succ-order-id').textContent = orderId;
+      document.getElementById('succ-item-name').textContent = `${selectedProduct.title} (${orderQuantity}세트)`;
+      document.getElementById('succ-pay-method').textContent = selectedPayMethod === 'onnuri' ? '온누리상품권(카드/디지털)' : '신용카드/간편결제';
+      document.getElementById('succ-final-price').textContent = `${total.toLocaleString()}원`;
+
+      renderProducts();
+      renderHeroCard();
+
+      document.getElementById('success-modal').classList.remove('hidden');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('success-modal').classList.add('hidden');
+    }
+
+    function openOnnuriModal() { document.getElementById('onnuri-modal').classList.remove('hidden'); }
+    function closeOnnuriModal() { document.getElementById('onnuri-modal').classList.add('hidden'); }
+
+    // ==========================================
+    // INITIALIZATION & URL PARAMETER PARSING
+    // ==========================================
+    function parseUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const incomingMarket = params.get('market');
+      const viewParam = params.get('view');
+
+      if (incomingMarket) {
+        document.getElementById('app-incoming-banner').classList.remove('hidden');
+        document.getElementById('incoming-market-name').textContent = incomingMarket;
+        document.getElementById('incoming-market-desc').textContent = `'${incomingMarket}'의 한정 수량 장날 라이브 드롭 및 입점 상점관입니다.`;
+        searchQuery = incomingMarket;
+      }
+
+      if (viewParam && ['mall', 'stores', 'requests', 'seller', 'admin'].includes(viewParam)) {
+        switchView(viewParam);
+      } else {
+        switchView('mall');
+      }
+    }
+
+    function startCountdownTimer() {
+      let seconds = 3 * 3600 + 42 * 60 + 18;
+      setInterval(() => {
+        if (seconds > 0) seconds--;
+        const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        const heroEl = document.getElementById('hero-timer');
+        if (heroEl) {
+          heroEl.textContent = `${h}:${m}:${s} 남음`;
+        }
+      }, 1000);
+    }
+
+    function renderAll() {
+      renderHeroCard();
+      renderProducts();
+      renderStores();
+      renderRequests();
+      renderSellerView();
+      renderAdminView();
+    }
+
+    // Window Onload
+    window.addEventListener('DOMContentLoaded', () => {
+      initData();
+      renderAll();
+      parseUrlParams();
+      startCountdownTimer();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
