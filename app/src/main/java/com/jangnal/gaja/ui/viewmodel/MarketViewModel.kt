@@ -216,7 +216,9 @@ class MarketViewModel(
                         if (snapshot == null) return@addSnapshotListener
                         
                         val firestoreShops = snapshot.documents.mapNotNull { doc ->
+                            if (doc.getBoolean("isDeleted") == true) return@mapNotNull null
                             val name = doc.getString("shopName") ?: return@mapNotNull null
+                            if (name.isBlank() || doc.getString("category") == "DELETED") return@mapNotNull null
                             Shop(
                                 marketId = market.id,
                                 shopName = name,
