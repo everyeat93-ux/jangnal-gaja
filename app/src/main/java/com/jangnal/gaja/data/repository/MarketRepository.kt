@@ -358,11 +358,16 @@ class MarketRepository(
                 .replace(Regex("^\\s*\\(사\\)"), "")
                 .replace(Regex("^\\s*\\(재\\)"), "")
                 .replace(Regex("^\\s*\\(합\\)"), "")
-                .trim()
-                
             val existing = marketDao.getShopsForMarketList(marketId)
             val isMockOrLegacy = { s: Shop ->
                 s.isMock ||
+                s.shopName.isBlank() ||
+                s.category == "DELETED" ||
+                s.category.contains("DELETED", ignoreCase = true) ||
+                s.shopName.contains("가마솥 한방 족발") ||
+                s.shopName.contains("고향 참기름·들기름 방앗간") ||
+                s.shopName.contains("명품 수제 손칼국수") ||
+                s.shopName.contains("장터 즉석 찹쌀꽈배기·도너츠") ||
                 s.shopName.contains("청과·채소 농산물") ||
                 s.shopName.contains("산지직송 건어물·젓갈") ||
                 s.shopName.contains("전통 떡방앗간·참기름") ||

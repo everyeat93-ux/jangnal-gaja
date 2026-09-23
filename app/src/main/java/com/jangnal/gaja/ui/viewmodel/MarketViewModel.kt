@@ -206,11 +206,11 @@ class MarketViewModel(
                 val firestore = FirebaseFirestore.getInstance()
                 val marketDocId = market.id.toString()
                 
-                // Firestore shops listener
+                // Firestore official shops listener
                 shopsListenerRegistration = firestore.collection("markets").document(marketDocId)
-                    .collection("shops").addSnapshotListener { snapshot, error ->
+                    .collection("official_shops").addSnapshotListener { snapshot, error ->
                         if (error != null) {
-                            android.util.Log.e("FirebaseSync", "Shops snapshot listener failed for market $marketDocId: ", error)
+                            android.util.Log.e("FirebaseSync", "Official shops snapshot listener failed for market $marketDocId: ", error)
                             return@addSnapshotListener
                         }
                         if (snapshot == null) return@addSnapshotListener
@@ -218,17 +218,22 @@ class MarketViewModel(
                         val firestoreShops = snapshot.documents.mapNotNull { doc ->
                             if (doc.getBoolean("isDeleted") == true) return@mapNotNull null
                             val name = doc.getString("shopName") ?: return@mapNotNull null
-                            if (name.isBlank() || doc.getString("category") == "DELETED") return@mapNotNull null
+                            val cat = doc.getString("category") ?: "기타"
+                            if (name.isBlank() || cat == "DELETED" || cat.contains("DELETED", ignoreCase = true)) return@mapNotNull null
+                            if (name.contains("가마솥 한방 족발") || name.contains("고향 참기름·들기름 방앗간") || name.contains("명품 수제 손칼국수")) return@mapNotNull null
                             Shop(
                                 marketId = market.id,
                                 shopName = name,
-                                category = doc.getString("category") ?: "기타",
+                                category = cat,
                                 latitude = doc.getDouble("latitude") ?: market.latitude,
                                 longitude = doc.getDouble("longitude") ?: market.longitude,
                                 queueStatus = doc.getLong("queueStatus")?.toInt() ?: -1,
                                 lastReportTime = doc.getLong("lastReportTime") ?: 0L,
                                 isVerifiedReport = doc.getBoolean("isVerifiedReport") ?: false,
-                                isMock = doc.getBoolean("isMock") ?: false
+                                isMock = doc.getBoolean("isMock") ?: false,
+                                isOnnuri = doc.getBoolean("isOnnuri") ?: true,
+                                onnuriType = doc.getString("onnuriType") ?: "지류·카드·모바일",
+                                onnuriConfirmedCount = doc.getLong("onnuriConfirmedCount")?.toInt() ?: 0
                             )
                         }
                         
@@ -367,7 +372,7 @@ class MarketViewModel(
                     "onnuriConfirmedCount" to 1
                 )
                 firestore.collection("markets").document(marketId.toString())
-                    .collection("shops").document(sanitizedName).set(shopMap).await()
+                    .collection("official_shops").document(sanitizedName).set(shopMap).await()
             } catch (e: Exception) {
                 android.util.Log.e("FirebaseSync", "Add shop to Firestore failed: ", e)
             }
@@ -396,7 +401,7 @@ class MarketViewModel(
             try {
                 val firestore = FirebaseFirestore.getInstance()
                 firestore.collection("markets").document(shop.marketId.toString())
-                    .collection("shops").document(shop.shopName).update(mapOf(
+                    .collection("official_shops").document(shop.shopName).update(mapOf(
                         "queueStatus" to sanitizedStatus,
                         "lastReportTime" to reportTime,
                         "isVerifiedReport" to isVerified
