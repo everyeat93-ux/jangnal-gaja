@@ -140,25 +140,13 @@ class MarketViewModel(
     fun checkAndLoadInitialData(context: Context) {
         viewModelScope.launch {
             if (repository.allMarkets.stateIn(viewModelScope).value.isEmpty()) {
-                // If DB is empty, try loading from CSV
+                // If DB is empty, load from clean unified CSV in assets
                 try {
                     val inputStream = context.assets.open("markets.csv")
                     repository.loadDataFromCsv(inputStream)
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    // Fallback to sample data if no CSV
                     seedSampleData()
-                }
-            }
-            
-            // Trigger background Gist sync periodically
-            launch {
-                val gistUrl = "https://gist.githubusercontent.com/Brasshun/ad574306a1414bf4bf60dc38416683f4/raw/markets.json"
-                val result = repository.syncDataFromJson(gistUrl, context)
-                if (result) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "최신 장날 정보가 업데이트되었습니다. 🏪", Toast.LENGTH_SHORT).show()
-                    }
                 }
             }
         }
