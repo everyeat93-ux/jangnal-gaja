@@ -1310,12 +1310,12 @@
     // =========================================================================
     // DATA PERSISTENCE & INITIAL SEED DATA
     // =========================================================================
-    const STORAGE_KEY_MERCHANTS = 'jg_merchants_v3';
-    const STORAGE_KEY_DROPS = 'jg_drops_v3';
-    const STORAGE_KEY_ORDERS = 'jg_orders_v3';
-    const STORAGE_KEY_REQUESTS = 'jg_requests_v3';
-    const STORAGE_KEY_REVIEWS = 'jg_reviews_v3';
-    const STORAGE_KEY_CART = 'jg_cart_v3';
+    const STORAGE_KEY_MERCHANTS = 'jg_merchants_v5';
+    const STORAGE_KEY_DROPS = 'jg_drops_v5';
+    const STORAGE_KEY_ORDERS = 'jg_orders_v5';
+    const STORAGE_KEY_REQUESTS = 'jg_requests_v5';
+    const STORAGE_KEY_REVIEWS = 'jg_reviews_v5';
+    const STORAGE_KEY_CART = 'jg_cart_v5';
 
     // Sample High-Res Document Data URLs
     const SAMPLE_DOCS = {
@@ -1324,272 +1324,11 @@
       foodDoc: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1000&q=80'
     };
 
-    const INITIAL_MERCHANTS = [
-      {
-        id: 'm-1',
-        marketName: '신림중앙시장 (순대타운)',
-        storeName: '원조 30년 백순대 본점',
-        ownerName: '김옥자',
-        loginId: 'soondae',
-        password: '1234',
-        businessNumber: '119-04-82910',
-        phone: '02-872-9988',
-        category: '맛집 밀키트',
-        isOnnuri: true,
-        onnuriCode: 'ON-1190-8291',
-        foodLicense: '제2015-서울관악-0089호',
-        bizDocUrl: SAMPLE_DOCS.bizDoc,
-        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
-        foodDocUrl: SAMPLE_DOCS.foodDoc,
-        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=600&q=80',
-        description: '30년 전통 신림 순대타운의 명물! 고소한 들깨가루와 비법 초고추장 소스로 볶아내는 원조 백순대입니다.',
-        locationHint: '순대타운 3층 301호',
-        status: 'APPROVED'
-      },
-      {
-        id: 'm-2',
-        marketName: '속초관광수산시장',
-        storeName: '속초 수제 조청 닭강정 본점',
-        ownerName: '박성호',
-        loginId: 'sokcho',
-        password: '1234',
-        businessNumber: '220-11-93820',
-        phone: '033-633-5544',
-        category: '간식/먹거리',
-        isOnnuri: true,
-        onnuriCode: 'ON-2201-9382',
-        foodLicense: '제2018-강원속초-0112호',
-        bizDocUrl: SAMPLE_DOCS.bizDoc,
-        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
-        foodDocUrl: SAMPLE_DOCS.foodDoc,
-        image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=600&q=80',
-        description: '국내산 100% 닭다리살과 전통 쌀조청으로 가마솥에서 튀겨낸 바삭한 속초 명물 닭강정입니다.',
-        locationHint: '닭전골목 12호',
-        status: 'APPROVED'
-      },
-      {
-        id: 'm-3',
-        marketName: '정선아리랑시장 (2·7일장)',
-        storeName: '정선 고랭지 산나물 방앗간',
-        ownerName: '이순덕',
-        loginId: 'san-namul',
-        password: '1234',
-        businessNumber: '312-88-10293',
-        phone: '033-563-1288',
-        category: '농축수산/특산물',
-        isOnnuri: true,
-        onnuriCode: 'ON-3128-1029',
-        foodLicense: '제2021-강원정선-0034호',
-        bizDocUrl: SAMPLE_DOCS.bizDoc,
-        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
-        foodDocUrl: SAMPLE_DOCS.foodDoc,
-        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
-        description: '해발 700m 정선 고랭지에서 당일 아침 수확한 햇생곤드레와 갓 짠 시골 들기름 세트입니다.',
-        locationHint: '나물골목 5동 2호',
-        status: 'APPROVED'
-      },
-      {
-        id: 'm-4',
-        marketName: '서울 광장시장',
-        storeName: '광장 맷돌 빈대떡 & 마약김밥',
-        ownerName: '정영숙',
-        loginId: 'bindaetteok',
-        password: '1234',
-        businessNumber: '101-22-38491',
-        phone: '02-2267-0099',
-        category: '맛집 밀키트',
-        isOnnuri: true,
-        onnuriCode: 'ON-1012-3849',
-        foodLicense: '제2019-서울종로-0245호',
-        bizDocUrl: SAMPLE_DOCS.bizDoc,
-        onnuriDocUrl: SAMPLE_DOCS.onnuriDoc,
-        foodDocUrl: SAMPLE_DOCS.foodDoc,
-        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
-        description: '100% 녹두를 맷돌에 직접 갈아 부쳐내는 겉바속촉 빈대떡 반죽과 겨자소스 마약김밥 세트입니다.',
-        locationHint: '만남의 광장 중앙',
-        status: 'APPROVED'
-      }
-    ];
-
-    const INITIAL_DROPS = [
-      {
-        id: 'drop-1',
-        merchantId: 'm-1',
-        marketName: '신림 순대타운',
-        storeName: '원조 30년 백순대 본점',
-        title: '[신림 순대타운] 3분 완성 원조 백순대볶음 밀키트 (2인분)',
-        badge: '한정 50세트',
-        targetCount: 50,
-        currentCount: 36,
-        originalPrice: 21000,
-        dropPrice: 18900,
-        isOnnuri: true,
-        category: 'mealkit',
-        prepTime: '3분',
-        shelfLife: '냉장 5일',
-        waitingCount: 38,
-        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=800&q=80',
-        story: '30년간 한 자리를 지켜온 순대타운의 깊은 맛! 양배추, 쫄면, 곱창, 순대를 비법 양념장과 함께 3분 만에 볶아 드실 수 있습니다.',
-        highlights: ['특제 비법 초장+들깨가루', '30년 전통 찰순대 2인분', '신선 야채+쫄면'],
-        shippingDate: '오늘 결제 시 3시 안심 신선 출고',
-        status: 'ACTIVE'
-      },
-      {
-        id: 'drop-2',
-        merchantId: 'm-2',
-        marketName: '속초관광수산시장',
-        storeName: '속초 수제 조청 닭강정 본점',
-        title: '[속초 30년 본점] 가마솥 수제 쌀조청 순살 닭강정 (1상자/특대)',
-        badge: '한정 60박스',
-        targetCount: 60,
-        currentCount: 48,
-        originalPrice: 24000,
-        dropPrice: 21000,
-        isOnnuri: true,
-        category: 'snack',
-        prepTime: '에어프라이어 3분',
-        shelfLife: '상온 3일/냉동 1달',
-        waitingCount: 52,
-        image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80',
-        story: '물엿 대신 100% 쌀조청으로 가마솥에서 튀겨내어 식어도 눅눅하지 않고 바삭함이 살아있습니다.',
-        highlights: ['국내산 100% 닭다리살 정육', '수제 쌀조청 특제 소스', '당일 튀김 즉시 발송'],
-        shippingDate: '당일 즉석 조리 후 신선 발송',
-        status: 'ACTIVE'
-      },
-      {
-        id: 'drop-3',
-        merchantId: 'm-3',
-        marketName: '정선아리랑시장 (2·7일장)',
-        storeName: '정선 고랭지 산나물 방앗간',
-        title: '[2·7일 정선 장날] 해발 700m 생곤드레(1kg) & 저온압착 들기름',
-        badge: '당일 아침 채취',
-        targetCount: 40,
-        currentCount: 31,
-        originalPrice: 29000,
-        dropPrice: 25900,
-        isOnnuri: true,
-        category: 'fresh',
-        prepTime: '생나물 무침 5분',
-        shelfLife: '냉장 7일',
-        waitingCount: 24,
-        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
-        story: '정선 5일 장날 아침 수확한 부드러운 생곤드레와 시골 방앗간에서 갓 짠 고소한 생들기름 세트입니다.',
-        highlights: ['해발 700m 당일 수확 곤드레 1kg', '저온 압착 생들기름 1병(180ml)', '특제 나물양념 간장 증정'],
-        shippingDate: '당일 채취 즉시 아이스박스 발송',
-        status: 'ACTIVE'
-      },
-      {
-        id: 'drop-4',
-        merchantId: 'm-4',
-        marketName: '서울 광장시장',
-        storeName: '광장 맷돌 빈대떡 & 마약김밥',
-        title: '[광장시장 직송] 맷돌 녹두 빈대떡 반죽 3장 + 마약김밥 2팩 세트',
-        badge: '한정 50세트',
-        targetCount: 50,
-        currentCount: 44,
-        originalPrice: 23000,
-        dropPrice: 19900,
-        isOnnuri: true,
-        category: 'mealkit',
-        prepTime: '팬에 5분',
-        shelfLife: '냉장 3일',
-        waitingCount: 45,
-        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
-        story: '100% 녹두를 맷돌로 직접 갈아 프라이팬에 굽기만 하면 광장시장 원조 그 맛 그대로 바삭하게 즐기실 수 있습니다.',
-        highlights: ['100% 맷돌 녹두반죽 3장분량', '원조 양파절임 소스', '마약김밥 2팩 + 특제 겨자소스'],
-        shippingDate: '당일 반죽 신선팩 즉시 출고',
-        status: 'ACTIVE'
-      }
-    ];
-
-    const INITIAL_REQUESTS = [
-      {
-        id: 'req-1',
-        marketName: '강릉 중앙시장',
-        storeName: '강릉 수제 어묵고로케',
-        menuName: '치즈·김치 고로케 5종 세트',
-        reason: '강릉 여행 때 줄 서서 먹었는데 집에서 장날 라이브로 주문해서 먹고 싶습니다!',
-        voteCount: 48,
-        status: 'RECRUITING'
-      },
-      {
-        id: 'req-2',
-        marketName: '대구 서문시장',
-        storeName: '50년 미성당 납작만두',
-        menuName: '원조 납작만두(30장) & 비빔야채',
-        reason: '대구 명물 납작만두와 특제 파 양념장을 가족들과 함께 집에서 먹고 싶어요.',
-        voteCount: 39,
-        status: 'COLLECTING'
-      }
-    ];
-
-    const INITIAL_ORDERS = [
-      {
-        id: 'JN-20260922-8391',
-        productId: 'drop-1',
-        merchantId: 'm-1',
-        productTitle: '[신림 순대타운] 3분 완성 원조 백순대볶음 밀키트 (2인분)',
-        qty: 2,
-        buyerName: '김민준',
-        buyerPhone: '010-3849-2910',
-        address: '서울특별시 서초구 서초대로 201 102동 405호',
-        payMethod: 'onnuri_card',
-        payMethodTitle: '충전식 카드형 온누리 (10% 할인)',
-        totalPrice: 37800,
-        status: 'SHIPPED',
-        courier: '우체국택배',
-        trackingNumber: '6892019482019',
-        shippedAt: '2026-09-22 09:30',
-        createdAt: Date.now() - 3600 * 1000 * 5
-      },
-      {
-        id: 'JN-20260922-7215',
-        productId: 'drop-2',
-        merchantId: 'm-2',
-        productTitle: '[속초 30년 본점] 가마솥 수제 쌀조청 순살 닭강정 (1상자/특대)',
-        qty: 1,
-        buyerName: '이수진',
-        buyerPhone: '010-8291-0022',
-        address: '경기도 성남시 분당구 판교역로 166 8층',
-        payMethod: 'onnuri_qr',
-        payMethodTitle: '모바일 온누리 QR (직입금)',
-        totalPrice: 21000,
-        status: 'PAID',
-        courier: null,
-        trackingNumber: null,
-        createdAt: Date.now() - 3600 * 1000 * 2
-      }
-    ];
-
-    const INITIAL_REVIEWS = [
-      {
-        id: 'rev-1',
-        productId: 'drop-1',
-        productTitle: '신림동 백순대 밀키트',
-        author: '김*준 (서초구)',
-        rating: 5,
-        content: '순대타운에서 직접 먹던 그 맛 그대로네요! 양배추와 쫄면도 넉넉하게 들어있어서 팬에 3분 볶으니 훌륭한 저녁이 되었습니다.',
-        date: '2026-09-21'
-      },
-      {
-        id: 'rev-2',
-        productId: 'drop-2',
-        productTitle: '속초 쌀조청 닭강정',
-        author: '이*진 (분당구)',
-        rating: 5,
-        content: '택배로 받았는데 눅눅하지 않고 바삭해서 놀랐습니다. 조청 소스가 너무 달지 않고 맥주 안주로 최고예요. 온누리상품권 10% 할인가 적용되어 가성비 짱!',
-        date: '2026-09-20'
-      },
-      {
-        id: 'rev-3',
-        productId: 'drop-3',
-        productTitle: '정선 생곤드레 & 들기름',
-        author: '박*순 (송파구)',
-        rating: 5,
-        content: '생곤드레가 정말 신선하고 부드러워요. 밥 지을 때 얹어 먹으니 시골 방앗간 들기름 향이 온 집안에 가득합니다. 강추합니다.',
-        date: '2026-09-19'
-      }
-    ];
+    const INITIAL_MERCHANTS = [];
+    const INITIAL_DROPS = [];
+    const INITIAL_REQUESTS = [];
+    const INITIAL_ORDERS = [];
+    const INITIAL_REVIEWS = [];
 
     // =========================================================================
     // STATE VARIABLES
@@ -1687,8 +1426,8 @@
       updateCartBadge();
     }
 
-    function resetToSampleData() {
-      if (!confirm('⚠️ 모든 상점, 상품(드롭), 주문 데이터를 초기 샘플 데이터로 복원하시겠습니까?')) return;
+    function clearAllData() {
+      if (!confirm('⚠️ 모든 상점, 상품(드롭), 주문 데이터를 완전히 초기화하시겠습니까?')) return;
       localStorage.removeItem(STORAGE_KEY_MERCHANTS);
       localStorage.removeItem(STORAGE_KEY_DROPS);
       localStorage.removeItem(STORAGE_KEY_ORDERS);
@@ -1696,7 +1435,7 @@
       localStorage.removeItem(STORAGE_KEY_REVIEWS);
       initData();
       renderApp();
-      alert('기본 샘플 데이터로 성공적으로 초기화되었습니다!');
+      alert('데이터가 깨끗하게 초기화되었습니다.');
     }
 
     // =========================================================================
@@ -1720,7 +1459,35 @@
 
       const activeDrops = drops.filter(d => d.status === 'ACTIVE');
       if (activeDrops.length === 0) {
-        container.innerHTML = `<div class="bg-gray-100 p-8 rounded-3xl text-center font-bold text-gray-500">현재 활성화된 장날 드롭이 없습니다.</div>`;
+        container.innerHTML = `
+          <div class="bg-gradient-to-br from-stone-900 via-stone-850 to-orange-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl border border-orange-900/40 relative overflow-hidden">
+            <div class="relative z-10 max-w-2xl space-y-4">
+              <div class="inline-flex items-center space-x-2 bg-orange-600 text-white text-xs font-black px-3.5 py-1 rounded-full shadow border border-orange-400/30">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                <span>전국 5일장·전통시장 입점 상점 공식 모집 중</span>
+              </div>
+              <h1 class="text-xl sm:text-3xl font-black leading-tight">
+                전국 전통시장 명물 맛집·특산물의<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-200">첫 번째 장날 드롭 주인공</span>을 기다립니다!
+              </h1>
+              <p class="text-xs sm:text-sm text-stone-300 leading-relaxed">
+                소상공인시장진흥공단 온누리상품권(10% 정부 할인 지원) 공식 가맹 연동으로 전국 단골을 만나보세요.<br class="hidden sm:inline"/>
+                복잡한 절차 없이 <strong class="text-amber-300">3대 서류(사업자등록증, 온누리코드, 영업신고증)</strong>로 3분 만에 간편하게 입점할 수 있습니다.
+              </p>
+              <div class="pt-2 flex flex-wrap gap-2.5">
+                <button onclick="openApplyModal()" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black py-3 px-5 rounded-2xl shadow-lg active:scale-98 transition flex items-center space-x-2 text-xs sm:text-sm">
+                  <i data-lucide="store" class="w-4 h-4"></i>
+                  <span>우리 시장 상점 입점 신청하기 (무료)</span>
+                </button>
+                <button onclick="openRequestModal()" class="bg-white/10 hover:bg-white/20 text-stone-200 font-bold py-3 px-4 rounded-2xl border border-white/15 transition text-xs flex items-center space-x-1.5">
+                  <i data-lucide="flame" class="w-4 h-4 text-orange-400"></i>
+                  <span>소비자 맛집 드롭 요청하기</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
         return;
       }
 
@@ -1824,7 +1591,22 @@
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="col-span-full bg-white p-8 rounded-3xl text-center text-xs text-gray-500 border border-gray-100">해당 카테고리의 드롭 상품이 없습니다.</div>`;
+        container.innerHTML = `
+          <div class="col-span-full bg-white p-8 sm:p-10 rounded-3xl text-center space-y-3 border border-stone-200/70 shadow-sm">
+            <div class="w-12 h-12 mx-auto bg-orange-100 rounded-2xl flex items-center justify-center text-2xl">
+              🛒
+            </div>
+            <div class="space-y-1">
+              <h4 class="font-black text-gray-900 text-sm sm:text-base">현재 오픈 준비 중인 장날 드롭 상품입니다</h4>
+              <p class="text-xs text-gray-500">전국의 전통시장 사장님들의 입점 심사가 진행되고 있습니다.</p>
+            </div>
+            <button onclick="openApplyModal()" class="inline-flex items-center space-x-1.5 bg-orange-600 hover:bg-orange-700 text-white font-black text-xs px-4 py-2 rounded-xl shadow transition">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+              <span>사장님 입점 신청하기</span>
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
         return;
       }
 
@@ -2457,9 +2239,9 @@
                 <p class="text-xs text-gray-500">모든 상점의 정보를 실시간으로 수정, 삭제하거나 새 상점을 등록할 수 있습니다.</p>
               </div>
               <div class="flex items-center space-x-2">
-                <button onclick="resetToSampleData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1">
+                <button onclick="clearAllData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1">
                   <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                  <span>초기 샘플 복원</span>
+                  <span>데이터 전체 초기화</span>
                 </button>
                 <button onclick="openMerchantEditModal(null)" class="bg-purple-700 hover:bg-purple-800 text-white text-xs font-black px-3.5 py-2 rounded-xl shadow transition flex items-center space-x-1">
                   <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -2468,6 +2250,13 @@
               </div>
             </div>
 
+            ${merchants.length === 0 ? `
+              <div class="bg-white rounded-3xl p-8 text-center border border-gray-200 text-xs space-y-2">
+                <div class="text-3xl">🏪</div>
+                <div class="font-bold text-gray-900 text-sm">현재 등록된 상점이 없습니다.</div>
+                <p class="text-gray-500">입점 신청서를 심사하여 승인하거나, 우측 상단의 [+ 새 상점 직접 등록] 버튼을 눌러 상점을 추가하세요.</p>
+              </div>
+            ` : `
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               ${merchants.map(m => {
                 const storeDrops = drops.filter(d => d.merchantId === m.id);
@@ -2513,6 +2302,7 @@
                 `;
               }).join('')}
             </div>
+            `}
           </div>
         `;
       } else if (tab === 'drops') {
@@ -2529,6 +2319,13 @@
               </button>
             </div>
 
+            ${drops.length === 0 ? `
+              <div class="bg-white rounded-3xl p-8 text-center border border-gray-200 text-xs space-y-2">
+                <div class="text-3xl">📦</div>
+                <div class="font-bold text-gray-900 text-sm">현재 등록된 라이브 드롭 상품이 없습니다.</div>
+                <p class="text-gray-500">우측 상단의 [+ 새 라이브 드롭 상품 개설] 버튼을 눌러 실제 판매 상품을 등록하세요.</p>
+              </div>
+            ` : `
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               ${drops.map(d => {
                 const merchant = merchants.find(m => m.id === d.merchantId) || { storeName: d.storeName, marketName: d.marketName };
@@ -2579,6 +2376,7 @@
                 `;
               }).join('')}
             </div>
+            `}
           </div>
         `;
       } else if (tab === 'logistics') {
