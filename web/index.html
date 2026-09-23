@@ -1668,6 +1668,20 @@
       if (countEl) countEl.textContent = dropRequests.length;
       if (!container) return;
 
+      if (dropRequests.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-white p-6 rounded-2xl text-center space-y-2 border border-stone-200/70 text-xs">
+            <div class="text-gray-600 font-black">현재 대기 중인 소비자 요청 맛집이 없습니다.</div>
+            <p class="text-[11px] text-gray-400">집에서 택배로 맛보고 싶은 전국 5일장/전통시장 명물 맛집을 직접 요청해 보세요!</p>
+            <button onclick="openRequestModal()" class="inline-flex items-center space-x-1 text-xs text-orange-600 font-black hover:underline mt-1">
+              <span>+ 내가 원하는 맛집 드롭 요청하기</span>
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
       container.innerHTML = dropRequests.map(req => `
         <div class="bg-white rounded-2xl p-3.5 border border-gray-200 shadow-sm flex items-center justify-between space-x-3 text-xs">
           <div class="space-y-1 flex-1 min-w-0">
@@ -1683,6 +1697,7 @@
           </button>
         </div>
       `).join('');
+      lucide.createIcons();
     }
 
     // Render Merchants 360 Grid (Approved stores + Welcoming Card for new merchants)
