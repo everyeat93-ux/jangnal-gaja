@@ -162,10 +162,50 @@ data class Market(
         }
     }
 
-    // 목록 화면용 간단 표기 (예: "5일장 (1일부터)")
+    // 5일장 주기 축약 표기 (예: "1·6일장", "2·7일장", "상설시장")
+    fun getShortCycleName(): String {
+        if (isPermanent()) return "상설시장"
+        val cleanCycle = openingCycle.replace(" ", "")
+        val (_, startDays) = parseCyclePublic()
+        val allDays = (getMarketDaysInMonth(31) + startDays).map { it % 10 }.toSet()
+        
+        return when {
+            cleanCycle.contains("1+6") || cleanCycle.contains("1,6") || cleanCycle.contains("1·6") || (allDays.contains(1) && allDays.contains(6)) -> "1·6일장"
+            cleanCycle.contains("2+7") || cleanCycle.contains("2,7") || cleanCycle.contains("2·7") || (allDays.contains(2) && allDays.contains(7)) -> "2·7일장"
+            cleanCycle.contains("3+8") || cleanCycle.contains("3,8") || cleanCycle.contains("3·8") || (allDays.contains(3) && allDays.contains(8)) -> "3·8일장"
+            cleanCycle.contains("4+9") || cleanCycle.contains("4,9") || cleanCycle.contains("4·9") || (allDays.contains(4) && allDays.contains(9)) -> "4·9일장"
+            cleanCycle.contains("5+10") || cleanCycle.contains("5+0") || cleanCycle.contains("0+5") || cleanCycle.contains("5,10") || cleanCycle.contains("5·10") || (allDays.contains(5) && allDays.contains(0)) -> "5·10일장"
+            startDays.isNotEmpty() -> "${startDays.joinToString("·")}일장"
+            else -> "5일장"
+        }
+    }
+
+    // 시장 유형 및 장날 필터 매칭 함수
+    fun matchesScheduleType(type: String): Boolean {
+        if (type == "전체" || type == "전체 유형") return true
+        if (type.contains("상설")) return isPermanent()
+        if (type == "5일장" || type == "5일장 전체" || type == "🎪 5일장") return !isPermanent()
+        
+        if (isPermanent()) return false
+        
+        val cleanCycle = openingCycle.replace(" ", "")
+        val (_, startDays) = parseCyclePublic()
+        val allDays = (getMarketDaysInMonth(31) + startDays).map { it % 10 }.toSet()
+        
+        return when {
+            type.contains("1·6") -> cleanCycle.contains("1+6") || cleanCycle.contains("1,6") || cleanCycle.contains("1·6") || allDays.contains(1) || allDays.contains(6)
+            type.contains("2·7") -> cleanCycle.contains("2+7") || cleanCycle.contains("2,7") || cleanCycle.contains("2·7") || allDays.contains(2) || allDays.contains(7)
+            type.contains("3·8") -> cleanCycle.contains("3+8") || cleanCycle.contains("3,8") || cleanCycle.contains("3·8") || allDays.contains(3) || allDays.contains(8)
+            type.contains("4·9") -> cleanCycle.contains("4+9") || cleanCycle.contains("4,9") || cleanCycle.contains("4·9") || allDays.contains(4) || allDays.contains(9)
+            type.contains("5·10") || type.contains("5·0") -> cleanCycle.contains("5+10") || cleanCycle.contains("5+0") || cleanCycle.contains("0+5") || cleanCycle.contains("5,10") || cleanCycle.contains("5·10") || allDays.contains(5) || allDays.contains(0)
+            else -> true
+        }
+    }
+
+    // 목록 화면용 간단 표기 (예: "5일장 (1·6일장)")
     fun getSimpleTypeText(): String {
-        if (isPermanent()) return "전통시장"
-        return "${getMarketTypeName()} (${getStartDayText()})"
+        if (isPermanent()) return "전통시장 (상설)"
+        return "${getMarketTypeName()} (${getShortCycleName()})"
     }
     
     // 상세 화면용 장날 목록 (예: "매월 1, 6, 11, 16, 21, 26, 31일")

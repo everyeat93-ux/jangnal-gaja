@@ -68,8 +68,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import android.location.Location
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun MarketListScreen(
     viewModel: MarketViewModel,
@@ -276,7 +289,7 @@ fun MarketListScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun MarketList(
     markets: List<Market>, 
@@ -296,7 +309,24 @@ fun MarketList(
         var selectedRegionIndex by remember { mutableIntStateOf(0) }
         val regions = listOf("전국", "수도권", "강원", "충청/대전", "전라/광주", "경상/부산", "제주")
         
-        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, selectedRegionIndex, userLocation) {
+        // 3차 필터: 시장 유형 및 장날 주기 필터
+        var selectedScheduleFilter by remember { mutableStateOf("전체 유형") }
+        val scheduleFilters = listOf("전체 유형", "🏪 상설시장", "🎪 5일장", "1·6일장", "2·7일장", "3·8일장", "4·9일장", "5·10일장")
+        
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        val nationwideMatches = remember(markets, searchQuery) {
+            if (searchQuery.isBlank()) emptyList()
+            else markets.filter {
+                it.marketName.contains(searchQuery, ignoreCase = true) ||
+                it.getDisplayName().contains(searchQuery, ignoreCase = true) ||
+                it.addressRoad.contains(searchQuery, ignoreCase = true) ||
+                it.addressJibun.contains(searchQuery, ignoreCase = true)
+            }
+        }
+        
+        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, selectedRegionIndex, selectedScheduleFilter, userLocation) {
             var filtered = if (searchQuery.isBlank()) markets
             else markets.filter { 
                 it.marketName.contains(searchQuery, ignoreCase = true) ||
@@ -313,7 +343,7 @@ fun MarketList(
                 filtered = filtered.filter { it.isOpenThisWeekend() }
             }
             
-            // P1: 광역 지역 필터링
+            // 2차: 광역 지역 필터링
             filtered = when (selectedRegionIndex) {
                 1 -> filtered.filter { m -> // 수도권
                     m.addressRoad.contains("서울") || m.addressJibun.contains("서울") ||
@@ -348,6 +378,11 @@ fun MarketList(
                     m.addressRoad.contains("제주") || m.addressJibun.contains("제주")
                 }
                 else -> filtered // 전국
+            }
+
+            // 3차: 시장 유형 및 장날 주기 필터링
+            if (selectedScheduleFilter != "전체 유형") {
+                filtered = filtered.filter { it.matchesScheduleType(selectedScheduleFilter) }
             }
             
             when (sortType) {
@@ -384,12 +419,29 @@ fun MarketList(
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
+                        IconButton(onClick = { 
+                            searchQuery = "" 
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        }) {
                             Icon(imageVector = Icons.Default.Clear, contentDescription = "지우기")
                         }
                     }
                 },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        // 검색 결과가 현재 지역에서 0건이지만 전국에 있을 경우 자동으로 전국으로 전환
+                        if (filteredMarkets.isEmpty() && nationwideMatches.isNotEmpty() && selectedRegionIndex != 0) {
+                            selectedRegionIndex = 0
+                        }
+                    }
+                ),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -452,7 +504,7 @@ fun MarketList(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 2차 필터: P1 전국 시/도 광역 지역 칩
+            // 2차 필터: 전국 시/도 광역 지역 칩
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -486,7 +538,40 @@ fun MarketList(
             
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 💡 친절한 안내 팁
+            // 3차 필터: 시장 유형 및 장날 주기 필터 (신설!)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                scheduleFilters.forEach { schedule ->
+                    val isSelected = selectedScheduleFilter == schedule
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { selectedScheduleFilter = schedule },
+                        label = { Text(schedule, fontSize = 12.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // 💡 친절한 안내 팁 (상황에 따라 동적 가이드)
+            val guideTipText = when {
+                searchQuery.isNotBlank() -> "🔍 '${searchQuery}' 검색 결과: 총 ${filteredMarkets.size}곳의 시장"
+                selectedScheduleFilter != "전체 유형" -> "📅 '${selectedScheduleFilter}' 조건의 시장을 모아보고 있습니다."
+                filterOpenToday -> "☀️ 오늘 열리는 5일장 및 매일 열리는 상설시장 목록입니다."
+                filterOpenWeekend -> "🚗 이번 주말(토/일)에 열리는 시장 목록입니다."
+                else -> "💡 '오늘 개장'이나 장날 주기(1·6일, 2·7일 등)를 선택해 맞춤 시장을 찾아보세요."
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -494,7 +579,7 @@ fun MarketList(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "💡 '오늘 개장' 칩을 누르면 오늘 열리는 5일장만 모아볼 수 있습니다.",
+                    text = guideTipText,
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
@@ -503,7 +588,81 @@ fun MarketList(
             Spacer(modifier = Modifier.height(4.dp))
 
             if (filteredMarkets.isEmpty()) {
-                EmptyState("검색 결과가 없습니다.")
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    color = Color.Transparent
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text("🔍", fontSize = 40.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        if (searchQuery.isNotBlank() && nationwideMatches.isNotEmpty() && selectedRegionIndex != 0) {
+                            Text(
+                                text = "'${regions[selectedRegionIndex]}' 지역에는 '${searchQuery}' 검색 결과가 없습니다.",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "💡 '전국'에 총 ${nationwideMatches.size}개의 일치하는 시장이 있습니다!",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    selectedRegionIndex = 0
+                                    selectedScheduleFilter = "전체 유형"
+                                    filterOpenToday = false
+                                    filterOpenWeekend = false
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text("🌐 전국 검색 결과 보기 (${nationwideMatches.size}개)", fontWeight = FontWeight.Bold)
+                            }
+                        } else {
+                            Text(
+                                text = if (searchQuery.isNotBlank()) "'${searchQuery}' 검색 결과가 없습니다." else "조건에 일치하는 시장이 없습니다.",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "다른 검색어를 입력하시거나 필터를 초기화해 보세요.",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        TextButton(
+                            onClick = {
+                                searchQuery = ""
+                                selectedRegionIndex = 0
+                                selectedScheduleFilter = "전체 유형"
+                                filterOpenToday = false
+                                filterOpenWeekend = false
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                            }
+                        ) {
+                            Text("필터 및 검색어 전체 초기화 🔄", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     if (dateLabel != null) {
@@ -531,8 +690,8 @@ fun EmptyState(message: String) {
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
-        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = message,

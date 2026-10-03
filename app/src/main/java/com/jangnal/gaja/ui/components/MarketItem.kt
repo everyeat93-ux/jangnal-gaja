@@ -92,9 +92,10 @@ fun MarketItem(
                     val isPerm = market.isPermanent()
                     val badgeColor = if (isPerm) Color(0xFF2E7D32) else Color(0xFFE65100)
                     val badgeBg = if (isPerm) Color(0xFFE8F5E9) else Color(0xFFFFF3E0)
+                    val badgeText = if (isPerm) "전통시장 (상설)" else market.getShortCycleName()
                     
                     Text(
-                        text = if (isPerm) "전통시장" else "5일장",
+                        text = badgeText,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = badgeColor,

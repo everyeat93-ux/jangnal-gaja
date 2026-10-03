@@ -54,6 +54,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
 import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.data.local.entity.Shop
 import com.jangnal.gaja.util.VoteTracker
@@ -1249,7 +1254,7 @@ private fun shareMarket(context: Context, market: Market) {
     }
 }
 
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun ShopQueueSection(
     market: Market,
@@ -1265,12 +1270,15 @@ fun ShopQueueSection(
     onConfirmOnnuri: (Long) -> Unit = {}
 ) {
     var showAddShopDialog by remember { mutableStateOf(false) }
+    var prefilledShopName by remember { mutableStateOf("") }
     var activeVotingShop by remember { mutableStateOf<Shop?>(null) }
     var selectedCategory by remember { mutableStateOf("전체") }
     var shopSearchText by remember { mutableStateOf("") }
     val confirmedShopIds = remember { mutableStateListOf<Long>() }
     var closedWarningMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     
     // Calculate distance
     val distance = remember(userLocation, market) {
@@ -1302,7 +1310,10 @@ fun ShopQueueSection(
             )
             
             TextButton(
-                onClick = { showAddShopDialog = true },
+                onClick = { 
+                    prefilledShopName = ""
+                    showAddShopDialog = true 
+                },
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
@@ -1348,7 +1359,10 @@ fun ShopQueueSection(
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     Button(
-                        onClick = { showAddShopDialog = true },
+                        onClick = { 
+                            prefilledShopName = ""
+                            showAddShopDialog = true 
+                        },
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
@@ -1362,17 +1376,35 @@ fun ShopQueueSection(
             // Item 1: 상점 검색창
             OutlinedTextField(
                 value = shopSearchText,
-                onValueChange = { shopSearchText = it },
+                onValueChange = { 
+                    shopSearchText = it 
+                    if (selectedCategory != "전체" && it.isNotBlank()) {
+                        selectedCategory = "전체"
+                    }
+                },
                 placeholder = { Text("시장 내 상호명 또는 메뉴 검색", fontSize = 13.sp) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                    }
+                ),
                 leadingIcon = {
                     Text("🔍", fontSize = 14.sp)
                 },
                 trailingIcon = {
                     if (shopSearchText.isNotEmpty()) {
-                        IconButton(onClick = { shopSearchText = "" }) {
+                        IconButton(onClick = { 
+                            shopSearchText = "" 
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        }) {
                             Text("✕", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
                         }
                     }
@@ -1446,15 +1478,44 @@ fun ShopQueueSection(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("🔍 조건에 일치하는 상점이 없습니다.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = if (shopSearchText.isNotBlank()) "🔍 '${shopSearchText}' 상점을 찾을 수 없습니다." else "🔍 조건에 일치하는 상점이 없습니다.",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (shopSearchText.isNotBlank()) "찾으시는 가게가 아직 등록되지 않았나요?\n직접 상점으로 등록해 첫 리뷰와 정보를 남겨보세요!" else "다른 카테고리를 선택하시거나 검색어를 변경해 보세요.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        if (shopSearchText.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = {
+                                    prefilledShopName = shopSearchText
+                                    showAddShopDialog = true
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text("➕ '${shopSearchText}' 상점 등록하기", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
                         TextButton(
                             onClick = {
                                 selectedCategory = "전체"
                                 shopSearchText = ""
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
                             }
                         ) {
-                            Text("필터 초기화 🔄", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("필터 및 검색어 초기화 🔄", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1977,14 +2038,22 @@ fun ShopQueueSection(
 
     // --- Dialogs (Item 6: 위치 힌트 지원 & 카테고리 선택) ---
     if (showAddShopDialog) {
-        var searchQuery by remember { mutableStateOf("") }
+        var searchQuery by remember(prefilledShopName) { mutableStateOf(prefilledShopName) }
         var locationHint by remember { mutableStateOf("") }
         var directCategory by remember { mutableStateOf("먹거리") }
-        val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        LaunchedEffect(prefilledShopName) {
+            if (prefilledShopName.isNotBlank()) {
+                onSearchShops(prefilledShopName)
+            }
+        }
 
         AlertDialog(
             onDismissRequest = { 
-                showAddShopDialog = false 
+                showAddShopDialog = false
+                prefilledShopName = ""
                 onClearSearchShops()
             },
             title = { Text("주변 상점/맛집 검색 및 등록", fontWeight = FontWeight.Bold) },
@@ -2007,11 +2076,22 @@ fun ShopQueueSection(
                             placeholder = { Text("상호명 (예: 호떡, 칼국수)") },
                             modifier = Modifier.weight(1f),
                             singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Search
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSearch = {
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                    onSearchShops(searchQuery)
+                                }
+                            ),
                             shape = RoundedCornerShape(8.dp)
                         )
                         Button(
                             onClick = { 
                                 focusManager.clearFocus()
+                                keyboardController?.hide()
                                 onSearchShops(searchQuery)
                             },
                             contentPadding = PaddingValues(horizontal = 12.dp),
@@ -2076,6 +2156,7 @@ fun ShopQueueSection(
                                                 onAddShop(fullShopName, directCategory)
                                                 android.widget.Toast.makeText(context, "✅ '${fullShopName}' 상점이 등록되었습니다! 🏪", android.widget.Toast.LENGTH_SHORT).show()
                                                 showAddShopDialog = false
+                                                prefilledShopName = ""
                                                 onClearSearchShops()
                                             }
                                         },
@@ -2100,6 +2181,7 @@ fun ShopQueueSection(
                                                 onAddShop(fullShopName, shop.category)
                                                 android.widget.Toast.makeText(context, "✅ '${fullShopName}' 상점이 등록되었습니다! 🏪", android.widget.Toast.LENGTH_SHORT).show()
                                                 showAddShopDialog = false
+                                                prefilledShopName = ""
                                                 onClearSearchShops()
                                             },
                                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -2142,6 +2224,7 @@ fun ShopQueueSection(
                 TextButton(
                     onClick = { 
                         showAddShopDialog = false 
+                        prefilledShopName = ""
                         onClearSearchShops()
                     }
                 ) {
