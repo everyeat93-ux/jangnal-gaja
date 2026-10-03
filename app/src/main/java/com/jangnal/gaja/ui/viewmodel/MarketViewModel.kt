@@ -28,6 +28,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Calendar
 
+import com.jangnal.gaja.data.local.entity.Festival
+import com.jangnal.gaja.data.local.entity.CommunityPost
+
 class MarketViewModel(
     private val repository: MarketRepository
 ) : ViewModel() {
@@ -36,9 +39,17 @@ class MarketViewModel(
     private var votesListenerRegistration: ListenerRegistration? = null
     private var amenitiesListenerRegistration: ListenerRegistration? = null
     private var reviewsListenerRegistration: ListenerRegistration? = null
+    private var festivalsListenerRegistration: ListenerRegistration? = null
+    private var communityListenerRegistration: ListenerRegistration? = null
 
     private val _activeShopReviews = MutableStateFlow<Map<String, List<ShopReview>>>(emptyMap())
     val activeShopReviews: StateFlow<Map<String, List<ShopReview>>> = _activeShopReviews.asStateFlow()
+
+    private val _activeMarketFestivals = MutableStateFlow<List<Festival>>(emptyList())
+    val activeMarketFestivals: StateFlow<List<Festival>> = _activeMarketFestivals.asStateFlow()
+
+    private val _activeMarketCommunityPosts = MutableStateFlow<List<CommunityPost>>(emptyList())
+    val activeMarketCommunityPosts: StateFlow<List<CommunityPost>> = _activeMarketCommunityPosts.asStateFlow()
 
     // 오늘 날짜 (Timestamp)
     private val _today = MutableStateFlow(System.currentTimeMillis())
@@ -183,6 +194,8 @@ class MarketViewModel(
         votesListenerRegistration?.remove()
         amenitiesListenerRegistration?.remove()
         reviewsListenerRegistration?.remove()
+        festivalsListenerRegistration?.remove()
+        communityListenerRegistration?.remove()
         
         shopsCollectJob = viewModelScope.launch {
             // 1. Prepopulate default mock shops if empty
@@ -201,11 +214,84 @@ class MarketViewModel(
                 }
             }
 
+            launch {
+                repository.loadFestivalsForMarket(market)
+                repository.getFestivalsForMarketFlow(market.id).collect {
+                    _activeMarketFestivals.value = it
+                }
+            }
+
+            launch {
+                repository.getCommunityPostsForMarketFlow(market.id).collect { posts ->
+                    _activeMarketCommunityPosts.value = posts
+                }
+            }
+
             // 3. Firebase Firestore Real-time Sync
             try {
                 val firestore = FirebaseFirestore.getInstance()
                 val marketDocId = market.id.toString()
                 
+                // Firestore festivals listener
+                festivalsListenerRegistration = firestore.collection("markets").document(marketDocId)
+                    .collection("festivals").addSnapshotListener { snapshot, error ->
+                        if (snapshot != null && !snapshot.isEmpty) {
+                            val fList = snapshot.documents.mapNotNull { doc ->
+                                val title = doc.getString("title") ?: return@mapNotNull null
+                                Festival(
+                                    id = doc.id,
+                                    marketId = market.id,
+                                    marketName = market.marketName,
+                                    title = title,
+                                    category = doc.getString("category") ?: "축제",
+                                    startDate = doc.getString("startDate") ?: "",
+                                    endDate = doc.getString("endDate") ?: "",
+                                    posterUrl = doc.getString("posterUrl") ?: "",
+                                    venue = doc.getString("venue") ?: "",
+                                    description = doc.getString("description") ?: "",
+                                    hostOrg = doc.getString("hostOrg") ?: "",
+                                    isOfficial = doc.getBoolean("isOfficial") ?: true,
+                                    createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis()
+                                )
+                            }
+                            if (fList.isNotEmpty()) {
+                                viewModelScope.launch(Dispatchers.IO) {
+                                    repository.insertFestivals(fList)
+                                }
+                            }
+                        }
+                    }
+
+                // Firestore community posts listener
+                communityListenerRegistration = firestore.collection("markets").document(marketDocId)
+                    .collection("community_posts").addSnapshotListener { snapshot, error ->
+                        if (snapshot != null) {
+                            val pList = snapshot.documents.mapNotNull { doc ->
+                                val content = doc.getString("content") ?: return@mapNotNull null
+                                val isBlind = doc.getBoolean("isBlind") ?: false
+                                if (isBlind) return@mapNotNull null
+                                CommunityPost(
+                                    postId = doc.id,
+                                    marketId = market.id,
+                                    marketName = market.marketName,
+                                    authorNickname = doc.getString("authorNickname") ?: "장터이웃",
+                                    authorDeviceIdHash = doc.getString("authorDeviceIdHash") ?: "",
+                                    category = doc.getString("category") ?: "꿀팁",
+                                    content = content,
+                                    photoUrl = doc.getString("photoUrl") ?: "",
+                                    isNearMarket = doc.getBoolean("isNearMarket") ?: false,
+                                    likeCount = doc.getLong("likeCount")?.toInt() ?: 0,
+                                    reportCount = doc.getLong("reportCount")?.toInt() ?: 0,
+                                    isBlind = false,
+                                    createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis()
+                                )
+                            }
+                            viewModelScope.launch(Dispatchers.IO) {
+                                pList.forEach { repository.insertCommunityPost(it) }
+                            }
+                        }
+                    }
+
                 // Firestore official shops listener
                 shopsListenerRegistration = firestore.collection("markets").document(marketDocId)
                     .collection("official_shops").addSnapshotListener { snapshot, error ->
@@ -580,12 +666,160 @@ class MarketViewModel(
         }
     }
 
+    fun submitCommunityPost(
+        context: Context,
+        market: Market,
+        nickname: String,
+        category: String,
+        content: String,
+        photoUri: Uri?,
+        userLocation: android.location.Location?,
+        onSuccess: () -> Unit
+    ) {
+        val validationError = com.jangnal.gaja.util.CommunitySafetyHelper.validateContent(content)
+        if (validationError != null) {
+            Toast.makeText(context, "⚠️ $validationError", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val sanitizedNickname = if (nickname.trim().isNotEmpty()) nickname.trim().take(12) else com.jangnal.gaja.util.CommunitySafetyHelper.generateRandomNickname()
+        val deviceHash = com.jangnal.gaja.util.CommunitySafetyHelper.getDeviceIdHash(context)
+
+        var isNear = false
+        if (userLocation != null) {
+            val results = FloatArray(1)
+            android.location.Location.distanceBetween(
+                userLocation.latitude, userLocation.longitude,
+                market.latitude, market.longitude,
+                results
+            )
+            isNear = results[0] <= 300f
+        }
+
+        viewModelScope.launch {
+            try {
+                var photoDownloadUrl = ""
+                if (photoUri != null) {
+                    val bytes = com.jangnal.gaja.util.ImageCompressionHelper.compressImage(context, photoUri)
+                    if (bytes != null) {
+                        val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
+                            .child("images/community/${market.id}/${System.currentTimeMillis()}.jpg")
+                        storageRef.putBytes(bytes).await()
+                        photoDownloadUrl = storageRef.downloadUrl.await().toString()
+                    }
+                }
+
+                val firestore = FirebaseFirestore.getInstance()
+                val docRef = firestore.collection("markets").document(market.id.toString())
+                    .collection("community_posts").document()
+                
+                val post = CommunityPost(
+                    postId = docRef.id,
+                    marketId = market.id,
+                    marketName = market.marketName,
+                    authorNickname = sanitizedNickname,
+                    authorDeviceIdHash = deviceHash,
+                    category = category,
+                    content = content.trim(),
+                    photoUrl = photoDownloadUrl,
+                    isNearMarket = isNear,
+                    likeCount = 0,
+                    reportCount = 0,
+                    isBlind = false,
+                    createdAt = System.currentTimeMillis()
+                )
+
+                val postMap = hashMapOf(
+                    "postId" to post.postId,
+                    "marketId" to post.marketId,
+                    "marketName" to post.marketName,
+                    "authorNickname" to post.authorNickname,
+                    "authorDeviceIdHash" to post.authorDeviceIdHash,
+                    "category" to post.category,
+                    "content" to post.content,
+                    "photoUrl" to post.photoUrl,
+                    "isNearMarket" to post.isNearMarket,
+                    "likeCount" to 0L,
+                    "reportCount" to 0L,
+                    "isBlind" to false,
+                    "createdAt" to post.createdAt
+                )
+
+                docRef.set(postMap).await()
+                repository.insertCommunityPost(post)
+                
+                Toast.makeText(context, "✅ 동네마당 소식이 성공적으로 등록되었습니다! 📝", Toast.LENGTH_SHORT).show()
+                onSuccess()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Submit community post failed: ", e)
+                Toast.makeText(context, "소식 등록 중 네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun likeCommunityPost(marketId: Long, postId: String) {
+        viewModelScope.launch {
+            repository.incrementCommunityPostLike(postId)
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("community_posts").document(postId).update("likeCount", FieldValue.increment(1L)).await()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Like community post failed: ", e)
+            }
+        }
+    }
+
+    fun reportCommunityPost(context: Context, marketId: Long, postId: String, authorHash: String, reason: String) {
+        viewModelScope.launch {
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                val reportData = hashMapOf(
+                    "marketId" to marketId,
+                    "postId" to postId,
+                    "authorHash" to authorHash,
+                    "reason" to reason,
+                    "reportedAt" to System.currentTimeMillis()
+                )
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("community_post_reports").document().set(reportData).await()
+
+                val postDoc = firestore.collection("markets").document(marketId.toString())
+                    .collection("community_posts").document(postId)
+                
+                val currentSnapshot = postDoc.get().await()
+                val currentReportCount = (currentSnapshot.getLong("reportCount") ?: 0L) + 1L
+                val shouldBlind = currentReportCount >= 3L
+
+                postDoc.update(mapOf(
+                    "reportCount" to FieldValue.increment(1L),
+                    "isBlind" to shouldBlind
+                )).await()
+
+                if (shouldBlind) {
+                    repository.blindCommunityPost(postId)
+                }
+
+                Toast.makeText(context, "🚨 신고가 접수되었습니다. 검토 후 신속히 조치하겠습니다.", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Report community post failed: ", e)
+            }
+        }
+    }
+
+    fun blockCommunityAuthor(context: Context, authorHash: String) {
+        com.jangnal.gaja.util.CommunitySafetyHelper.blockAuthor(context, authorHash)
+        Toast.makeText(context, "🚫 해당 사용자가 차단되었습니다. 앞으로 이 사용자의 글이 보이지 않습니다.", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onCleared() {
         super.onCleared()
         shopsListenerRegistration?.remove()
         votesListenerRegistration?.remove()
         amenitiesListenerRegistration?.remove()
         reviewsListenerRegistration?.remove()
+        festivalsListenerRegistration?.remove()
+        communityListenerRegistration?.remove()
     }
 }
 

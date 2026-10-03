@@ -154,12 +154,16 @@ fun MarketListScreen(
         val activeShops by viewModel.activeMarketShops.collectAsState()
         val searchResults by viewModel.searchResults.collectAsState()
         val activeReviews by viewModel.activeShopReviews.collectAsState()
+        val activeFestivals by viewModel.activeMarketFestivals.collectAsState()
+        val activeCommunityPosts by viewModel.activeMarketCommunityPosts.collectAsState()
         val kakaoApiKey = context.getString(com.jangnal.gaja.R.string.kakao_rest_api_key)
 
         com.jangnal.gaja.ui.components.MarketDetailSheet(
             market = selectedMarket!!,
             shops = activeShops,
             searchResults = searchResults,
+            festivals = activeFestivals,
+            communityPosts = activeCommunityPosts,
             reviews = activeReviews,
             userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
@@ -219,6 +223,33 @@ fun MarketListScreen(
             },
             onConfirmOnnuri = { shopId ->
                 viewModel.confirmOnnuriPayment(shopId)
+            },
+            onSubmitCommunityPost = { nickname, category, content, photoUri ->
+                selectedMarket?.let { market ->
+                    viewModel.submitCommunityPost(
+                        context = context,
+                        market = market,
+                        nickname = nickname,
+                        category = category,
+                        content = content,
+                        photoUri = photoUri,
+                        userLocation = userLocation,
+                        onSuccess = {}
+                    )
+                }
+            },
+            onLikeCommunityPost = { postId ->
+                selectedMarket?.let { market ->
+                    viewModel.likeCommunityPost(market.id, postId)
+                }
+            },
+            onReportCommunityPost = { postId, authorHash, reason ->
+                selectedMarket?.let { market ->
+                    viewModel.reportCommunityPost(context, market.id, postId, authorHash, reason)
+                }
+            },
+            onBlockCommunityAuthor = { authorHash ->
+                viewModel.blockCommunityAuthor(context, authorHash)
             },
             onDismissRequest = { selectedMarket = null }
         )

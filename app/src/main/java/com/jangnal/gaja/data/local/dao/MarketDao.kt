@@ -8,6 +8,8 @@ import androidx.room.Query
 import androidx.room.Update
 import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.data.local.entity.Shop
+import com.jangnal.gaja.data.local.entity.Festival
+import com.jangnal.gaja.data.local.entity.CommunityPost
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -176,4 +178,39 @@ interface MarketDao {
 
     @Query("UPDATE markets SET hasParking = :value WHERE id = :marketId")
     suspend fun updateMarketParking(marketId: Long, value: String)
+
+    // --- Festivals / Cultural Events Operations ---
+    @Query("SELECT * FROM festivals WHERE marketId = :marketId ORDER BY startDate ASC")
+    fun getFestivalsForMarketFlow(marketId: Long): Flow<List<Festival>>
+
+    @Query("SELECT * FROM festivals WHERE marketId = :marketId ORDER BY startDate ASC")
+    suspend fun getFestivalsForMarketList(marketId: Long): List<Festival>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFestivals(festivals: List<Festival>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFestival(festival: Festival): Long
+
+    @Query("DELETE FROM festivals WHERE marketId = :marketId")
+    suspend fun deleteFestivalsForMarket(marketId: Long)
+
+    // --- Community Posts Operations ---
+    @Query("SELECT * FROM community_posts WHERE marketId = :marketId AND isBlind = 0 ORDER BY createdAt DESC")
+    fun getCommunityPostsForMarketFlow(marketId: Long): Flow<List<CommunityPost>>
+
+    @Query("SELECT * FROM community_posts WHERE marketId = :marketId AND isBlind = 0 ORDER BY createdAt DESC")
+    suspend fun getCommunityPostsForMarketList(marketId: Long): List<CommunityPost>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCommunityPost(post: CommunityPost): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCommunityPosts(posts: List<CommunityPost>)
+
+    @Query("UPDATE community_posts SET isBlind = 1 WHERE postId = :postId")
+    suspend fun blindCommunityPost(postId: String)
+
+    @Query("UPDATE community_posts SET likeCount = likeCount + 1 WHERE postId = :postId")
+    suspend fun incrementCommunityPostLike(postId: String)
 }

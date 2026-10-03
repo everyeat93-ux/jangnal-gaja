@@ -4,6 +4,8 @@ import android.content.Context
 import com.jangnal.gaja.data.local.dao.MarketDao
 import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.data.local.entity.Shop
+import com.jangnal.gaja.data.local.entity.Festival
+import com.jangnal.gaja.data.local.entity.CommunityPost
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -536,6 +538,67 @@ class MarketRepository(
                 e.printStackTrace()
             }
             results
+        }
+    }
+
+    // --- Festivals / Cultural Events Operations ---
+    fun getFestivalsForMarketFlow(marketId: Long): Flow<List<Festival>> {
+        return marketDao.getFestivalsForMarketFlow(marketId)
+    }
+
+    suspend fun loadFestivalsForMarket(market: Market): List<Festival> {
+        return withContext(Dispatchers.IO) {
+            val existing = marketDao.getFestivalsForMarketList(market.id)
+            if (existing.isNotEmpty()) {
+                return@withContext existing
+            }
+            // 1:1 고유 큐레이션 축제 데이터 로드 및 캐싱
+            val curated = com.jangnal.gaja.util.FestivalDataHelper.getCuratedFestivalsForMarket(market)
+            if (curated.isNotEmpty()) {
+                marketDao.insertFestivals(curated)
+            }
+            marketDao.getFestivalsForMarketList(market.id)
+        }
+    }
+
+    suspend fun insertFestival(festival: Festival) {
+        withContext(Dispatchers.IO) {
+            marketDao.insertFestival(festival)
+        }
+    }
+
+    suspend fun insertFestivals(festivals: List<Festival>) {
+        withContext(Dispatchers.IO) {
+            marketDao.insertFestivals(festivals)
+        }
+    }
+
+    // --- Community Posts Operations ---
+    fun getCommunityPostsForMarketFlow(marketId: Long): Flow<List<CommunityPost>> {
+        return marketDao.getCommunityPostsForMarketFlow(marketId)
+    }
+
+    suspend fun getCommunityPostsForMarket(marketId: Long): List<CommunityPost> {
+        return withContext(Dispatchers.IO) {
+            marketDao.getCommunityPostsForMarketList(marketId)
+        }
+    }
+
+    suspend fun insertCommunityPost(post: CommunityPost) {
+        withContext(Dispatchers.IO) {
+            marketDao.insertCommunityPost(post)
+        }
+    }
+
+    suspend fun blindCommunityPost(postId: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.blindCommunityPost(postId)
+        }
+    }
+
+    suspend fun incrementCommunityPostLike(postId: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.incrementCommunityPostLike(postId)
         }
     }
 }

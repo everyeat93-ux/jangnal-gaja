@@ -7,12 +7,14 @@ import androidx.room.RoomDatabase
 import com.jangnal.gaja.data.local.dao.MarketDao
 import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.data.local.entity.Shop
+import com.jangnal.gaja.data.local.entity.Festival
+import com.jangnal.gaja.data.local.entity.CommunityPost
 
 /**
  * The Room Database for the application.
  * Defines the entities and version.
  */
-@Database(entities = [Market::class, Shop::class], version = 12, exportSchema = false)
+@Database(entities = [Market::class, Shop::class, Festival::class, CommunityPost::class], version = 13, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun marketDao(): MarketDao

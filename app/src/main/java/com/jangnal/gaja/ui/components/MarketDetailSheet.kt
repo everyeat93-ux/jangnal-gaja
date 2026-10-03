@@ -84,6 +84,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.InputChip
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
+import com.jangnal.gaja.data.local.entity.Festival
+import com.jangnal.gaja.data.local.entity.CommunityPost
+import com.jangnal.gaja.util.CommunitySafetyHelper
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
@@ -91,6 +94,8 @@ fun MarketDetailSheet(
     market: Market,
     shops: List<Shop> = emptyList(),
     searchResults: List<Shop> = emptyList(),
+    festivals: List<Festival> = emptyList(),
+    communityPosts: List<CommunityPost> = emptyList(),
     reviews: Map<String, List<com.jangnal.gaja.ui.viewmodel.ShopReview>> = emptyMap(),
     userLocation: android.location.Location? = null,
     onFavoriteToggle: (Market) -> Unit = {},
@@ -104,6 +109,10 @@ fun MarketDetailSheet(
     onConfirmOnnuri: (Long) -> Unit = {},
     onDeleteShop: (String) -> Unit = {},
     onReportShopIssue: (String, String, String) -> Unit = { _, _, _ -> },
+    onSubmitCommunityPost: (String, String, String, Uri?) -> Unit = { _, _, _, _ -> },
+    onLikeCommunityPost: (String) -> Unit = {},
+    onReportCommunityPost: (String, String, String) -> Unit = { _, _, _ -> },
+    onBlockCommunityAuthor: (String) -> Unit = {},
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -255,6 +264,31 @@ fun MarketDetailSheet(
                     onConfirmOnnuri = onConfirmOnnuri,
                     onDeleteShop = onDeleteShop,
                     onReportShopIssue = onReportShopIssue
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 2-1. 🎪 1:1 고유 축제 & 문화공연 섹션
+                MarketFestivalSection(
+                    market = market,
+                    festivals = festivals
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 2-2. 💬 시장 동네마당 커뮤니티 섹션
+                MarketCommunitySection(
+                    market = market,
+                    posts = communityPosts,
+                    userLocation = userLocation,
+                    onSubmitPost = onSubmitCommunityPost,
+                    onLikePost = onLikeCommunityPost,
+                    onReportPost = onReportCommunityPost,
+                    onBlockAuthor = onBlockCommunityAuthor
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -2491,6 +2525,682 @@ fun ShopQueueSection(
             confirmButton = {
                 Button(onClick = { closedWarningMessage = null }) {
                     Text("확인")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun MarketFestivalSection(
+    market: Market,
+    festivals: List<Festival>
+) {
+    if (festivals.isEmpty()) return
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "🎪 시장 축제 & 문화공연",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFFFFEBEE)
+                ) {
+                    Text(
+                        text = "${festivals.size}개 진행/예정",
+                        color = Color(0xFFC62828),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "💡 '${market.getDisplayName()}'에서 열리는 1:1 전용 축제, 버스킹, 노래자랑 및 온누리 환급 행사입니다.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 11.sp
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            festivals.forEach { fest ->
+                val badgeColor = when (fest.category) {
+                    "문화공연" -> Color(0xFF7B1FA2)
+                    "할인행사" -> Color(0xFF2E7D32)
+                    "야시장" -> Color(0xFFE65100)
+                    else -> Color(0xFFC2185B)
+                }
+                val badgeBg = when (fest.category) {
+                    "문화공연" -> Color(0xFFF3E5F5)
+                    "할인행사" -> Color(0xFFE8F5E9)
+                    "야시장" -> Color(0xFFFFF3E0)
+                    else -> Color(0xFFFFEBEE)
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    shadowElevation = 1.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = badgeBg
+                            ) {
+                                Text(
+                                    text = "✨ ${fest.category}",
+                                    color = badgeColor,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                            Text(
+                                text = "📅 ${fest.startDate} ~ ${fest.endDate}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            if (fest.posterUrl.isNotEmpty()) {
+                                AsyncImage(
+                                    model = fest.posterUrl,
+                                    contentDescription = "축제 포스터",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(76.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFFFFE0B2))
+                                )
+                            }
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = fest.title,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                if (fest.venue.isNotEmpty()) {
+                                    Text(
+                                        text = "📍 장소: ${fest.venue}",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                }
+                                Text(
+                                    text = fest.description,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    lineHeight = 16.sp
+                                )
+                                if (fest.hostOrg.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "🏛️ 주최: ${fest.hostOrg}",
+                                        fontSize = 10.sp,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun MarketCommunitySection(
+    market: Market,
+    posts: List<CommunityPost>,
+    userLocation: android.location.Location?,
+    onSubmitPost: (String, String, String, Uri?) -> Unit,
+    onLikePost: (String) -> Unit,
+    onReportPost: (String, String, String) -> Unit,
+    onBlockAuthor: (String) -> Unit
+) {
+    val context = LocalContext.current
+    var showWriteDialog by remember { mutableStateOf(false) }
+    var selectedTab by remember { mutableStateOf("전체") }
+    var postToReport by remember { mutableStateOf<CommunityPost?>(null) }
+    var postToBlock by remember { mutableStateOf<CommunityPost?>(null) }
+    var zoomPhotoUrl by remember { mutableStateOf<String?>(null) }
+
+    val categories = listOf("전체", "실시간 꿀팁", "온누리 장바구니", "축제소식", "동네수다")
+
+    // Filter posts by tab & blocked authors
+    val filteredPosts = remember(posts, selectedTab) {
+        posts.filter { post ->
+            !CommunitySafetyHelper.isAuthorBlocked(context, post.authorDeviceIdHash) &&
+            !post.isBlind &&
+            (selectedTab == "전체" || post.category.contains(selectedTab))
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "💬 ${market.getDisplayName()} 동네마당",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+
+            Button(
+                onClick = { showWriteDialog = true },
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text("➕ 소식 올리기", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "💡 장날 꿀팁, 온누리상품권 사용 장바구니 후기, 현장 소식을 이웃들과 자유롭게 나눠보세요!",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 11.sp
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // 카테고리 필터 칩
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            categories.forEach { cat ->
+                val isSel = selectedTab == cat
+                FilterChip(
+                    selected = isSel,
+                    onClick = { selectedTab = cat },
+                    label = { Text(cat, fontSize = 12.sp, fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal) },
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        if (filteredPosts.isEmpty()) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("🗣️", fontSize = 32.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = if (selectedTab == "전체") "아직 등록된 동네마당 소식이 없습니다." else "'$selectedTab' 관련 소식이 없습니다.",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "오늘 방문하신 후기나 장날 꿀팁, 온누리 득템 소식을 첫 번째로 남겨보세요!",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = { showWriteDialog = true },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("📝 첫 번째 소식 올리기 ➕", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                filteredPosts.forEach { post ->
+                    val isNear = post.isNearMarket
+                    var likedLocally by remember(post.postId) { mutableStateOf(false) }
+                    val currentLikes = post.likeCount + (if (likedLocally) 1 else 0)
+                    val dateStr = remember(post.createdAt) {
+                        SimpleDateFormat("M/d HH:mm", Locale.KOREA).format(Date(post.createdAt))
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        shadowElevation = 1.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = post.authorNickname,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    if (isNear) {
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = Color(0xFFE8F5E9)
+                                        ) {
+                                            Text(
+                                                text = "📍 현장인증 🟢",
+                                                color = Color(0xFF2E7D32),
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                            )
+                                        }
+                                    }
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                                    ) {
+                                        Text(
+                                            text = post.category,
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                        )
+                                    }
+                                }
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = dateStr,
+                                        fontSize = 10.sp,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                    IconButton(
+                                        onClick = { postToReport = post },
+                                        modifier = Modifier.size(20.dp)
+                                    ) {
+                                        Text("🚨", fontSize = 11.sp)
+                                    }
+                                    IconButton(
+                                        onClick = { postToBlock = post },
+                                        modifier = Modifier.size(20.dp)
+                                    ) {
+                                        Text("🚫", fontSize = 11.sp)
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Text(
+                                text = post.content,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                lineHeight = 18.sp
+                            )
+
+                            if (post.photoUrl.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                AsyncImage(
+                                    model = post.photoUrl,
+                                    contentDescription = "동네마당 첨부 사진",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable { zoomPhotoUrl = post.photoUrl }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (likedLocally) Color(0xFFFFEBEE) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                    border = BorderStroke(0.5.dp, if (likedLocally) Color(0xFFEF9A9A) else Color.Transparent),
+                                    modifier = Modifier.clickable {
+                                        if (!likedLocally) {
+                                            likedLocally = true
+                                            onLikePost(post.postId)
+                                        }
+                                    }
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(text = if (likedLocally) "❤️" else "🤍", fontSize = 12.sp)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "공감 $currentLikes",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (likedLocally) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // --- Dialogs ---
+    if (showWriteDialog) {
+        var hasAgreed by remember { mutableStateOf(CommunitySafetyHelper.hasAgreedToGuidelines(context)) }
+        var showGuidelinesDialog by remember { mutableStateOf(!hasAgreed) }
+        var customNickname by remember { mutableStateOf(CommunitySafetyHelper.generateRandomNickname()) }
+        var postCategory by remember { mutableStateOf("실시간 꿀팁") }
+        var postContent by remember { mutableStateOf("") }
+        var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+        val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            selectedImageUri = uri
+        }
+
+        if (showGuidelinesDialog) {
+            AlertDialog(
+                onDismissRequest = { showWriteDialog = false },
+                title = { Text("📜 정겨운 동네마당 이용 약속", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("쾌적하고 따뜻한 전통시장 소통을 위해 아래 가이드라인을 준수해 주세요.")
+                        Text("1. 🚫 욕설, 비속어, 특정 상인 비방 금지", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text("2. 🚫 개인 간 계좌이체/금전거래 및 사기 유도 금지", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text("3. 🚫 불법 광고, 도박, 외부 링크 홍보 금지", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text("💡 위반 시 게시글이 즉시 블라인드 처리되며 이용이 영구 제한될 수 있습니다.", fontSize = 11.sp, color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            CommunitySafetyHelper.setAgreedToGuidelines(context)
+                            hasAgreed = true
+                            showGuidelinesDialog = false
+                        }
+                    ) {
+                        Text("동의하고 글쓰기")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showWriteDialog = false }) {
+                        Text("취소")
+                    }
+                }
+            )
+        } else {
+            AlertDialog(
+                onDismissRequest = { showWriteDialog = false },
+                title = { Text("💬 '${market.getDisplayName()}' 소식 올리기", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // 닉네임 입력
+                        OutlinedTextField(
+                            value = customNickname,
+                            onValueChange = { if (it.length <= 12) customNickname = it },
+                            label = { Text("작성자 닉네임") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+
+                        // 카테고리 선택
+                        Text("카테고리 선택", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        val postCats = listOf("실시간 꿀팁", "온누리 장바구니", "축제소식", "동네수다")
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            postCats.forEach { c ->
+                                val isSel = postCategory == c
+                                FilterChip(
+                                    selected = isSel,
+                                    onClick = { postCategory = c },
+                                    label = { Text(c, fontSize = 11.sp) },
+                                    shape = RoundedCornerShape(6.dp)
+                                )
+                            }
+                        }
+
+                        // 내용 입력
+                        val validationError = remember(postContent) {
+                            if (postContent.isBlank()) null else CommunitySafetyHelper.validateContent(postContent)
+                        }
+
+                        OutlinedTextField(
+                            value = postContent,
+                            onValueChange = { if (it.length <= 300) postContent = it },
+                            placeholder = { Text("오늘 시장에서 겪은 재미있는 일이나 온누리상품권 사용 꿀팁, 맛있는 먹거리를 공유해 주세요!") },
+                            supportingText = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    if (validationError != null) {
+                                        Text(text = "⚠️ $validationError", color = MaterialTheme.colorScheme.error, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                                    } else {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                    Text(text = "${postContent.length}/300자", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            },
+                            isError = validationError != null,
+                            modifier = Modifier.fillMaxWidth(),
+                            maxLines = 4,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+
+                        // 사진 첨부
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedButton(
+                                onClick = { galleryLauncher.launch("image/*") },
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("🖼 사진 첨부")
+                            }
+
+                            if (selectedImageUri != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                ) {
+                                    androidx.compose.foundation.Image(
+                                        painter = coil.compose.rememberAsyncImagePainter(selectedImageUri),
+                                        contentDescription = "첨부 사진",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            } else {
+                                Text("첨부 없음", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    val canSubmit = postContent.trim().isNotBlank() && CommunitySafetyHelper.validateContent(postContent) == null
+                    Button(
+                        onClick = {
+                            onSubmitPost(customNickname, postCategory, postContent, selectedImageUri)
+                            showWriteDialog = false
+                        },
+                        enabled = canSubmit,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("동네마당에 소식 올리기 🟢", fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showWriteDialog = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("취소")
+                    }
+                }
+            )
+        }
+    }
+
+    // 신고 다이얼로그
+    if (postToReport != null) {
+        val target = postToReport!!
+        var reportReason by remember { mutableStateOf("욕설 및 비방 🛑") }
+        val reasons = listOf("욕설 및 비방 🛑", "사기 및 개인정보/계좌 노출 ⚠️", "불법 광고 및 도박 스팸 🚫", "부적절한 내용 ✏️")
+
+        AlertDialog(
+            onDismissRequest = { postToReport = null },
+            title = { Text("🚨 게시글 신고", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("해당 글을 신고하시는 사유를 선택해 주세요. 누적 3회 이상 신고 시 즉시 자동 숨김 처리됩니다.")
+                    reasons.forEach { r ->
+                        val isSel = reportReason == r
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (isSel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            border = BorderStroke(1.dp, if (isSel) MaterialTheme.colorScheme.primary else Color.Transparent),
+                            modifier = Modifier.fillMaxWidth().clickable { reportReason = r }
+                        ) {
+                            Text(text = r, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onReportPost(target.postId, target.authorDeviceIdHash, reportReason)
+                        postToReport = null
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("신고 접수")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { postToReport = null }, modifier = Modifier.fillMaxWidth()) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    // 차단 다이얼로그
+    if (postToBlock != null) {
+        val target = postToBlock!!
+        AlertDialog(
+            onDismissRequest = { postToBlock = null },
+            title = { Text("🚫 작성자 차단", fontWeight = FontWeight.Bold) },
+            text = {
+                Text("정말 '${target.authorNickname}' 사용자를 차단하시겠습니까?\n\n차단하시면 이 사용자가 작성한 모든 글과 댓글이 내 화면에서 영구적으로 숨겨집니다.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onBlockAuthor(target.authorDeviceIdHash)
+                        postToBlock = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("차단하기", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { postToBlock = null }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    // 사진 크게보기 다이얼로그
+    if (zoomPhotoUrl != null) {
+        AlertDialog(
+            onDismissRequest = { zoomPhotoUrl = null },
+            title = { Text("사진 크게보기", fontWeight = FontWeight.Bold) },
+            text = {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(280.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = zoomPhotoUrl,
+                        contentDescription = "확대 사진",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { zoomPhotoUrl = null }) {
+                    Text("닫기")
                 }
             }
         )
