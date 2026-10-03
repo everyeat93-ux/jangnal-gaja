@@ -347,10 +347,34 @@ class MarketViewModel(
         }
     }
 
-    fun addShopToMarket(marketId: Long, name: String, category: String, lat: Double, lon: Double) {
+    fun findDuplicateShop(marketId: Long, name: String): Shop? {
+        val cleanInput = name.replace("\\s+".toRegex(), "").lowercase(java.util.Locale.ROOT)
+        if (cleanInput.isBlank()) return null
+        return _activeMarketShops.value.find { existing ->
+            val cleanExisting = existing.shopName.replace("\\s+".toRegex(), "").lowercase(java.util.Locale.ROOT)
+            cleanExisting == cleanInput || (cleanInput.length >= 4 && cleanExisting == cleanInput)
+        }
+    }
+
+    fun addShopToMarket(
+        context: Context,
+        marketId: Long, 
+        name: String, 
+        category: String, 
+        lat: Double, 
+        lon: Double,
+        onSuccess: (Shop) -> Unit = {},
+        onDuplicate: (Shop) -> Unit = {}
+    ) {
         val sanitizedName = name.trim().take(30)
         if (sanitizedName.isEmpty()) return
         val sanitizedCategory = if (category.trim().isEmpty()) "기타" else category.trim().take(15)
+
+        val duplicate = findDuplicateShop(marketId, sanitizedName)
+        if (duplicate != null) {
+            onDuplicate(duplicate)
+            return
+        }
 
         viewModelScope.launch {
             val newShop = Shop(
@@ -365,6 +389,7 @@ class MarketViewModel(
                 onnuriConfirmedCount = 1
             )
             repository.insertShop(newShop)
+            com.jangnal.gaja.util.VoteTracker.recordMyCreatedShop(context, marketId, sanitizedName)
 
             // Push to Firestore
             try {
@@ -381,12 +406,57 @@ class MarketViewModel(
                     "isMock" to false,
                     "isOnnuri" to true,
                     "onnuriType" to "지류·카드·모바일",
-                    "onnuriConfirmedCount" to 1
+                    "onnuriConfirmedCount" to 1,
+                    "createdAt" to System.currentTimeMillis()
                 )
                 firestore.collection("markets").document(marketId.toString())
                     .collection("official_shops").document(sanitizedName).set(shopMap).await()
             } catch (e: Exception) {
                 android.util.Log.e("FirebaseSync", "Add shop to Firestore failed: ", e)
+            }
+            onSuccess(newShop)
+        }
+    }
+
+    fun deleteShopFromMarket(context: Context, marketId: Long, shopName: String) {
+        viewModelScope.launch {
+            repository.deleteShopByName(marketId, shopName)
+            com.jangnal.gaja.util.VoteTracker.removeMyCreatedShop(context, marketId, shopName)
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("official_shops").document(shopName).set(mapOf(
+                        "isDeleted" to true,
+                        "deletedAt" to System.currentTimeMillis()
+                    ), SetOptions.merge()).await()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Delete shop in Firestore failed: ", e)
+            }
+        }
+    }
+
+    fun reportShopIssue(context: Context, marketId: Long, shopName: String, reason: String, detail: String) {
+        viewModelScope.launch {
+            com.jangnal.gaja.util.VoteTracker.setShopIssueReported(context, marketId, shopName)
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                val reportData = hashMapOf(
+                    "marketId" to marketId,
+                    "shopName" to shopName,
+                    "reason" to reason,
+                    "detail" to detail,
+                    "reportedAt" to System.currentTimeMillis()
+                )
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("shop_reports").document().set(reportData).await()
+                
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("official_shops").document(shopName).set(mapOf(
+                        "reportCount" to FieldValue.increment(1L),
+                        "lastReportReason" to reason
+                    ), SetOptions.merge()).await()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Report shop issue failed: ", e)
             }
         }
     }

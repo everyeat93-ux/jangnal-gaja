@@ -171,7 +171,32 @@ fun MarketListScreen(
             },
             onAddShop = { name, category ->
                 selectedMarket?.let { market ->
-                    viewModel.addShopToMarket(market.id, name, category, market.latitude, market.longitude)
+                    viewModel.addShopToMarket(
+                        context = context,
+                        marketId = market.id,
+                        name = name,
+                        category = category,
+                        lat = market.latitude,
+                        lon = market.longitude,
+                        onSuccess = { shop ->
+                            android.widget.Toast.makeText(context, "✅ '${shop.shopName}' 상점이 등록되었습니다! 🏪\n(10분 이내 직접 취소 가능)", android.widget.Toast.LENGTH_LONG).show()
+                        },
+                        onDuplicate = { dup ->
+                            android.widget.Toast.makeText(context, "⚠️ 이미 등록된 상점입니다: '${dup.shopName}'", android.widget.Toast.LENGTH_LONG).show()
+                        }
+                    )
+                }
+            },
+            onDeleteShop = { shopName ->
+                selectedMarket?.let { market ->
+                    viewModel.deleteShopFromMarket(context, market.id, shopName)
+                    android.widget.Toast.makeText(context, "🗑️ '${shopName}' 상점 등록이 취소(삭제)되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            },
+            onReportShopIssue = { shopName, reason, detail ->
+                selectedMarket?.let { market ->
+                    viewModel.reportShopIssue(context, market.id, shopName, reason, detail)
+                    android.widget.Toast.makeText(context, "🚨 '${shopName}' 관련 제보가 접수되었습니다.\n검토 후 신속히 반영하겠습니다. 감사합니다!", android.widget.Toast.LENGTH_LONG).show()
                 }
             },
             onSearchShops = { query ->

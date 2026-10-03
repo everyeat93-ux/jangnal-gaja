@@ -79,4 +79,57 @@ object VoteTracker {
         val elapsed = System.currentTimeMillis() - lastTime
         return elapsed > 15 * 60 * 1000 // 15분 쿨다운
     }
+
+    // 5. 내가 직접 등록한 상점 기록 (10분 이내 실수 삭제 가능)
+    private fun normalizeShopKey(marketId: Long, shopName: String): String {
+        val cleanName = shopName.replace("\\s+".toRegex(), "").lowercase(Locale.ROOT)
+        return "my_created_shop_${marketId}_$cleanName"
+    }
+
+    fun recordMyCreatedShop(context: Context, marketId: Long, shopName: String) {
+        val key = normalizeShopKey(marketId, shopName)
+        getPrefs(context).edit().putLong(key, System.currentTimeMillis()).apply()
+    }
+
+    fun isMyCreatedShop(context: Context, marketId: Long, shopName: String): Boolean {
+        val key = normalizeShopKey(marketId, shopName)
+        return getPrefs(context).contains(key)
+    }
+
+    fun canDeleteMyCreatedShop(context: Context, marketId: Long, shopName: String): Boolean {
+        val key = normalizeShopKey(marketId, shopName)
+        val createdTime = getPrefs(context).getLong(key, 0L)
+        if (createdTime == 0L) return false
+        val elapsed = System.currentTimeMillis() - createdTime
+        return elapsed <= 10 * 60 * 1000 // 10분 이내
+    }
+
+    fun getRemainingDeleteMinutes(context: Context, marketId: Long, shopName: String): Int {
+        val key = normalizeShopKey(marketId, shopName)
+        val createdTime = getPrefs(context).getLong(key, 0L)
+        if (createdTime == 0L) return 0
+        val elapsed = System.currentTimeMillis() - createdTime
+        val remaining = (10 * 60 * 1000 - elapsed) / 60000
+        return remaining.coerceAtLeast(0).toInt()
+    }
+
+    fun removeMyCreatedShop(context: Context, marketId: Long, shopName: String) {
+        val key = normalizeShopKey(marketId, shopName)
+        getPrefs(context).edit().remove(key).apply()
+    }
+
+    // 6. 상점 폐업 / 정보 오류 제보 (1인 1일 1상점 1회)
+    fun hasReportedShopIssue(context: Context, marketId: Long, shopName: String): Boolean {
+        val today = getTodayString()
+        val cleanName = shopName.replace("\\s+".toRegex(), "").lowercase(Locale.ROOT)
+        val key = "shop_issue_reported_${marketId}_${cleanName}_$today"
+        return getPrefs(context).getBoolean(key, false)
+    }
+
+    fun setShopIssueReported(context: Context, marketId: Long, shopName: String) {
+        val today = getTodayString()
+        val cleanName = shopName.replace("\\s+".toRegex(), "").lowercase(Locale.ROOT)
+        val key = "shop_issue_reported_${marketId}_${cleanName}_$today"
+        getPrefs(context).edit().putBoolean(key, true).apply()
+    }
 }

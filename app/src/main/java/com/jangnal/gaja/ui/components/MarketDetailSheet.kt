@@ -102,6 +102,8 @@ fun MarketDetailSheet(
     onReportAmenity: (String, Boolean) -> Unit = { _, _ -> },
     onSubmitReview: (String, Float, String, Uri?) -> Unit = { _, _, _, _ -> },
     onConfirmOnnuri: (Long) -> Unit = {},
+    onDeleteShop: (String) -> Unit = {},
+    onReportShopIssue: (String, String, String) -> Unit = { _, _, _ -> },
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -250,7 +252,9 @@ fun MarketDetailSheet(
                     onSearchShops = onSearchShops,
                     onClearSearchShops = onClearSearchShops,
                     onSubmitReview = onSubmitReview,
-                    onConfirmOnnuri = onConfirmOnnuri
+                    onConfirmOnnuri = onConfirmOnnuri,
+                    onDeleteShop = onDeleteShop,
+                    onReportShopIssue = onReportShopIssue
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -1267,11 +1271,15 @@ fun ShopQueueSection(
     onSearchShops: (String) -> Unit,
     onClearSearchShops: () -> Unit,
     onSubmitReview: (String, Float, String, Uri?) -> Unit = { _, _, _, _ -> },
-    onConfirmOnnuri: (Long) -> Unit = {}
+    onConfirmOnnuri: (Long) -> Unit = {},
+    onDeleteShop: (String) -> Unit = {},
+    onReportShopIssue: (String, String, String) -> Unit = { _, _, _ -> }
 ) {
     var showAddShopDialog by remember { mutableStateOf(false) }
     var prefilledShopName by remember { mutableStateOf("") }
     var activeVotingShop by remember { mutableStateOf<Shop?>(null) }
+    var shopToDelete by remember { mutableStateOf<Shop?>(null) }
+    var shopToReport by remember { mutableStateOf<Shop?>(null) }
     var selectedCategory by remember { mutableStateOf("전체") }
     var shopSearchText by remember { mutableStateOf("") }
     val confirmedShopIds = remember { mutableStateListOf<Long>() }
@@ -1574,28 +1582,65 @@ fun ShopQueueSection(
                                     )
                                 }
 
-                                if (hasReviews) {
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "⭐ $avgStr (${shopReviews.size})",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFE65100)
-                                    )
-                                } else {
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Surface(
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-                                        modifier = Modifier.clickable { activeReviewShop = shop }
-                                    ) {
+                                val isMine = VoteTracker.isMyCreatedShop(context, market.id, shop.shopName)
+                                val canDelete = VoteTracker.canDeleteMyCreatedShop(context, market.id, shop.shopName)
+                                val remainingMins = VoteTracker.getRemainingDeleteMinutes(context, market.id, shop.shopName)
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    if (hasReviews) {
                                         Text(
-                                            text = "⭐ 첫 리뷰 쓰기",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            text = "⭐ $avgStr (${shopReviews.size})",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFE65100)
                                         )
+                                    } else {
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                                            modifier = Modifier.clickable { activeReviewShop = shop }
+                                        ) {
+                                            Text(
+                                                text = "⭐ 첫 리뷰",
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+
+                                    if (isMine && canDelete) {
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = Color(0xFFFFEBEE),
+                                            border = BorderStroke(0.5.dp, Color(0xFFEF9A9A)),
+                                            modifier = Modifier.clickable { shopToDelete = shop }
+                                        ) {
+                                            Text(
+                                                text = "🗑️ 취소(${remainingMins}분)",
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFC62828),
+                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    } else {
+                                        IconButton(
+                                            onClick = { 
+                                                if (VoteTracker.hasReportedShopIssue(context, market.id, shop.shopName)) {
+                                                    android.widget.Toast.makeText(context, "오늘 이미 '${shop.shopName}'에 대한 제보를 접수하셨습니다 😊", android.widget.Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    shopToReport = shop 
+                                                }
+                                            },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Text("🚨", fontSize = 12.sp)
+                                        }
                                     }
                                 }
                             }
@@ -2044,6 +2089,23 @@ fun ShopQueueSection(
         val focusManager = LocalFocusManager.current
         val keyboardController = LocalSoftwareKeyboardController.current
 
+        fun checkDuplicateAndAdd(rawName: String, category: String) {
+            val cleanInput = rawName.replace(Regex("[\\s\\p{Punct}]"), "").lowercase()
+            val duplicate = shops.find { s ->
+                val cleanExisting = s.shopName.replace(Regex("[\\s\\p{Punct}]"), "").lowercase()
+                cleanExisting == cleanInput || (cleanInput.length >= 4 && cleanExisting == cleanInput)
+            }
+            if (duplicate != null) {
+                android.widget.Toast.makeText(context, "⚠️ 이미 등록된 상점입니다: '${duplicate.shopName}'", android.widget.Toast.LENGTH_LONG).show()
+                return
+            }
+            val fullShopName = if (locationHint.isNotBlank()) "$rawName (${locationHint.trim()})" else rawName
+            onAddShop(fullShopName, category)
+            showAddShopDialog = false
+            prefilledShopName = ""
+            onClearSearchShops()
+        }
+
         LaunchedEffect(prefilledShopName) {
             if (prefilledShopName.isNotBlank()) {
                 onSearchShops(prefilledShopName)
@@ -2152,12 +2214,7 @@ fun ShopQueueSection(
                                         onClick = {
                                             val customName = searchQuery.trim().take(30)
                                             if (customName.isNotEmpty()) {
-                                                val fullShopName = if (locationHint.isNotBlank()) "$customName (${locationHint.trim()})" else customName
-                                                onAddShop(fullShopName, directCategory)
-                                                android.widget.Toast.makeText(context, "✅ '${fullShopName}' 상점이 등록되었습니다! 🏪", android.widget.Toast.LENGTH_SHORT).show()
-                                                showAddShopDialog = false
-                                                prefilledShopName = ""
-                                                onClearSearchShops()
+                                                checkDuplicateAndAdd(customName, directCategory)
                                             }
                                         },
                                         shape = RoundedCornerShape(8.dp)
@@ -2177,12 +2234,7 @@ fun ShopQueueSection(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                val fullShopName = if (locationHint.isNotBlank()) "${shop.shopName} (${locationHint.trim()})" else shop.shopName
-                                                onAddShop(fullShopName, shop.category)
-                                                android.widget.Toast.makeText(context, "✅ '${fullShopName}' 상점이 등록되었습니다! 🏪", android.widget.Toast.LENGTH_SHORT).show()
-                                                showAddShopDialog = false
-                                                prefilledShopName = ""
-                                                onClearSearchShops()
+                                                checkDuplicateAndAdd(shop.shopName, shop.category)
                                             },
                                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                                         shape = RoundedCornerShape(8.dp)
@@ -2229,6 +2281,119 @@ fun ShopQueueSection(
                     }
                 ) {
                     Text("닫기")
+                }
+            }
+        )
+    }
+
+    if (shopToDelete != null) {
+        val target = shopToDelete!!
+        val remaining = VoteTracker.getRemainingDeleteMinutes(context, market.id, target.shopName)
+        AlertDialog(
+            onDismissRequest = { shopToDelete = null },
+            title = { Text("상점 등록 취소 (삭제)", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("방금 등록하신 '${target.shopName}' 상점을 목록에서 삭제하시겠습니까?")
+                    Text(
+                        text = "💡 등록 후 10분 이내(남은 시간: 약 ${remaining}분)에만 등록자 본인이 직접 취소할 수 있습니다.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteShop(target.shopName)
+                        shopToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("등록 취소 (삭제)", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { shopToDelete = null }) {
+                    Text("유지하기")
+                }
+            }
+        )
+    }
+
+    if (shopToReport != null) {
+        val target = shopToReport!!
+        var reportReason by remember { mutableStateOf("폐업 / 사라진 상점 🛑") }
+        var reportDetail by remember { mutableStateOf("") }
+        val reportReasons = listOf(
+            "폐업 / 사라진 상점 🛑",
+            "위치 또는 시장 불일치 🗺️",
+            "상호명 또는 메뉴 오류 ✏️",
+            "중복 또는 부적절한 등록 ⚠️"
+        )
+
+        AlertDialog(
+            onDismissRequest = { shopToReport = null },
+            title = { Text("🚨 '${target.shopName}' 정보 오류/제보", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "상점의 변경사항이나 폐업 정보를 알려주시면 검토 후 다른 이용자분들에게 안전하게 반영됩니다.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Text("제보 사유 선택", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        reportReasons.forEach { r ->
+                            val isSel = reportReason == r
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isSel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                border = BorderStroke(1.dp, if (isSel) MaterialTheme.colorScheme.primary else Color.Transparent),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { reportReason = r }
+                            ) {
+                                Text(
+                                    text = r,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSel) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = reportDetail,
+                        onValueChange = { if (it.length <= 100) reportDetail = it },
+                        placeholder = { Text("상세 내용 (선택: 예: 옆 골목으로 이전함)", fontSize = 12.sp) },
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 2,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onReportShopIssue(target.shopName, reportReason, reportDetail)
+                        shopToReport = null
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("제보 접수하기 🚨", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { shopToReport = null },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("취소")
                 }
             }
         )

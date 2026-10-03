@@ -436,6 +436,18 @@ class MarketRepository(
         }
     }
 
+    suspend fun deleteShopByName(marketId: Long, shopName: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.deleteShopByName(marketId, shopName)
+        }
+    }
+
+    suspend fun deleteShopById(shopId: Long) {
+        withContext(Dispatchers.IO) {
+            marketDao.deleteShopById(shopId)
+        }
+    }
+
     suspend fun updateShopQueue(shopId: Long, status: Int, isVerified: Boolean) {
         withContext(Dispatchers.IO) {
             marketDao.updateShopQueueStatus(shopId, status, System.currentTimeMillis(), isVerified)

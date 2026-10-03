@@ -156,6 +156,12 @@ interface MarketDao {
     @Query("DELETE FROM shops WHERE marketId = :marketId")
     suspend fun deleteShopsForMarket(marketId: Long)
 
+    @Query("DELETE FROM shops WHERE marketId = :marketId AND shopName = :shopName")
+    suspend fun deleteShopByName(marketId: Long, shopName: String)
+
+    @Query("DELETE FROM shops WHERE id = :shopId")
+    suspend fun deleteShopById(shopId: Long)
+
     @Update
     suspend fun updateShop(shop: Shop)
 
