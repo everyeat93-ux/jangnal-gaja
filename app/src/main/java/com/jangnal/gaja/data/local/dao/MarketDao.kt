@@ -195,6 +195,9 @@ interface MarketDao {
     @Query("DELETE FROM festivals WHERE marketId = :marketId")
     suspend fun deleteFestivalsForMarket(marketId: Long)
 
+    @Query("DELETE FROM festivals WHERE id LIKE 'fest_%'")
+    suspend fun deleteMockFestivals()
+
     // --- Community Posts Operations ---
     @Query("SELECT * FROM community_posts WHERE marketId = :marketId AND isBlind = 0 ORDER BY createdAt DESC")
     fun getCommunityPostsForMarketFlow(marketId: Long): Flow<List<CommunityPost>>

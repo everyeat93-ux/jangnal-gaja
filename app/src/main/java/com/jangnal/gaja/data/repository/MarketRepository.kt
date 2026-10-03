@@ -548,15 +548,7 @@ class MarketRepository(
 
     suspend fun loadFestivalsForMarket(market: Market): List<Festival> {
         return withContext(Dispatchers.IO) {
-            val existing = marketDao.getFestivalsForMarketList(market.id)
-            if (existing.isNotEmpty()) {
-                return@withContext existing
-            }
-            // 1:1 고유 큐레이션 축제 데이터 로드 및 캐싱
-            val curated = com.jangnal.gaja.util.FestivalDataHelper.getCuratedFestivalsForMarket(market)
-            if (curated.isNotEmpty()) {
-                marketDao.insertFestivals(curated)
-            }
+            marketDao.deleteMockFestivals()
             marketDao.getFestivalsForMarketList(market.id)
         }
     }

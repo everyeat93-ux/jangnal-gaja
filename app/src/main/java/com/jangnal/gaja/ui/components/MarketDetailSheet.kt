@@ -266,15 +266,17 @@ fun MarketDetailSheet(
                     onReportShopIssue = onReportShopIssue
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(20.dp))
+                if (festivals.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                // 2-1. 🎪 1:1 고유 축제 & 문화공연 섹션
-                MarketFestivalSection(
-                    market = market,
-                    festivals = festivals
-                )
+                    // 2-1. 🎪 1:1 고유 축제 & 문화공연 섹션
+                    MarketFestivalSection(
+                        market = market,
+                        festivals = festivals
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
                 Divider()
