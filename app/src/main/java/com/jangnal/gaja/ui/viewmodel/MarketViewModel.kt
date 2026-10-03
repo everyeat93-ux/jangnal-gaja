@@ -332,6 +332,18 @@ class MarketViewModel(
     fun confirmOnnuriPayment(shopId: Long) {
         viewModelScope.launch {
             repository.incrementShopOnnuriConfirm(shopId)
+            try {
+                val shop = _activeMarketShops.value.find { it.id == shopId }
+                if (shop != null) {
+                    val firestore = FirebaseFirestore.getInstance()
+                    firestore.collection("markets").document(shop.marketId.toString())
+                        .collection("official_shops").document(shop.shopName).set(mapOf(
+                            "onnuriConfirmedCount" to FieldValue.increment(1L)
+                        ), SetOptions.merge()).await()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Confirm onnuri payment to Firestore failed: ", e)
+            }
         }
     }
 

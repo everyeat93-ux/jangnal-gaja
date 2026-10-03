@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.ui.components.MarketItem
@@ -376,8 +377,8 @@ fun MarketList(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                placeholder = { Text("시장 이름 또는 주소 검색") },
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("시장 이름(예: 구로, 속초), 특산물 또는 주소 검색", fontSize = 13.sp) },
                 leadingIcon = { 
                     Icon(imageVector = Icons.Default.Search, contentDescription = "검색") 
                 },
@@ -449,7 +450,7 @@ fun MarketList(
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // 2차 필터: P1 전국 시/도 광역 지역 칩
             Row(
@@ -483,7 +484,23 @@ fun MarketList(
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // 💡 친절한 안내 팁
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "💡 '오늘 개장' 칩을 누르면 오늘 열리는 5일장만 모아볼 수 있습니다.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             if (filteredMarkets.isEmpty()) {
                 EmptyState("검색 결과가 없습니다.")

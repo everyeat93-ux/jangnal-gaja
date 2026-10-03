@@ -56,8 +56,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.data.local.entity.Shop
+import com.jangnal.gaja.util.VoteTracker
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.ui.text.style.TextOverflow
 import java.util.Calendar
 import java.util.Date
 import java.text.SimpleDateFormat
@@ -161,8 +163,34 @@ fun MarketDetailSheet(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             
-            // 시장 유형 뱃지
-                // 1. 헤더 뱃지 행 (시장 유형 + 오늘 개장 여부 + 온누리 가맹 1줄 뱃지 - 해당 시장 실제 상점 데이터 기반 동적 계산)
+                // 💡 상단 사용자 안내 팁 배너
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("💡", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "상점의 별점과 결제수단을 확인하고, 한줄평과 실시간 대기줄을 제보해 보세요!",
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // 시장 유형 뱃지 (FlowRow로 좁은 화면에서도 줄바꿈 자연스럽게 처리)
                 val onnuriCount = shops.count { it.isOnnuri }
                 val onnuriBadgeText = when {
                     shops.isNotEmpty() && onnuriCount > 0 -> "💳 온누리 가맹 ${onnuriCount}곳 (${onnuriCount * 100 / shops.size}%)"
@@ -171,10 +199,10 @@ fun MarketDetailSheet(
                     else -> "💳 온누리상품권 10% 가맹"
                 }
 
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Badge(
                         text = market.getSimpleTypeText(),
@@ -522,9 +550,9 @@ fun MarketDetailSheet(
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "오늘 시장이 열렸는지 현장의 소식을 실시간으로 공유해 주세요!",
+                    text = "💡 현장에 계신가요? 오늘 시장이 열렸는지 이웃들에게 실시간으로 알려주세요!",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -541,7 +569,9 @@ fun MarketDetailSheet(
                 val displayOpenVotes = if (isVoteToday) market.voteOpenTodayCount else 0
                 val displayClosedVotes = if (isVoteToday) market.voteClosedTodayCount else 0
 
-                var localVotedType by remember(market.id) { mutableStateOf<Boolean?>(null) }
+                var localVotedType by remember(market.id) { 
+                    mutableStateOf(VoteTracker.getMarketVoteStatus(context, market.id)) 
+                }
                 var optimisticOpenDelta by remember(market.id) { mutableIntStateOf(0) }
                 var optimisticClosedDelta by remember(market.id) { mutableIntStateOf(0) }
 
@@ -550,7 +580,7 @@ fun MarketDetailSheet(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     val isOpenVoted = localVotedType == true
                     Button(
@@ -560,12 +590,14 @@ fun MarketDetailSheet(
                             } else {
                                 localVotedType = true
                                 optimisticOpenDelta = 1
+                                VoteTracker.setMarketVoteStatus(context, market.id, true)
                                 onVoteClick(market.id, true)
                                 android.widget.Toast.makeText(context, "✅ 소중한 제보 감사합니다! '오늘 열렸어요'가 즉시 반영되었습니다 👏", android.widget.Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                         colors = if (isOpenVoted) {
                             ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -581,13 +613,15 @@ fun MarketDetailSheet(
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                            modifier = Modifier.padding(vertical = 2.dp)
                         ) {
                             Text(
-                                text = if (isOpenVoted) "✓ 오늘 열렸어요 (제보됨)" else "👍 오늘 열렸어요",
+                                text = if (isOpenVoted) "✓ 오늘 열렸어요" else "👍 오늘 열렸어요",
                                 fontWeight = FontWeight.Bold,
                                 color = if (isOpenVoted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
-                                fontSize = 13.sp
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                softWrap = false
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
@@ -606,12 +640,14 @@ fun MarketDetailSheet(
                             } else {
                                 localVotedType = false
                                 optimisticClosedDelta = 1
+                                VoteTracker.setMarketVoteStatus(context, market.id, false)
                                 onVoteClick(market.id, false)
                                 android.widget.Toast.makeText(context, "✅ 소중한 제보 감사합니다! '닫혔어요'가 즉시 반영되었습니다 👏", android.widget.Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                         colors = if (isClosedVoted) {
                             ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -627,13 +663,15 @@ fun MarketDetailSheet(
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                            modifier = Modifier.padding(vertical = 2.dp)
                         ) {
                             Text(
-                                text = if (isClosedVoted) "✓ 닫혔어요 (제보됨)" else "👎 닫혔어요/안열려요",
+                                text = if (isClosedVoted) "✓ 닫혔어요" else "👎 닫혔어요",
                                 fontWeight = FontWeight.Bold,
                                 color = if (isClosedVoted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.error,
-                                fontSize = 13.sp
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                softWrap = false
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
@@ -655,6 +693,12 @@ fun MarketDetailSheet(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "💡 카드를 터치하여 화장실/주차장 정보를 제보하거나 길안내를 받을 수 있습니다.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -702,8 +746,13 @@ fun MarketDetailSheet(
                             ) {
                                 Button(
                                     onClick = {
-                                        onReportAmenity(amenityType, true)
-                                        android.widget.Toast.makeText(context, "✅ '${label}' 있음 정보가 제보되었습니다! 감사합니다 👏", android.widget.Toast.LENGTH_SHORT).show()
+                                        if (VoteTracker.hasReportedAmenity(context, market.id, amenityType)) {
+                                            android.widget.Toast.makeText(context, "오늘 이미 '${label}' 이용 가능 제보를 완료하셨습니다 😊", android.widget.Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            VoteTracker.setAmenityReported(context, market.id, amenityType)
+                                            onReportAmenity(amenityType, true)
+                                            android.widget.Toast.makeText(context, "✅ '${label}' 있음 정보가 제보되었습니다! 감사합니다 👏", android.widget.Toast.LENGTH_SHORT).show()
+                                        }
                                         activeAmenityReport = null
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -713,8 +762,13 @@ fun MarketDetailSheet(
                                 }
                                 OutlinedButton(
                                     onClick = {
-                                        onReportAmenity(amenityType, false)
-                                        android.widget.Toast.makeText(context, "✅ '${label}' 없음/정보없음 제보가 등록되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
+                                        if (VoteTracker.hasReportedAmenity(context, market.id, amenityType)) {
+                                            android.widget.Toast.makeText(context, "오늘 이미 '${label}' 제보를 완료하셨습니다 😊", android.widget.Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            VoteTracker.setAmenityReported(context, market.id, amenityType)
+                                            onReportAmenity(amenityType, false)
+                                            android.widget.Toast.makeText(context, "✅ '${label}' 없음/정보없음 제보가 등록되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
+                                        }
                                         activeAmenityReport = null
                                     },
                                     modifier = Modifier.fillMaxWidth()
@@ -804,7 +858,7 @@ fun MarketDetailSheet(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // [P4] Sticky 고정 하단 액션바 (닫기 버튼 제거 & 길찾기 메인 CTA 확장)
+            // [P4] Sticky 고정 하단 액션바 (좁은 화면 대응 및 줄바꿈 방지)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shadowElevation = 8.dp,
@@ -814,29 +868,31 @@ fun MarketDetailSheet(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedButton(
                         onClick = { shareMarket(context, market) },
-                        modifier = Modifier.weight(1f).height(48.dp),
-                        shape = RoundedCornerShape(12.dp)
+                        modifier = Modifier.weight(1.1f).height(46.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("공유", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("공유", fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1, softWrap = false)
                     }
 
                     Button(
                         onClick = { openMap(context, market) },
-                        modifier = Modifier.weight(2.4f).height(48.dp),
+                        modifier = Modifier.weight(2.3f).height(46.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("📍 길찾기 안내", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text("📍 길찾기 안내", fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1, softWrap = false)
                     }
                 }
             }
@@ -1408,10 +1464,11 @@ fun ShopQueueSection(
                             (System.currentTimeMillis() - shop.lastReportTime) < 40 * 60 * 1000 // 40 minutes
 
                     val shopReviews = reviews[shop.shopName] ?: emptyList()
-                    val avgRating = shopReviews.map { it.rating }.average()
-                    val avgStr = String.format(Locale.US, "%.1f", if (avgRating.isNaN()) 0.0 else avgRating)
-                    val isConfirmedByUser = confirmedShopIds.contains(shop.id)
-                    val displayConfirmCount = shop.onnuriConfirmedCount + (if (isConfirmedByUser) 1 else 0)
+                    val hasReviews = shopReviews.isNotEmpty()
+                    val avgRating = if (hasReviews) shopReviews.map { it.rating }.average() else 0.0
+                    val avgStr = String.format(Locale.US, "%.1f", avgRating)
+                    val isConfirmedByUser = VoteTracker.hasConfirmedPayment(context, shop.id) || confirmedShopIds.contains(shop.id)
+                    val displayConfirmCount = shop.onnuriConfirmedCount + (if (isConfirmedByUser && !confirmedShopIds.contains(shop.id) && shop.onnuriConfirmedCount == 0) 1 else 0)
 
                     Surface(
                         modifier = Modifier
@@ -1452,18 +1509,33 @@ fun ShopQueueSection(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 16.sp,
                                         maxLines = 1,
-                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
 
-                                if (shopReviews.isNotEmpty()) {
+                                if (hasReviews) {
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = "⭐ $avgStr (${shopReviews.size})",
-                                        fontSize = 12.sp,
+                                        fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = Color(0xFFE65100)
                                     )
+                                } else {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                                        modifier = Modifier.clickable { activeReviewShop = shop }
+                                    ) {
+                                        Text(
+                                            text = "⭐ 첫 리뷰 쓰기",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
                                 }
                             }
 
@@ -1506,7 +1578,7 @@ fun ShopQueueSection(
                                     border = BorderStroke(0.5.dp, Color(0xFFA5D6A7))
                                 ) {
                                     Text(
-                                        text = "💳 카드결제",
+                                        text = "💳 카드결제 가능",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF2E7D32),
@@ -1514,14 +1586,14 @@ fun ShopQueueSection(
                                     )
                                 }
 
-                                if (displayConfirmCount > 0) {
+                                if (displayConfirmCount > 0 || isConfirmedByUser) {
                                     Surface(
                                         shape = RoundedCornerShape(6.dp),
                                         color = if (isConfirmedByUser) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
                                         border = BorderStroke(0.5.dp, if (isConfirmedByUser) Color(0xFFA5D6A7) else Color(0xFFFFCC80))
                                     ) {
                                         Text(
-                                            text = if (isConfirmedByUser) "🟢 내 결제확인 완료 (${displayConfirmCount}명)" else "🟢 현장 확인됨 (${displayConfirmCount}명)",
+                                            text = if (isConfirmedByUser) "🟢 내 결제인증 완료" else "🟢 결제인증됨 (${displayConfirmCount}명)",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = if (isConfirmedByUser) Color(0xFF2E7D32) else Color(0xFFE65100),
@@ -1533,7 +1605,7 @@ fun ShopQueueSection(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // 3. 대기줄 상태 요약 라인 (P4: 영업시간 및 개장일 가드)
+                            // 3. 대기줄 상태 요약 라인 (영업시간 및 개장일 가드)
                             val currentCal = Calendar.getInstance()
                             val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
                             val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
@@ -1594,51 +1666,25 @@ fun ShopQueueSection(
                             Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), thickness = 0.5.dp)
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            // 4. 하단 버튼 바: Item 3 결제확인 피드백 및 1회 확인 상태 전환
+                            // 4. 하단 버튼 바: 2개 직관적이고 널찍한 버튼 (리뷰/결제인증 & 실시간 대기제보)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                if (isConfirmedByUser) {
-                                    Button(
-                                        onClick = {},
-                                        enabled = false,
-                                        modifier = Modifier
-                                            .weight(1.2f)
-                                            .height(38.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                            disabledContainerColor = Color(0xFF2E7D32),
-                                            disabledContentColor = Color.White
-                                        )
-                                    ) {
-                                        Text("✔️ 확인완료", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                } else {
-                                    Button(
-                                        onClick = {
-                                            confirmedShopIds.add(shop.id)
-                                            android.widget.Toast.makeText(
-                                                context,
-                                                "🎉 ${shop.shopName}\n결제 확인이 인증되었습니다! (+1명) 🟢",
-                                                android.widget.Toast.LENGTH_SHORT
-                                            ).show()
-                                            onConfirmOnnuri(shop.id)
-                                        },
-                                        modifier = Modifier
-                                            .weight(1.2f)
-                                            .height(38.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFF1976D2),
-                                            contentColor = Color.White
-                                        )
-                                    ) {
-                                        Text("👍 결제확인", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    }
+                                OutlinedButton(
+                                    onClick = { activeReviewShop = shop },
+                                    modifier = Modifier
+                                        .weight(1.3f)
+                                        .height(40.dp),
+                                    shape = RoundedCornerShape(10.dp),
+                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f))
+                                ) {
+                                    Text("💬 한줄평 · 결제인증", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                                 }
 
                                 OutlinedButton(
@@ -1647,28 +1693,21 @@ fun ShopQueueSection(
                                             closedWarningMessage = "오늘은 '${market.getDisplayName()}' 장날이 아닙니다.\n다음 장날(${market.getNextMarketText()}) 운영 시간에 현장 대기줄을 제보해 주세요! 📅"
                                         } else if (!isOperatingHours) {
                                             closedWarningMessage = "현재는 전통시장 야간 영업 종료 시간(통상 09:00~19:00)입니다.\n내일 아침 개장 시간(09:00~) 이후 현장 대기줄을 제보해 주세요! 🌙"
+                                        } else if (!VoteTracker.canReportQueue(context, shop.id)) {
+                                            val lastTime = VoteTracker.getLastQueueReportTime(context, shop.id)
+                                            val minsRemaining = 15 - ((System.currentTimeMillis() - lastTime) / 60000).toInt()
+                                            android.widget.Toast.makeText(context, "⏱️ 방금 대기줄 제보를 완료하셨습니다.\n(${minsRemaining}분 후 다시 제보 가능)", android.widget.Toast.LENGTH_SHORT).show()
                                         } else {
                                             activeVotingShop = shop
                                         }
                                     },
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .height(38.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                                        .weight(1.1f)
+                                        .height(40.dp),
+                                    shape = RoundedCornerShape(10.dp),
+                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
-                                    Text("대기줄 제보", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                                }
-
-                                OutlinedButton(
-                                    onClick = { activeReviewShop = shop },
-                                    modifier = Modifier
-                                        .weight(0.9f)
-                                        .height(38.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
-                                ) {
-                                    Text("한줄평", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                    Text("⏱️ 실시간 대기제보", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false)
                                 }
                             }
 
@@ -1782,7 +1821,7 @@ fun ShopQueueSection(
                 var textContent by remember { mutableStateOf("") }
                 var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
                 var selectedPaymentTags by remember { mutableStateOf(setOf<String>()) }
-                val paymentOptions = listOf("온누리", "카드", "간편결제", "현금")
+                val paymentOptions = listOf("지류 온누리", "카드형 온누리", "모바일 온누리", "신용/체크카드", "현금/이체")
                 
                 val galleryLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.GetContent()
@@ -1792,13 +1831,13 @@ fun ShopQueueSection(
 
                 AlertDialog(
                     onDismissRequest = { activeReviewShop = null },
-                    title = { Text("${targetShop.shopName} 한줄평 제보", fontWeight = FontWeight.Bold) },
+                    title = { Text("${targetShop.shopName} 한줄평 & 결제인증", fontWeight = FontWeight.Bold) },
                     text = {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("💡 소진공 공공데이터상 온누리 가맹점입니다. 현장에서 결제가 원활하게 잘 되셨나요? 평점과 사진, 솔직한 한줄평을 남겨주세요!")
+                            Text("💡 소진공 공공데이터 온누리 가맹점입니다. 이용하신 결제수단과 함께 솔직한 평점/한줄평을 남겨주시면 다른 방문자들에게 큰 도움이 됩니다!")
                             
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1830,10 +1869,9 @@ fun ShopQueueSection(
                                 ) {
                                     paymentOptions.forEach { opt ->
                                         val isChecked = selectedPaymentTags.contains(opt)
-                                        val icon = when(opt) {
-                                            "온누리" -> "🎫"
-                                            "카드" -> "💳"
-                                            "간편결제" -> "📱"
+                                        val icon = when {
+                                            opt.contains("온누리") -> "🎫"
+                                            opt.contains("카드") -> "💳"
                                             else -> "💵"
                                         }
                                         FilterChip(
@@ -1853,7 +1891,7 @@ fun ShopQueueSection(
                                 onValueChange = { 
                                     if (it.length <= 150) textContent = it 
                                 },
-                                placeholder = { Text("호떡 피가 엄청 쫄깃하고 맛있어요! 추천합니다.") },
+                                placeholder = { Text("호떡 피가 엄청 쫄깃하고 맛있어요! 온누리 카드 결제 잘 됩니다.") },
                                 supportingText = {
                                     Text(
                                         text = "${textContent.length}/150자",
@@ -1908,13 +1946,20 @@ fun ShopQueueSection(
                                 } else ""
                                 val finalContent = (tagPrefix + textContent).trim()
                                 onSubmitReview(targetShop.shopName, ratingVal, finalContent, selectedImageUri)
-                                android.widget.Toast.makeText(reviewTargetContext, "✅ '${targetShop.shopName}' 한줄평 제보가 등록되었습니다! 📝", android.widget.Toast.LENGTH_SHORT).show()
+                                
+                                if (selectedPaymentTags.isNotEmpty() && !VoteTracker.hasConfirmedPayment(context, targetShop.id)) {
+                                    VoteTracker.setPaymentConfirmed(context, targetShop.id)
+                                    confirmedShopIds.add(targetShop.id)
+                                    onConfirmOnnuri(targetShop.id)
+                                }
+                                
+                                android.widget.Toast.makeText(reviewTargetContext, "✅ '${targetShop.shopName}' 한줄평 및 결제인증이 완료되었습니다! 📝", android.widget.Toast.LENGTH_SHORT).show()
                                 activeReviewShop = null
                             },
                             enabled = canSubmit,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("제보 등록 🟢")
+                            Text("제보 & 인증 등록 🟢")
                         }
                     },
                     dismissButton = {
@@ -2145,6 +2190,7 @@ fun ShopQueueSection(
                 ) {
                     Button(
                         onClick = {
+                            VoteTracker.setQueueReported(context, shop.id)
                             onReportQueue(shop.id, 0)
                             android.widget.Toast.makeText(context, "✅ '${shop.shopName}' 대기줄 [한산함] 제보가 반영되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
                             activeVotingShop = null
@@ -2152,10 +2198,11 @@ fun ShopQueueSection(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("한산함 (대기 적음) 🟢")
+                        Text("한산함 (대기 적음 / 바로 입장) 🟢")
                     }
                     Button(
                         onClick = {
+                            VoteTracker.setQueueReported(context, shop.id)
                             onReportQueue(shop.id, 1)
                             android.widget.Toast.makeText(context, "✅ '${shop.shopName}' 대기줄 [보통] 제보가 반영되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
                             activeVotingShop = null
@@ -2167,6 +2214,7 @@ fun ShopQueueSection(
                     }
                     Button(
                         onClick = {
+                            VoteTracker.setQueueReported(context, shop.id)
                             onReportQueue(shop.id, 2)
                             android.widget.Toast.makeText(context, "✅ '${shop.shopName}' 대기줄 [혼잡함] 제보가 반영되었습니다! 👏", android.widget.Toast.LENGTH_SHORT).show()
                             activeVotingShop = null
