@@ -91,6 +91,7 @@ import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.data.local.entity.CommunityPost
 import com.jangnal.gaja.data.local.entity.CommunityComment
 import com.jangnal.gaja.data.local.entity.MarketStamp
+import com.jangnal.gaja.data.local.entity.MarketFlashSale
 import com.jangnal.gaja.util.CommunitySafetyHelper
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -104,6 +105,7 @@ fun MarketDetailSheet(
     comments: Map<String, List<CommunityComment>> = emptyMap(),
     reviews: Map<String, List<com.jangnal.gaja.ui.viewmodel.ShopReview>> = emptyMap(),
     stamps: List<MarketStamp> = emptyList(),
+    flashSales: List<MarketFlashSale> = emptyList(),
     userLocation: android.location.Location? = null,
     onFavoriteToggle: (Market) -> Unit = {},
     onVoteClick: (Long, Boolean) -> Unit = { _, _ -> },
@@ -124,6 +126,8 @@ fun MarketDetailSheet(
     onDeleteCommunityComment: (String) -> Unit = {},
     onReportCommunityComment: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onClaimStamp: (String, Uri?) -> Unit = { _, _ -> },
+    onSubmitFlashSale: (String, String, Int, Int, String, Int, Boolean) -> Unit = { _, _, _, _, _, _, _ -> },
+    onDeleteFlashSale: (Long) -> Unit = {},
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -515,13 +519,13 @@ fun MarketDetailSheet(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                val detailTabs = remember(festivals.size, shops.size, communityPosts.size) {
+                val detailTabs = remember(festivals.size, shops.size, communityPosts.size, flashSales.size) {
                     listOfNotNull(
-                        "shops" to "🏪 상점·맛집 (${shops.size})",
+                        "shops" to if (flashSales.isNotEmpty()) "🏪 상점·특가 (${shops.size})" else "🏪 상점·맛집 (${shops.size})",
                         "courses" to "🗺️ 추천코스",
                         if (festivals.isNotEmpty()) "festivals" to "🎪 축제·공연 (${festivals.size})" else null,
                         "community" to "💬 동네마당 (${communityPosts.size})",
-                        "info" to "ℹ️ 시장정보·장날"
+                        "info" to "ℹ️ 시장정보·상인회"
                     )
                 }
                 var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -558,6 +562,7 @@ fun MarketDetailSheet(
                             market = market,
                             shops = shops,
                             searchResults = searchResults,
+                            flashSales = flashSales,
                             reviews = reviews,
                             userLocation = userLocation,
                             onReportQueue = onReportQueue,
@@ -567,7 +572,9 @@ fun MarketDetailSheet(
                             onSubmitReview = onSubmitReview,
                             onConfirmOnnuri = onConfirmOnnuri,
                             onDeleteShop = onDeleteShop,
-                            onReportShopIssue = onReportShopIssue
+                            onReportShopIssue = onReportShopIssue,
+                            onSubmitFlashSale = onSubmitFlashSale,
+                            onDeleteFlashSale = onDeleteFlashSale
                         )
                     }
                     "courses" -> {
@@ -598,6 +605,11 @@ fun MarketDetailSheet(
                         )
                     }
                     "info" -> {
+                        // 📢 상인회 공식 소식 및 온누리 10~20% 환급 홍보관
+                        MerchantNoticeSection(market = market)
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         // 3. [P1 & P5] 🛒 장날 LIVE DROP 고전환 커머스 카드 (구체적 음식명 + 고화질 사진 1장 + 명확한 택배 주문 CTA)
                         val dropItem = remember(market.marketName, displaySpecialty) {
                     val name = market.marketName
@@ -1638,6 +1650,7 @@ fun ShopQueueSection(
     market: Market,
     shops: List<Shop>,
     searchResults: List<Shop>,
+    flashSales: List<MarketFlashSale> = emptyList(),
     reviews: Map<String, List<com.jangnal.gaja.ui.viewmodel.ShopReview>> = emptyMap(),
     userLocation: android.location.Location?,
     onReportQueue: (Long, Int) -> Unit,
@@ -1647,7 +1660,9 @@ fun ShopQueueSection(
     onSubmitReview: (String, Float, String, Uri?) -> Unit = { _, _, _, _ -> },
     onConfirmOnnuri: (Long) -> Unit = {},
     onDeleteShop: (String) -> Unit = {},
-    onReportShopIssue: (String, String, String) -> Unit = { _, _, _ -> }
+    onReportShopIssue: (String, String, String) -> Unit = { _, _, _ -> },
+    onSubmitFlashSale: (String, String, Int, Int, String, Int, Boolean) -> Unit = { _, _, _, _, _, _, _ -> },
+    onDeleteFlashSale: (Long) -> Unit = {}
 ) {
     var showAddShopDialog by remember { mutableStateOf(false) }
     var prefilledShopName by remember { mutableStateOf("") }
@@ -1679,6 +1694,17 @@ fun ShopQueueSection(
     val isNear = distance <= 100f
 
     Column(modifier = Modifier.fillMaxWidth()) {
+        // 📢 오늘 마감 장날 타임세일 (떨이특가) 섹션
+        MarketFlashSaleSection(
+            market = market,
+            flashSales = flashSales,
+            shops = shops,
+            onSubmitFlashSale = onSubmitFlashSale,
+            onDeleteFlashSale = onDeleteFlashSale
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -3893,3 +3919,607 @@ fun MarketCommunitySection(
         )
     }
 }
+
+@Composable
+fun MerchantNoticeSection(market: Market) {
+    val context = LocalContext.current
+    
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFF1F8E9),
+        border = BorderStroke(1.dp, Color(0xFF81C784))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFF2E7D32)
+                ) {
+                    Text(
+                        text = "📢 상인회 공식",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${market.getDisplayName()} 상인회 소식",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = Color(0xFF1B5E20)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(10.dp))
+            
+            // 온누리상품권 10~20% 환급 행사 안내
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                border = BorderStroke(0.5.dp, Color(0xFFA5D6A7))
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("💳", fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "온누리상품권 10~20% 특별 환급 & 할인 혜택",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = Color(0xFF2E7D32)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "• 모바일/카드형 온누리상품권 10% 상시 할인 충전 지원\n• 농축수산물 당일 34,000원 이상 구매 시 온누리상품권 최대 2만원(20%) 현장 환급 행사 참여 시장\n• 환급 부스: 상인회 고객지원센터 1층",
+                        fontSize = 11.sp,
+                        color = Color(0xFF33691E),
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // 상인회 편의시설 및 고객지원
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                border = BorderStroke(0.5.dp, Color(0xFFA5D6A7))
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🏛️", fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "고객지원센터 및 편의 서비스 안내",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = Color(0xFF2E7D32)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "• 운영 시간: 09:00 ~ 18:00 (장날 및 주말 정상 운영)\n• 무료 주차권: 상점 1만원 이상 이용 시 1시간 무료 주차권 증정\n• 편의 시설: 고객 쉼터, 유모차/휠체어 대여, 공용 화장실, 카트 대여",
+                        fontSize = 11.sp,
+                        color = Color(0xFF33691E),
+                        lineHeight = 16.sp
+                    )
+                    
+                    if (market.phoneNumber.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${market.phoneNumber}"))
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (_: Exception) {}
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color(0xFF2E7D32)
+                                ),
+                                border = BorderStroke(1.dp, Color(0xFF2E7D32))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Phone,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = Color(0xFF2E7D32)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("상인회 문의 (${market.phoneNumber})", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MarketFlashSaleSection(
+    market: Market,
+    flashSales: List<MarketFlashSale>,
+    shops: List<Shop>,
+    onSubmitFlashSale: (shopName: String, itemTitle: String, originalPrice: Int, discountPrice: Int, quantityInfo: String, durationHours: Int, isVerified: Boolean) -> Unit,
+    onDeleteFlashSale: (Long) -> Unit
+) {
+    var showFlashSaleDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = Color(0xFFFFF3E0),
+            border = BorderStroke(1.dp, Color(0xFFFFB74D))
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🔥", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "오늘 마감 장날 타임세일",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = Color(0xFFD84315)
+                                )
+                                if (flashSales.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color(0xFFE65100)
+                                    ) {
+                                        Text(
+                                            text = "${flashSales.size}건 진행중",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            Text(
+                                text = "상인 직등록 · 마감 전 신선 식품 떨이 & 깜짝 특가",
+                                fontSize = 11.sp,
+                                color = Color(0xFFBF360C)
+                            )
+                        }
+                    }
+                    
+                    Button(
+                        onClick = { showFlashSaleDialog = true },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE65100),
+                            contentColor = Color.White
+                        ),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        modifier = Modifier.height(34.dp)
+                    ) {
+                        Text("+ 특가 등록", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                
+                if (flashSales.isEmpty()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color.White.copy(alpha = 0.85f),
+                        border = BorderStroke(0.5.dp, Color(0xFFFFCC80))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🏷️", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "지금 진행 중인 마감 특가가 없습니다.\n장 마감 전 남은 품목을 판매하실 상인분은 위 버튼으로 특가를 등록해 보세요!",
+                                fontSize = 11.sp,
+                                color = Color(0xFF5D4037),
+                                lineHeight = 16.sp
+                            )
+                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        flashSales.forEach { sale ->
+                            FlashSaleCard(
+                                sale = sale,
+                                onDelete = { onDeleteFlashSale(sale.id) },
+                                onShare = {
+                                    val shareText = "[장날가자] 🔥 ${sale.marketName} '${sale.shopName}' 오늘 마감 특가!\n\n" +
+                                            "📌 품목: ${sale.itemTitle}\n" +
+                                            "💰 가격: ${if (sale.originalPrice > 0) "${sale.originalPrice}원 -> " else ""}${sale.discountPrice}원 (${sale.getDiscountPercentage()}% 할인!)\n" +
+                                            (if (sale.quantityInfo.isNotBlank()) "📦 수량: ${sale.quantityInfo}\n" else "") +
+                                            "⏳ 마감까지 약 ${sale.getRemainingMinutes()}분 남음\n\n" +
+                                            "자세한 장날 정보는 '장날가자' 앱에서 확인하세요!"
+                                    val intent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, shareText)
+                                    }
+                                    try {
+                                        context.startActivity(Intent.createChooser(intent, "마감 특가 공유하기"))
+                                    } catch (_: Exception) {}
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    if (showFlashSaleDialog) {
+        FlashSaleCreateDialog(
+            market = market,
+            shops = shops,
+            onDismiss = { showFlashSaleDialog = false },
+            onSubmit = { shopName, itemTitle, origPrice, discPrice, qtyInfo, durationHours, isVerified ->
+                onSubmitFlashSale(shopName, itemTitle, origPrice, discPrice, qtyInfo, durationHours, isVerified)
+                showFlashSaleDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun FlashSaleCard(
+    sale: MarketFlashSale,
+    onDelete: () -> Unit,
+    onShare: () -> Unit
+) {
+    val remainingMins = sale.getRemainingMinutes()
+    val remainingText = if (remainingMins >= 60) {
+        "${remainingMins / 60}시간 ${remainingMins % 60}분 남음"
+    } else {
+        "${remainingMins}분 남음"
+    }
+    val discountPercent = sale.getDiscountPercentage()
+    
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, Color(0xFFFFCC80))
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = sale.shopName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (sale.isVerifiedMerchant) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFFE8F5E9)
+                        ) {
+                            Text(
+                                text = "✓ 상인인증",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E7D32),
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                            )
+                        }
+                    }
+                }
+                
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = if (remainingMins <= 30) Color(0xFFFFEBEE) else Color(0xFFFFF3E0)
+                ) {
+                    Text(
+                        text = "⏳ $remainingText",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (remainingMins <= 30) Color(0xFFD32F2F) else Color(0xFFE65100),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(6.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = sale.itemTitle,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (sale.quantityInfo.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "📦 ${sale.quantityInfo}",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                Column(horizontalAlignment = Alignment.End) {
+                    if (discountPercent > 0) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFFD32F2F)
+                        ) {
+                            Text(
+                                text = "-$discountPercent%",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
+                    
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        if (sale.originalPrice > sale.discountPrice && sale.originalPrice > 0) {
+                            Text(
+                                text = String.format(Locale.KOREA, "%,d원", sale.originalPrice),
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.outline,
+                                style = androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        Text(
+                            text = String.format(Locale.KOREA, "%,d원", sale.discountPrice),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFFE65100)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            Divider(color = Color(0xFFF0F0F0))
+            Spacer(modifier = Modifier.height(6.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    onClick = onShare,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(13.dp), tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text("특가 공유", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                }
+                
+                Spacer(modifier = Modifier.width(4.dp))
+                
+                TextButton(
+                    onClick = onDelete,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text("마감/삭제", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FlashSaleCreateDialog(
+    market: Market,
+    shops: List<Shop>,
+    onDismiss: () -> Unit,
+    onSubmit: (shopName: String, itemTitle: String, originalPrice: Int, discountPrice: Int, quantityInfo: String, durationHours: Int, isVerified: Boolean) -> Unit
+) {
+    var shopName by remember { mutableStateOf(shops.firstOrNull()?.shopName ?: "") }
+    var itemTitle by remember { mutableStateOf("") }
+    var originalPriceStr by remember { mutableStateOf("") }
+    var discountPriceStr by remember { mutableStateOf("") }
+    var quantityInfo by remember { mutableStateOf("") }
+    var durationHours by remember { mutableIntStateOf(3) }
+    var isVerifiedMerchant by remember { mutableStateOf(true) }
+
+    val origPrice = originalPriceStr.toIntOrNull() ?: 0
+    val discPrice = discountPriceStr.toIntOrNull() ?: 0
+    val calculatedDiscount = if (origPrice > 0 && discPrice > 0 && origPrice > discPrice) {
+        ((origPrice - discPrice) * 100) / origPrice
+    } else 0
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("🔥", fontSize = 22.sp)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("오늘 마감 타임세일 등록", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = "마감 전 신선 농축수산물, 반찬, 떡, 족발 등의 잔여 수량을 신속하게 판매할 수 있도록 특가를 등록합니다.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 16.sp
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                OutlinedTextField(
+                    value = shopName,
+                    onValueChange = { if (it.length <= 25) shopName = it },
+                    label = { Text("상점 상호명 *", fontSize = 12.sp) },
+                    placeholder = { Text("예: 삼거리 할머니 떡집, 대박정육점", fontSize = 12.sp) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                OutlinedTextField(
+                    value = itemTitle,
+                    onValueChange = { if (it.length <= 30) itemTitle = it },
+                    label = { Text("특가 품목명 *", fontSize = 12.sp) },
+                    placeholder = { Text("예: 갓 찧은 인절미 3팩 묶음, 한우 국거리 500g", fontSize = 12.sp) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = originalPriceStr,
+                        onValueChange = { if (it.length <= 8 && it.all { c -> c.isDigit() }) originalPriceStr = it },
+                        label = { Text("정상가 (원)", fontSize = 11.sp) },
+                        placeholder = { Text("15000", fontSize = 11.sp) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    
+                    OutlinedTextField(
+                        value = discountPriceStr,
+                        onValueChange = { if (it.length <= 8 && it.all { c -> c.isDigit() }) discountPriceStr = it },
+                        label = { Text("마감 할인가 * (원)", fontSize = 11.sp) },
+                        placeholder = { Text("10000", fontSize = 11.sp) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+                
+                if (calculatedDiscount > 0) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "🎉 정가 대비 $calculatedDiscount% 할인 특가로 등록됩니다!",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD84315)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                OutlinedTextField(
+                    value = quantityInfo,
+                    onValueChange = { if (it.length <= 25) quantityInfo = it },
+                    label = { Text("수량/메모 (선택)", fontSize = 11.sp) },
+                    placeholder = { Text("예: 선착순 5세트 한정, 포장만 가능", fontSize = 11.sp) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Text("⏳ 타임세일 유효 시간", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(1 to "1시간", 2 to "2시간", 3 to "3시간", 4 to "4시간").forEach { (hrs, label) ->
+                        FilterChip(
+                            selected = durationHours == hrs,
+                            onClick = { durationHours = hrs },
+                            label = { Text(label, fontSize = 11.sp) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    androidx.compose.material3.Checkbox(
+                        checked = isVerifiedMerchant,
+                        onCheckedChange = { isVerifiedMerchant = it }
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("상인회 회원 또는 실제 점포 운영자입니다", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (shopName.isNotBlank() && itemTitle.isNotBlank() && discPrice > 0) {
+                        onSubmit(shopName.trim(), itemTitle.trim(), origPrice, discPrice, quantityInfo.trim(), durationHours, isVerifiedMerchant)
+                    }
+                },
+                enabled = shopName.isNotBlank() && itemTitle.isNotBlank() && discPrice > 0,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("특가 등록하기 🔥", fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소")
+            }
+        }
+    )
+}
+

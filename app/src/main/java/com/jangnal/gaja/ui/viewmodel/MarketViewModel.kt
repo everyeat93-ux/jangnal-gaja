@@ -32,6 +32,7 @@ import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.data.local.entity.CommunityPost
 import com.jangnal.gaja.data.local.entity.CommunityComment
 import com.jangnal.gaja.data.local.entity.MarketStamp
+import com.jangnal.gaja.data.local.entity.MarketFlashSale
 
 class MarketViewModel(
     private val repository: MarketRepository
@@ -50,6 +51,9 @@ class MarketViewModel(
 
     private val _activeMarketFestivals = MutableStateFlow<List<Festival>>(emptyList())
     val activeMarketFestivals: StateFlow<List<Festival>> = _activeMarketFestivals.asStateFlow()
+
+    private val _activeMarketFlashSales = MutableStateFlow<List<MarketFlashSale>>(emptyList())
+    val activeMarketFlashSales: StateFlow<List<MarketFlashSale>> = _activeMarketFlashSales.asStateFlow()
 
     val allFestivals: StateFlow<List<Festival>> = repository.allFestivalsFlow
         .stateIn(
@@ -281,6 +285,13 @@ class MarketViewModel(
             launch {
                 repository.getCommentsForMarketFlow(market.id).collect { comments ->
                     _activeMarketComments.value = comments.groupBy { it.postId }
+                }
+            }
+
+            launch {
+                repository.cleanExpiredFlashSales()
+                repository.getActiveFlashSalesForMarket(market.id).collect { sales ->
+                    _activeMarketFlashSales.value = sales
                 }
             }
 
@@ -1073,6 +1084,63 @@ class MarketViewModel(
                 onDone()
             } catch (e: Exception) {
                 android.util.Log.e("Stamp", "Delete stamp error: ", e)
+            }
+        }
+    }
+
+    // --- Market Flash Sales (마감 타임세일) Operations ---
+    fun loadFlashSalesForMarket(marketId: Long) {
+        viewModelScope.launch {
+            repository.cleanExpiredFlashSales()
+            repository.getActiveFlashSalesForMarket(marketId).collect { sales ->
+                _activeMarketFlashSales.value = sales
+            }
+        }
+    }
+
+    fun submitFlashSale(
+        context: Context,
+        market: Market,
+        shopName: String,
+        itemTitle: String,
+        originalPrice: Int,
+        discountPrice: Int,
+        quantityInfo: String,
+        durationHours: Int = 3,
+        isVerifiedMerchant: Boolean = false,
+        onSuccess: () -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                val expireTime = System.currentTimeMillis() + (durationHours * 3600 * 1000)
+                val sale = MarketFlashSale(
+                    marketId = market.id,
+                    marketName = market.getDisplayName(),
+                    shopName = shopName,
+                    itemTitle = itemTitle,
+                    originalPrice = originalPrice,
+                    discountPrice = discountPrice,
+                    quantityInfo = quantityInfo,
+                    createdTimestamp = System.currentTimeMillis(),
+                    expireTimestamp = expireTime,
+                    isVerifiedMerchant = isVerifiedMerchant
+                )
+                repository.saveFlashSale(sale)
+                Toast.makeText(context, "🔥 '${shopName}' 마감 특가(${durationHours}시간 한정)가 등록되었습니다!", Toast.LENGTH_LONG).show()
+                onSuccess()
+            } catch (e: Exception) {
+                Toast.makeText(context, "특가 등록 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun deleteFlashSale(saleId: Long, onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                repository.deleteFlashSale(saleId)
+                onDone()
+            } catch (e: Exception) {
+                android.util.Log.e("FlashSale", "Delete flash sale error: ", e)
             }
         }
     }

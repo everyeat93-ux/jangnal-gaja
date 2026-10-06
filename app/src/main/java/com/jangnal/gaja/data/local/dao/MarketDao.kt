@@ -269,4 +269,20 @@ interface MarketDao {
 
     @Query("SELECT COUNT(*) FROM market_stamps WHERE isMarketDay = 1")
     fun getGoldenStampCountFlow(): Flow<Int>
+
+    // --- Market Flash Sales (마감 타임세일) Operations ---
+    @Query("SELECT * FROM market_flash_sales WHERE marketId = :marketId AND expireTimestamp > :now ORDER BY createdTimestamp DESC")
+    fun getActiveFlashSalesForMarketFlow(marketId: Long, now: Long = System.currentTimeMillis()): Flow<List<com.jangnal.gaja.data.local.entity.MarketFlashSale>>
+
+    @Query("SELECT * FROM market_flash_sales WHERE expireTimestamp > :now ORDER BY createdTimestamp DESC")
+    fun getAllActiveFlashSalesFlow(now: Long = System.currentTimeMillis()): Flow<List<com.jangnal.gaja.data.local.entity.MarketFlashSale>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFlashSale(sale: com.jangnal.gaja.data.local.entity.MarketFlashSale): Long
+
+    @Query("DELETE FROM market_flash_sales WHERE id = :saleId")
+    suspend fun deleteFlashSale(saleId: Long)
+
+    @Query("DELETE FROM market_flash_sales WHERE expireTimestamp <= :now")
+    suspend fun cleanExpiredFlashSales(now: Long = System.currentTimeMillis())
 }

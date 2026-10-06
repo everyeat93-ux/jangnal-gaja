@@ -198,6 +198,7 @@ fun MarketListScreen(
         val activeFestivals by viewModel.activeMarketFestivals.collectAsState()
         val activeCommunityPosts by viewModel.activeMarketCommunityPosts.collectAsState()
         val activeComments by viewModel.activeMarketComments.collectAsState()
+        val activeFlashSales by viewModel.activeMarketFlashSales.collectAsState()
         val kakaoApiKey = context.getString(com.jangnal.gaja.R.string.kakao_rest_api_key)
 
         com.jangnal.gaja.ui.components.MarketDetailSheet(
@@ -209,6 +210,7 @@ fun MarketListScreen(
             comments = activeComments,
             reviews = activeReviews,
             stamps = allStamps,
+            flashSales = activeFlashSales,
             userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
             onVoteClick = { marketId, isOpen -> viewModel.voteMarketStatus(marketId, isOpen) },
@@ -326,6 +328,26 @@ fun MarketListScreen(
                         photoUri = photoUri,
                         userLocation = userLocation
                     )
+                }
+            },
+            onSubmitFlashSale = { shopName, itemTitle, origPrice, discPrice, qtyInfo, durationHours, isVerified ->
+                selectedMarket?.let { market ->
+                    viewModel.submitFlashSale(
+                        context = context,
+                        market = market,
+                        shopName = shopName,
+                        itemTitle = itemTitle,
+                        originalPrice = origPrice,
+                        discountPrice = discPrice,
+                        quantityInfo = qtyInfo,
+                        durationHours = durationHours,
+                        isVerifiedMerchant = isVerified
+                    )
+                }
+            },
+            onDeleteFlashSale = { saleId ->
+                viewModel.deleteFlashSale(saleId) {
+                    android.widget.Toast.makeText(context, "🗑️ 마감 특가가 종료(삭제)되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
                 }
             },
             onDismissRequest = { selectedMarket = null }

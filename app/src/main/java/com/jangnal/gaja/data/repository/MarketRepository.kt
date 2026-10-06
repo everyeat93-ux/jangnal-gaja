@@ -666,4 +666,29 @@ class MarketRepository(
             marketDao.deleteStamp(stampId)
         }
     }
+
+    // --- Market Flash Sales (마감 타임세일) Operations ---
+    fun getActiveFlashSalesForMarket(marketId: Long): Flow<List<com.jangnal.gaja.data.local.entity.MarketFlashSale>> {
+        return marketDao.getActiveFlashSalesForMarketFlow(marketId)
+    }
+
+    val allActiveFlashSales: Flow<List<com.jangnal.gaja.data.local.entity.MarketFlashSale>> = marketDao.getAllActiveFlashSalesFlow()
+
+    suspend fun saveFlashSale(sale: com.jangnal.gaja.data.local.entity.MarketFlashSale): Long {
+        return withContext(Dispatchers.IO) {
+            marketDao.insertFlashSale(sale)
+        }
+    }
+
+    suspend fun deleteFlashSale(saleId: Long) {
+        withContext(Dispatchers.IO) {
+            marketDao.deleteFlashSale(saleId)
+        }
+    }
+
+    suspend fun cleanExpiredFlashSales() {
+        withContext(Dispatchers.IO) {
+            marketDao.cleanExpiredFlashSales()
+        }
+    }
 }
