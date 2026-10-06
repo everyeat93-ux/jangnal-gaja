@@ -2549,6 +2549,10 @@ fun MarketFestivalSection(
 ) {
     if (festivals.isEmpty()) return
 
+    // 진행중/예정 축제를 우선 정렬, 종료된 축제는 후순위
+    val sortedFestivals = festivals.sortedWith(compareBy({ it.isExpired() }, { it.startDate }))
+    val activeCount = festivals.count { !it.isExpired() }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -2565,11 +2569,11 @@ fun MarketFestivalSection(
                 Spacer(modifier = Modifier.width(6.dp))
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = Color(0xFFFFEBEE)
+                    color = if (activeCount > 0) Color(0xFFFFEBEE) else MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
-                        text = "${festivals.size}개 진행/예정",
-                        color = Color(0xFFC62828),
+                        text = if (activeCount > 0) "${activeCount}개 진행/예정" else "종료 행사",
+                        color = if (activeCount > 0) Color(0xFFC62828) else Color.Gray,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -2588,25 +2592,28 @@ fun MarketFestivalSection(
         Spacer(modifier = Modifier.height(10.dp))
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            festivals.forEach { fest ->
-                val badgeColor = when (fest.category) {
-                    "문화공연" -> Color(0xFF7B1FA2)
-                    "할인행사" -> Color(0xFF2E7D32)
-                    "야시장" -> Color(0xFFE65100)
+            sortedFestivals.forEach { fest ->
+                val isExpired = fest.isExpired()
+                val badgeColor = when {
+                    isExpired -> Color.Gray
+                    fest.category == "문화공연" -> Color(0xFF7B1FA2)
+                    fest.category == "할인행사" -> Color(0xFF2E7D32)
+                    fest.category == "야시장" -> Color(0xFFE65100)
                     else -> Color(0xFFC2185B)
                 }
-                val badgeBg = when (fest.category) {
-                    "문화공연" -> Color(0xFFF3E5F5)
-                    "할인행사" -> Color(0xFFE8F5E9)
-                    "야시장" -> Color(0xFFFFF3E0)
+                val badgeBg = when {
+                    isExpired -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    fest.category == "문화공연" -> Color(0xFFF3E5F5)
+                    fest.category == "할인행사" -> Color(0xFFE8F5E9)
+                    fest.category == "야시장" -> Color(0xFFFFF3E0)
                     else -> Color(0xFFFFEBEE)
                 }
 
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                    shadowElevation = 1.dp,
+                    color = if (isExpired) MaterialTheme.colorScheme.surface.copy(alpha = 0.7f) else MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, if (isExpired) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    shadowElevation = if (isExpired) 0.dp else 1.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
@@ -2615,23 +2622,37 @@ fun MarketFestivalSection(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = badgeBg
-                            ) {
-                                Text(
-                                    text = "✨ ${fest.category}",
-                                    color = badgeColor,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = badgeBg
+                                ) {
+                                    Text(
+                                        text = "✨ ${fest.category}",
+                                        color = badgeColor,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (fest.isOngoing()) Color(0xFFFFEBEE) else if (isExpired) Color(0xFFEEEEEE) else Color(0xFFE3F2FD)
+                                ) {
+                                    Text(
+                                        text = fest.getStatusText(),
+                                        color = if (fest.isOngoing()) Color(0xFFC62828) else if (isExpired) Color.Gray else Color(0xFF1976D2),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                    )
+                                }
                             }
                             Text(
                                 text = "📅 ${fest.startDate} ~ ${fest.endDate}",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (isExpired) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 

@@ -162,9 +162,45 @@ def upload_to_firestore(matched_list):
 
     print(f"\n🎉 Firestore 실시간 동기화 완료! (총 {success_count}건 등록/갱신 성공)")
 
+def cleanup_expired_festivals(markets):
+    print(">>> 4. 지난 과거 축제 데이터(종료일 경과) 점검 및 정리...")
+    today_str = time.strftime('%Y.%m.%d')
+    deleted_count = 0
+    
+    for m in markets:
+        market_id = m['id']
+        list_url = f'https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/markets/{market_id}/festivals?key={FIREBASE_API_KEY}'
+        req = urllib.request.Request(list_url)
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                docs = data.get('documents', [])
+                for doc in docs:
+                    doc_name = doc.get('name', '')
+                    fields = doc.get('fields', {})
+                    end_date = fields.get('endDate', {}).get('stringValue', '')
+                    if end_date and end_date < today_str:
+                        del_url = f'https://firestore.googleapis.com/v1/{doc_name}?key={FIREBASE_API_KEY}'
+                        del_req = urllib.request.Request(del_url, method='DELETE')
+                        try:
+                            with urllib.request.urlopen(del_req, timeout=5):
+                                deleted_count += 1
+                                print(f"  🗑️ 만료 축제 자동 정리: {fields.get('title', {}).get('stringValue', '')} (종료: {end_date})")
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+
+    if deleted_count > 0:
+        print(f"  ✓ 총 {deleted_count}건의 종료된 지난 축제를 Firestore에서 자동 정리했습니다.")
+    else:
+        print(f"  ✓ 만료된 축제 없이 모든 데이터가 최신 상태입니다.")
+
 if __name__ == '__main__':
     festivals = fetch_all_festivals()
     markets = load_markets('app/src/main/assets/markets.csv')
     matched = match_festivals(festivals, markets)
     if matched:
         upload_to_firestore(matched)
+    cleanup_expired_festivals(matched)
+

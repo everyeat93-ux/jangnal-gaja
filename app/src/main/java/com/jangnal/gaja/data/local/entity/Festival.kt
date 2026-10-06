@@ -35,4 +35,27 @@ data class Festival(
     val hostOrg: String = "",             // 주최/주관 (예: 시장 상인회, 지자체)
     val isOfficial: Boolean = true,       // 공공데이터/지자체 공식 연동 여부
     val createdAt: Long = System.currentTimeMillis()
-)
+) {
+    fun getNormalizedStartDate(): String = startDate.replace("-", ".").trim()
+    fun getNormalizedEndDate(): String = endDate.replace("-", ".").trim()
+
+    fun isExpired(): Boolean {
+        val end = getNormalizedEndDate()
+        if (end.isEmpty()) return false
+        val today = java.text.SimpleDateFormat("yyyy.MM.dd", java.util.Locale.KOREA).format(java.util.Date())
+        return end < today
+    }
+
+    fun isOngoing(): Boolean {
+        val start = getNormalizedStartDate()
+        val end = getNormalizedEndDate()
+        val today = java.text.SimpleDateFormat("yyyy.MM.dd", java.util.Locale.KOREA).format(java.util.Date())
+        return (start.isEmpty() || start <= today) && (end.isEmpty() || today <= end)
+    }
+
+    fun getStatusText(): String {
+        if (isExpired()) return "종료"
+        if (isOngoing()) return "진행중 🔥"
+        return "예정 ✨"
+    }
+}
