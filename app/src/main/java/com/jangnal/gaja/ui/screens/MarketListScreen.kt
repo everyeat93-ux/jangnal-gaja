@@ -199,6 +199,7 @@ fun MarketListScreen(
         val activeCommunityPosts by viewModel.activeMarketCommunityPosts.collectAsState()
         val activeComments by viewModel.activeMarketComments.collectAsState()
         val activeFlashSales by viewModel.activeMarketFlashSales.collectAsState()
+        val allVerifications by viewModel.allVerifications.collectAsState()
         val kakaoApiKey = context.getString(com.jangnal.gaja.R.string.kakao_rest_api_key)
 
         com.jangnal.gaja.ui.components.MarketDetailSheet(
@@ -211,6 +212,7 @@ fun MarketListScreen(
             reviews = activeReviews,
             stamps = allStamps,
             flashSales = activeFlashSales,
+            verifications = allVerifications,
             userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
             onVoteClick = { marketId, isOpen -> viewModel.voteMarketStatus(marketId, isOpen) },
@@ -348,6 +350,20 @@ fun MarketListScreen(
             onDeleteFlashSale = { saleId ->
                 viewModel.deleteFlashSale(saleId) {
                     android.widget.Toast.makeText(context, "🗑️ 마감 특가가 종료(삭제)되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            },
+            onSubmitMerchantVerification = { shopName, ownerName, businessNumber, contactPhone, docType, photoUri ->
+                selectedMarket?.let { market ->
+                    viewModel.submitMerchantVerification(
+                        context = context,
+                        market = market,
+                        shopName = shopName,
+                        ownerName = ownerName,
+                        businessNumber = businessNumber,
+                        contactPhone = contactPhone,
+                        documentType = docType,
+                        photoUri = photoUri
+                    )
                 }
             },
             onDismissRequest = { selectedMarket = null }

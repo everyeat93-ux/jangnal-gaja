@@ -285,4 +285,20 @@ interface MarketDao {
 
     @Query("DELETE FROM market_flash_sales WHERE expireTimestamp <= :now")
     suspend fun cleanExpiredFlashSales(now: Long = System.currentTimeMillis())
+
+    // --- Merchant Verification (공식 상인 서류 인증) Operations ---
+    @Query("SELECT * FROM merchant_verifications WHERE marketId = :marketId AND shopName = :shopName ORDER BY submitTimestamp DESC LIMIT 1")
+    fun getVerificationForShopFlow(marketId: Long, shopName: String): Flow<com.jangnal.gaja.data.local.entity.MerchantVerification?>
+
+    @Query("SELECT * FROM merchant_verifications WHERE marketId = :marketId AND shopName = :shopName ORDER BY submitTimestamp DESC LIMIT 1")
+    suspend fun getVerificationForShop(marketId: Long, shopName: String): com.jangnal.gaja.data.local.entity.MerchantVerification?
+
+    @Query("SELECT * FROM merchant_verifications ORDER BY submitTimestamp DESC")
+    fun getAllVerificationsFlow(): Flow<List<com.jangnal.gaja.data.local.entity.MerchantVerification>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMerchantVerification(verif: com.jangnal.gaja.data.local.entity.MerchantVerification): Long
+
+    @Query("UPDATE merchant_verifications SET status = :status, reviewTimestamp = :reviewTimestamp, rejectionReason = :reason WHERE id = :id")
+    suspend fun updateMerchantVerificationStatus(id: Long, status: String, reviewTimestamp: Long, reason: String = "")
 }

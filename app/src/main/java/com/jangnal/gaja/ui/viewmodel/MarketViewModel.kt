@@ -33,6 +33,7 @@ import com.jangnal.gaja.data.local.entity.CommunityPost
 import com.jangnal.gaja.data.local.entity.CommunityComment
 import com.jangnal.gaja.data.local.entity.MarketStamp
 import com.jangnal.gaja.data.local.entity.MarketFlashSale
+import com.jangnal.gaja.data.local.entity.MerchantVerification
 
 class MarketViewModel(
     private val repository: MarketRepository
@@ -99,6 +100,14 @@ class MarketViewModel(
 
     // 전국 / 내 주변 최근 동네마당 피드 (최신 100건)
     val recentCommunityFeed: StateFlow<List<CommunityPost>> = repository.getAllRecentCommunityPostsFlow(100)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // 공식 상인 서류 인증 목록 (로컬 DB)
+    val allVerifications: StateFlow<List<MerchantVerification>> = repository.allVerificationsFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -1141,6 +1150,78 @@ class MarketViewModel(
                 onDone()
             } catch (e: Exception) {
                 android.util.Log.e("FlashSale", "Delete flash sale error: ", e)
+            }
+        }
+    }
+
+    // --- Merchant Verification (공식 상인 서류 인증) Operations ---
+    fun submitMerchantVerification(
+        context: Context,
+        market: Market,
+        shopName: String,
+        ownerName: String,
+        businessNumber: String,
+        contactPhone: String,
+        documentType: String,
+        photoUri: Uri?,
+        onSuccess: (MerchantVerification) -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                var compressedPhotoUri = ""
+                if (photoUri != null) {
+                    val compressedBytes = com.jangnal.gaja.util.ImageCompressionHelper.compressImage(context, photoUri)
+                    if (compressedBytes != null) {
+                        val photoFile = java.io.File(context.filesDir, "merchant_doc_${System.currentTimeMillis()}.jpg")
+                        photoFile.writeBytes(compressedBytes)
+                        compressedPhotoUri = Uri.fromFile(photoFile).toString()
+                    } else {
+                        compressedPhotoUri = photoUri.toString()
+                    }
+                }
+
+                val verif = MerchantVerification(
+                    marketId = market.id,
+                    marketName = market.getDisplayName(),
+                    shopName = shopName,
+                    ownerName = ownerName,
+                    businessNumber = businessNumber,
+                    contactPhone = contactPhone,
+                    documentType = documentType,
+                    documentPhotoUri = compressedPhotoUri,
+                    status = "PENDING",
+                    submitTimestamp = System.currentTimeMillis()
+                )
+                val id = repository.submitMerchantVerification(verif)
+                com.jangnal.gaja.util.VoteTracker.setMerchantVerificationStatus(context, market.id, shopName, "PENDING")
+                
+                // Push to Firestore for admin review
+                try {
+                    val firestore = FirebaseFirestore.getInstance()
+                    val docMap = hashMapOf(
+                        "id" to id,
+                        "marketId" to market.id,
+                        "marketName" to market.getDisplayName(),
+                        "shopName" to shopName,
+                        "ownerName" to ownerName,
+                        "businessNumber" to businessNumber,
+                        "contactPhone" to contactPhone,
+                        "documentType" to documentType,
+                        "status" to "PENDING",
+                        "submitTimestamp" to System.currentTimeMillis()
+                    )
+                    firestore.collection("markets").document(market.id.toString())
+                        .collection("merchant_verifications").document(shopName).set(docMap).await()
+                } catch (e: Exception) {
+                    android.util.Log.e("FirebaseSync", "Submit merchant verification Firestore failed: ", e)
+                }
+
+                val saved = verif.copy(id = id)
+                Toast.makeText(context, "📄 '${shopName}' 공식 상인 서류 인증 심사가 접수되었습니다!\n영업일 기준 24시간 이내 검토 후 승인 뱃지가 부여됩니다.", Toast.LENGTH_LONG).show()
+                onSuccess(saved)
+            } catch (e: Exception) {
+                onError(e.message ?: "서류 제출 중 오류가 발생했습니다.")
             }
         }
     }

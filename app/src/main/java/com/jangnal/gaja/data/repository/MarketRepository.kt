@@ -691,4 +691,29 @@ class MarketRepository(
             marketDao.cleanExpiredFlashSales()
         }
     }
+
+    // --- Merchant Verification (공식 상인 서류 인증) Operations ---
+    fun getVerificationForShopFlow(marketId: Long, shopName: String): Flow<com.jangnal.gaja.data.local.entity.MerchantVerification?> {
+        return marketDao.getVerificationForShopFlow(marketId, shopName)
+    }
+
+    suspend fun getVerificationForShop(marketId: Long, shopName: String): com.jangnal.gaja.data.local.entity.MerchantVerification? {
+        return withContext(Dispatchers.IO) {
+            marketDao.getVerificationForShop(marketId, shopName)
+        }
+    }
+
+    val allVerificationsFlow: Flow<List<com.jangnal.gaja.data.local.entity.MerchantVerification>> = marketDao.getAllVerificationsFlow()
+
+    suspend fun submitMerchantVerification(verif: com.jangnal.gaja.data.local.entity.MerchantVerification): Long {
+        return withContext(Dispatchers.IO) {
+            marketDao.insertMerchantVerification(verif)
+        }
+    }
+
+    suspend fun updateMerchantVerificationStatus(id: Long, status: String, reason: String = "") {
+        withContext(Dispatchers.IO) {
+            marketDao.updateMerchantVerificationStatus(id, status, System.currentTimeMillis(), reason)
+        }
+    }
 }

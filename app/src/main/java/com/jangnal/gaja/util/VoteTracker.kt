@@ -132,4 +132,25 @@ object VoteTracker {
         val key = "shop_issue_reported_${marketId}_${cleanName}_$today"
         getPrefs(context).edit().putBoolean(key, true).apply()
     }
+
+    // 7. 공식 상인 서류 인증 상태 (로컬 기기 캐시)
+    fun getMerchantVerificationStatus(context: Context, marketId: Long, shopName: String): String? {
+        val cleanName = shopName.replace("\\s+".toRegex(), "").lowercase(Locale.ROOT)
+        val key = "merchant_verif_status_${marketId}_$cleanName"
+        return getPrefs(context).getString(key, null)
+    }
+
+    fun setMerchantVerificationStatus(context: Context, marketId: Long, shopName: String, status: String) {
+        val cleanName = shopName.replace("\\s+".toRegex(), "").lowercase(Locale.ROOT)
+        val key = "merchant_verif_status_${marketId}_$cleanName"
+        getPrefs(context).edit().putString(key, status).apply()
+    }
+
+    fun isVerifiedMerchant(context: Context, marketId: Long, shopName: String): Boolean {
+        return getMerchantVerificationStatus(context, marketId, shopName) == "APPROVED"
+    }
+
+    fun isPendingMerchant(context: Context, marketId: Long, shopName: String): Boolean {
+        return getMerchantVerificationStatus(context, marketId, shopName) == "PENDING"
+    }
 }
