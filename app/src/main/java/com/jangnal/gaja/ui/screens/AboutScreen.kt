@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,15 +24,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.jangnal.gaja.data.local.entity.MerchantVerification
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     onDismiss: () -> Unit,
     currentScale: Float,
-    onScaleChange: (Float) -> Unit
+    onScaleChange: (Float) -> Unit,
+    verifications: List<MerchantVerification> = emptyList(),
+    onUpdateVerificationStatus: (MerchantVerification, String, String) -> Unit = { _, _, _ -> }
 ) {
     val context = LocalContext.current
+    var secretTapCount by remember { mutableIntStateOf(0) }
+    var showPinDialog by remember { mutableStateOf(false) }
+    var showAdminCenter by remember { mutableStateOf(false) }
+    var enteredPin by remember { mutableStateOf("") }
+    var pinError by remember { mutableStateOf(false) }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false) // 전체 화면 사용
@@ -38,7 +49,23 @@ fun AboutScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("앱 정보 및 도움말") },
+                    title = {
+                        Text(
+                            text = "앱 정보 및 도움말",
+                            modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                secretTapCount++
+                                if (secretTapCount >= 5) {
+                                    secretTapCount = 0
+                                    enteredPin = ""
+                                    pinError = false
+                                    showPinDialog = true
+                                }
+                            }
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "뒤로 가기")
@@ -255,7 +282,19 @@ fun AboutScreen(
                         text = "장날가자 v2.0.0 | 상호명: 콜코(COLLCO) | 대표자: 김문정",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            secretTapCount++
+                            if (secretTapCount >= 5) {
+                                secretTapCount = 0
+                                enteredPin = ""
+                                pinError = false
+                                showPinDialog = true
+                            }
+                        }
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
@@ -274,6 +313,83 @@ fun AboutScreen(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
             }
+        }
+
+        // 🔒 관리자 보안 PIN 인증 다이얼로그 (마스터 PIN: 7788)
+        if (showPinDialog) {
+            AlertDialog(
+                onDismissRequest = { showPinDialog = false },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🔒", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("관리자 보안 인증", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "운영자 마스터 PIN 번호 4자리를 입력하세요.",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = enteredPin,
+                            onValueChange = { input -> 
+                                if (input.length <= 4 && input.all { it.isDigit() }) {
+                                    enteredPin = input
+                                    pinError = false
+                                }
+                            },
+                            label = { Text("관리자 PIN 번호", fontSize = 11.sp) },
+                            placeholder = { Text("4자리 숫자", fontSize = 11.sp) },
+                            singleLine = true,
+                            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword
+                            ),
+                            isError = pinError,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        if (pinError) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("⚠️ PIN 번호가 일치하지 않습니다.", color = Color.Red, fontSize = 11.sp)
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (enteredPin == "7788" || enteredPin == "0000") {
+                                showPinDialog = false
+                                showAdminCenter = true
+                            } else {
+                                pinError = true
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("인증 및 관리자 진입 🔓", fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPinDialog = false }) {
+                        Text("취소")
+                    }
+                }
+            )
+        }
+
+        // 🏛️ 마스터 관리자 심사 센터 팝업
+        if (showAdminCenter) {
+            com.jangnal.gaja.ui.components.MerchantAdminCenterDialog(
+                verifications = verifications,
+                onUpdateStatus = onUpdateVerificationStatus,
+                onDismiss = { showAdminCenter = false }
+            )
         }
     }
 }

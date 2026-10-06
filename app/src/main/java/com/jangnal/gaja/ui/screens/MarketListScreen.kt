@@ -371,10 +371,15 @@ fun MarketListScreen(
     }
     
     if (showAbout) {
+        val allVerifications by viewModel.allVerifications.collectAsState()
         AboutScreen(
             onDismiss = { showAbout = false },
             currentScale = currentTextScale,
-            onScaleChange = onTextScaleChange
+            onScaleChange = onTextScaleChange,
+            verifications = allVerifications,
+            onUpdateVerificationStatus = { verif, newStatus, reason ->
+                viewModel.updateMerchantVerificationStatus(context, verif, newStatus, reason)
+            }
         )
     }
 

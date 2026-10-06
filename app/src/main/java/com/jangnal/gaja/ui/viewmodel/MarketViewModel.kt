@@ -34,6 +34,7 @@ import com.jangnal.gaja.data.local.entity.CommunityComment
 import com.jangnal.gaja.data.local.entity.MarketStamp
 import com.jangnal.gaja.data.local.entity.MarketFlashSale
 import com.jangnal.gaja.data.local.entity.MerchantVerification
+import com.jangnal.gaja.util.VoteTracker
 
 class MarketViewModel(
     private val repository: MarketRepository
@@ -1222,6 +1223,49 @@ class MarketViewModel(
                 onSuccess(saved)
             } catch (e: Exception) {
                 onError(e.message ?: "서류 제출 중 오류가 발생했습니다.")
+            }
+        }
+    }
+
+    fun updateMerchantVerificationStatus(
+        context: Context,
+        verification: MerchantVerification,
+        newStatus: String,
+        reason: String = "",
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                repository.updateMerchantVerificationStatus(verification.id, newStatus, reason)
+                
+                // Update VoteTracker local device cache
+                VoteTracker.setMerchantVerificationStatus(context, verification.marketId, verification.shopName, newStatus)
+                
+                // Sync status to Cloud Firestore
+                try {
+                    val firestore = FirebaseFirestore.getInstance()
+                    firestore.collection("markets").document(verification.marketId.toString())
+                        .collection("merchant_verifications").document(verification.shopName).update(mapOf(
+                            "status" to newStatus,
+                            "reviewTimestamp" to System.currentTimeMillis(),
+                            "rejectionReason" to reason
+                        )).await()
+                } catch (e: Exception) {
+                    android.util.Log.e("FirebaseSync", "Update merchant verification status in Firestore failed: ", e)
+                }
+                
+                val msg = if (newStatus == "APPROVED") {
+                    "🎉 '${verification.shopName}' 상점의 공식 상인 인증이 승인되었습니다!"
+                } else if (newStatus == "REJECTED") {
+                    "⚠️ '${verification.shopName}' 상점의 서류 심사가 반려 처리되었습니다."
+                } else {
+                    "⏳ '${verification.shopName}' 상점이 심사 대기 상태로 변경되었습니다."
+                }
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "심사 상태 변경 중 오류가 발생했습니다.")
             }
         }
     }
