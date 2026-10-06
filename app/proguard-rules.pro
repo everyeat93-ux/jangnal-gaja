@@ -1,21 +1,54 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ==========================================
+# 🚀 장날가자 (Jangnal Gaja) ProGuard / R8 Rules
+# ==========================================
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# 1. Line numbers for crash reporting
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# 2. General Reflection & Annotations
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# 3. Data Entities & Local DB (Room)
+-keep class com.jangnal.gaja.data.local.entity.** { *; }
+-keep class com.jangnal.gaja.data.local.dao.** { *; }
+-keep class com.jangnal.gaja.data.local.AppDatabase { *; }
+-keep class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao class * { *; }
+-dontwarn androidx.room.paging.**
+
+# 4. Data Models & JSON Serialization (Gson / Firestore)
+-keep class com.jangnal.gaja.model.** { *; }
+-keepclassmembers class com.jangnal.gaja.data.local.entity.** { *; }
+-keepclassmembers class * {
+    @com.google.firebase.firestore.PropertyName <fields>;
+    @com.google.firebase.firestore.PropertyName <methods>;
+    @com.google.firebase.firestore.Exclude <fields>;
+    @com.google.firebase.firestore.Exclude <methods>;
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# 5. Kakao Maps SDK
+-keep class com.kakao.maps.** { *; }
+-keep interface com.kakao.maps.** { *; }
+-dontwarn com.kakao.maps.**
+
+# 6. Google Play Services & Firebase
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+
+# 7. Coil Image Loader
+-keep class coil.** { *; }
+-dontwarn coil.**
+
+# 8. Kotlin Coroutines
+-dontwarn kotlinx.coroutines.**
+-keepclassmembers class kotlinx.coroutines.** { *; }
+
+# 9. Android Jetpack Compose & ViewModel
+-keep class androidx.compose.** { *; }
+-keep class androidx.lifecycle.** { *; }
+-keep class com.jangnal.gaja.ui.viewmodel.** { *; }
