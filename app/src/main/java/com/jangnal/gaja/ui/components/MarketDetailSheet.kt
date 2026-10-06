@@ -1957,6 +1957,10 @@ fun ShopQueueSection(
                     val isConfirmedByUser = VoteTracker.hasConfirmedPayment(context, shop.id) || confirmedShopIds.contains(shop.id)
                     val displayConfirmCount = shop.onnuriConfirmedCount + (if (isConfirmedByUser && !confirmedShopIds.contains(shop.id) && shop.onnuriConfirmedCount == 0) 1 else 0)
 
+                    val shopVerif = verifications.firstOrNull { it.marketId == market.id && it.shopName.trim() == shop.shopName.trim() }
+                    val isVerifiedShop = shopVerif?.isApproved() == true || VoteTracker.isVerifiedMerchant(context, market.id, shop.shopName)
+                    val isPendingShop = shopVerif?.isPending() == true || VoteTracker.isPendingMerchant(context, market.id, shop.shopName)
+
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1998,10 +2002,6 @@ fun ShopQueueSection(
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
-
-                                    val shopVerif = verifications.firstOrNull { it.marketId == market.id && it.shopName.trim() == shop.shopName.trim() }
-                                    val isVerifiedShop = shopVerif?.isApproved() == true || VoteTracker.isVerifiedMerchant(context, market.id, shop.shopName)
-                                    val isPendingShop = shopVerif?.isPending() == true || VoteTracker.isPendingMerchant(context, market.id, shop.shopName)
 
                                     if (isVerifiedShop) {
                                         Spacer(modifier = Modifier.width(4.dp))
@@ -4524,7 +4524,7 @@ fun FlashSaleCreateDialog(
         if (prefilledShopName.isNotBlank() && list.none { it.shopName.equals(prefilledShopName, ignoreCase = true) }) {
             if (verifications.any { it.marketId == market.id && it.shopName.trim().equals(prefilledShopName.trim(), ignoreCase = true) && it.isApproved() } ||
                 VoteTracker.isVerifiedMerchant(context, market.id, prefilledShopName)) {
-                list.add(0, Shop(marketId = market.id, shopName = prefilledShopName, category = "공식인증점포"))
+                list.add(0, Shop(marketId = market.id, shopName = prefilledShopName, category = "공식인증점포", latitude = market.latitude, longitude = market.longitude))
             }
         }
         list
