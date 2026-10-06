@@ -518,6 +518,7 @@ fun MarketDetailSheet(
                 val detailTabs = remember(festivals.size, shops.size, communityPosts.size) {
                     listOfNotNull(
                         "shops" to "🏪 상점·맛집 (${shops.size})",
+                        "courses" to "🗺️ 추천코스",
                         if (festivals.isNotEmpty()) "festivals" to "🎪 축제·공연 (${festivals.size})" else null,
                         "community" to "💬 동네마당 (${communityPosts.size})",
                         "info" to "ℹ️ 시장정보·장날"
@@ -567,6 +568,12 @@ fun MarketDetailSheet(
                             onConfirmOnnuri = onConfirmOnnuri,
                             onDeleteShop = onDeleteShop,
                             onReportShopIssue = onReportShopIssue
+                        )
+                    }
+                    "courses" -> {
+                        MarketTravelCourseSection(
+                            market = market,
+                            userLocation = userLocation
                         )
                     }
                     "festivals" -> {

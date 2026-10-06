@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -115,6 +116,26 @@ fun MarketItem(
                             modifier = Modifier
                                 .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+
+                    val hasCuratedCourse = remember(market.marketName) {
+                        val n = market.marketName
+                        n.contains("정선") || n.contains("속초") || n.contains("강릉") || n.contains("구로") || 
+                        n.contains("광장") || n.contains("모란") || n.contains("서문") || n.contains("전주") || 
+                        n.contains("순천") || n.contains("통인") || n.contains("망원") || n.contains("수원") || 
+                        n.contains("자갈치") || n.contains("예산")
+                    }
+                    if (hasCuratedCourse) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "🗺️ 코스",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0277BD),
+                            modifier = Modifier
+                                .background(Color(0xFFE1F5FE), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
                         )
                     }
                 }

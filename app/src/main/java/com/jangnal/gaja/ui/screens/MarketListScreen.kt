@@ -527,7 +527,7 @@ fun MarketList(
         
         // 3차 필터: 시장 유형 및 장날 주기 필터
         var selectedScheduleFilter by remember { mutableStateOf("전체 유형") }
-        val scheduleFilters = listOf("전체 유형", "🎪 축제·행사 열리는 장", "🏪 상설시장", "🎪 5일장", "1·6일장", "2·7일장", "3·8일장", "4·9일장", "5·10일장")
+        val scheduleFilters = listOf("전체 유형", "🗺️ 여행 코스 추천 장", "🎪 축제·행사 열리는 장", "🏪 상설시장", "🎪 5일장", "1·6일장", "2·7일장", "3·8일장", "4·9일장", "5·10일장")
         
         val activeFestivalMarketIds = remember(festivals) {
             festivals.filter { !it.isExpired() }.map { it.marketId }.toSet()
@@ -605,7 +605,10 @@ fun MarketList(
             }
 
             // 3차: 시장 유형 및 장날 주기 필터링
-            if (selectedScheduleFilter == "🎪 축제·행사 열리는 장") {
+            if (selectedScheduleFilter == "🗺️ 여행 코스 추천 장") {
+                val famousNames = listOf("정선", "속초", "강릉", "구로", "광장", "모란", "서문", "전주", "순천", "통인", "망원", "수원", "자갈치", "예산")
+                filtered = filtered.filter { m -> famousNames.any { m.marketName.contains(it) } }
+            } else if (selectedScheduleFilter == "🎪 축제·행사 열리는 장") {
                 filtered = filtered.filter { activeFestivalMarketIds.contains(it.id) }
             } else if (selectedScheduleFilter != "전체 유형") {
                 filtered = filtered.filter { it.matchesScheduleType(selectedScheduleFilter) }
