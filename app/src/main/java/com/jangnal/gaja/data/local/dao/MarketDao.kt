@@ -244,4 +244,29 @@ interface MarketDao {
 
     @Query("DELETE FROM community_comments WHERE commentId = :commentId")
     suspend fun deleteComment(commentId: String)
+
+    // --- Market Stamps (Passport) Operations ---
+    @Query("SELECT * FROM market_stamps ORDER BY visitTimestamp DESC")
+    fun getAllStampsFlow(): Flow<List<com.jangnal.gaja.data.local.entity.MarketStamp>>
+
+    @Query("SELECT * FROM market_stamps WHERE marketId = :marketId ORDER BY visitTimestamp DESC")
+    fun getStampsForMarketFlow(marketId: Long): Flow<List<com.jangnal.gaja.data.local.entity.MarketStamp>>
+
+    @Query("SELECT * FROM market_stamps WHERE marketId = :marketId ORDER BY visitTimestamp DESC LIMIT 1")
+    suspend fun getLatestStampForMarket(marketId: Long): com.jangnal.gaja.data.local.entity.MarketStamp?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStamp(stamp: com.jangnal.gaja.data.local.entity.MarketStamp): Long
+
+    @Query("DELETE FROM market_stamps WHERE id = :stampId")
+    suspend fun deleteStamp(stampId: Long)
+
+    @Query("SELECT COUNT(*) FROM market_stamps")
+    fun getTotalStampCountFlow(): Flow<Int>
+
+    @Query("SELECT COUNT(DISTINCT marketId) FROM market_stamps")
+    fun getUniqueMarketCountFlow(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM market_stamps WHERE isMarketDay = 1")
+    fun getGoldenStampCountFlow(): Flow<Int>
 }

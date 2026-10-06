@@ -638,4 +638,32 @@ class MarketRepository(
             marketDao.deleteComment(commentId)
         }
     }
+
+    // --- Market Stamps (Passport) Operations ---
+    val allStamps: Flow<List<com.jangnal.gaja.data.local.entity.MarketStamp>> = marketDao.getAllStampsFlow()
+    val totalStampCount: Flow<Int> = marketDao.getTotalStampCountFlow()
+    val uniqueMarketCount: Flow<Int> = marketDao.getUniqueMarketCountFlow()
+    val goldenStampCount: Flow<Int> = marketDao.getGoldenStampCountFlow()
+
+    fun getStampsForMarket(marketId: Long): Flow<List<com.jangnal.gaja.data.local.entity.MarketStamp>> {
+        return marketDao.getStampsForMarketFlow(marketId)
+    }
+
+    suspend fun getLatestStampForMarket(marketId: Long): com.jangnal.gaja.data.local.entity.MarketStamp? {
+        return withContext(Dispatchers.IO) {
+            marketDao.getLatestStampForMarket(marketId)
+        }
+    }
+
+    suspend fun saveMarketStamp(stamp: com.jangnal.gaja.data.local.entity.MarketStamp): Long {
+        return withContext(Dispatchers.IO) {
+            marketDao.insertStamp(stamp)
+        }
+    }
+
+    suspend fun deleteStamp(stampId: Long) {
+        withContext(Dispatchers.IO) {
+            marketDao.deleteStamp(stampId)
+        }
+    }
 }

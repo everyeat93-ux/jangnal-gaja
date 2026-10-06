@@ -31,6 +31,7 @@ import java.util.Calendar
 import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.data.local.entity.CommunityPost
 import com.jangnal.gaja.data.local.entity.CommunityComment
+import com.jangnal.gaja.data.local.entity.MarketStamp
 
 class MarketViewModel(
     private val repository: MarketRepository
@@ -62,6 +63,35 @@ class MarketViewModel(
 
     private val _activeMarketComments = MutableStateFlow<Map<String, List<CommunityComment>>>(emptyMap())
     val activeMarketComments: StateFlow<Map<String, List<CommunityComment>>> = _activeMarketComments.asStateFlow()
+
+    // --- Passport / Stamps StateFlows ---
+    val allStamps: StateFlow<List<MarketStamp>> = repository.allStamps
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val totalStampCount: StateFlow<Int> = repository.totalStampCount
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    val uniqueMarketCount: StateFlow<Int> = repository.uniqueMarketCount
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    val goldenStampCount: StateFlow<Int> = repository.goldenStampCount
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
 
     // 전국 / 내 주변 최근 동네마당 피드 (최신 100건)
     val recentCommunityFeed: StateFlow<List<CommunityPost>> = repository.getAllRecentCommunityPostsFlow(100)
@@ -987,6 +1017,62 @@ class MarketViewModel(
                 Toast.makeText(context, "🚨 댓글 신고가 접수되었습니다.", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 android.util.Log.e("FirebaseSync", "Report community comment failed: ", e)
+            }
+        }
+    }
+
+    // --- Passport / Stamps Operations ---
+    fun claimStamp(
+        context: Context,
+        market: Market,
+        memo: String = "",
+        photoUri: Uri? = null,
+        userLocation: android.location.Location? = null,
+        onSuccess: (MarketStamp) -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                var compressedPhotoUri: String? = null
+                if (photoUri != null) {
+                    val compressedBytes = com.jangnal.gaja.util.ImageCompressionHelper.compressImage(context, photoUri)
+                    if (compressedBytes != null) {
+                        val photoFile = java.io.File(context.filesDir, "stamp_${System.currentTimeMillis()}.jpg")
+                        photoFile.writeBytes(compressedBytes)
+                        compressedPhotoUri = Uri.fromFile(photoFile).toString()
+                    } else {
+                        compressedPhotoUri = photoUri.toString()
+                    }
+                }
+
+                val isMarketDay = market.isOpenToday()
+                val stamp = MarketStamp(
+                    marketId = market.id,
+                    marketName = market.getDisplayName(),
+                    visitTimestamp = System.currentTimeMillis(),
+                    isMarketDay = isMarketDay,
+                    userMemo = memo,
+                    photoUri = compressedPhotoUri,
+                    latitude = userLocation?.latitude ?: market.latitude,
+                    longitude = userLocation?.longitude ?: market.longitude,
+                    province = market.getProvince()
+                )
+                val id = repository.saveMarketStamp(stamp)
+                val savedStamp = stamp.copy(id = id)
+                onSuccess(savedStamp)
+            } catch (e: Exception) {
+                onError("스탬프 날인 중 오류가 발생했습니다: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteStamp(stampId: Long, onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                repository.deleteStamp(stampId)
+                onDone()
+            } catch (e: Exception) {
+                android.util.Log.e("Stamp", "Delete stamp error: ", e)
             }
         }
     }

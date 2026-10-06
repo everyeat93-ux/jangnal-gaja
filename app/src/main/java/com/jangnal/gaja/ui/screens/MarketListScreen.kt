@@ -176,8 +176,13 @@ fun MarketListScreen(
     // State for Community Feed Sheet
     var showCommunityFeed by remember { mutableStateOf(false) }
 
+    // State for Passport Sheet
+    var showPassport by remember { mutableStateOf(false) }
+
     val recentCommunityPosts by viewModel.recentCommunityFeed.collectAsState()
     val allMarketsList by viewModel.allMarkets.collectAsState()
+    val allStamps by viewModel.allStamps.collectAsState()
+    val uniqueMarketStampCount by viewModel.uniqueMarketCount.collectAsState()
 
     LaunchedEffect(selectedMarket) {
         viewModel.clearSearchResults()
@@ -203,6 +208,7 @@ fun MarketListScreen(
             communityPosts = activeCommunityPosts,
             comments = activeComments,
             reviews = activeReviews,
+            stamps = allStamps,
             userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
             onVoteClick = { marketId, isOpen -> viewModel.voteMarketStatus(marketId, isOpen) },
@@ -311,6 +317,17 @@ fun MarketListScreen(
                     viewModel.reportCommunityComment(context, market.id, postId, commentId, authorHash, reason)
                 }
             },
+            onClaimStamp = { memo, photoUri ->
+                selectedMarket?.let { market ->
+                    viewModel.claimStamp(
+                        context = context,
+                        market = market,
+                        memo = memo,
+                        photoUri = photoUri,
+                        userLocation = userLocation
+                    )
+                }
+            },
             onDismissRequest = { selectedMarket = null }
         )
     }
@@ -344,6 +361,21 @@ fun MarketListScreen(
         )
     }
 
+    if (showPassport) {
+        com.jangnal.gaja.ui.components.PassportSheet(
+            stamps = allStamps,
+            allMarkets = allMarketsList,
+            onSelectMarket = { market ->
+                showPassport = false
+                selectedMarket = market
+            },
+            onDeleteStamp = { stampId ->
+                viewModel.deleteStamp(stampId)
+            },
+            onDismissRequest = { showPassport = false }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -361,6 +393,26 @@ fun MarketListScreen(
                     actionIconContentColor = com.jangnal.gaja.ui.theme.JangnalBrown
                 ),
                 actions = {
+                    // 📘 나의 여권 버튼
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color(0xFF162433),
+                        border = BorderStroke(1.dp, Color(0xFFD4AF37)),
+                        modifier = Modifier.clickable { showPassport = true }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp)
+                        ) {
+                            Text(
+                                text = if (uniqueMarketStampCount > 0) "📘 여권 ${uniqueMarketStampCount}곳" else "📘 여권",
+                                fontSize = 11.sp,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = Color(0xFFFFD54F)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
                     Surface(
                         shape = RoundedCornerShape(20.dp),
                         color = com.jangnal.gaja.ui.theme.JangnalBrown,

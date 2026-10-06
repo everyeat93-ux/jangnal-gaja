@@ -80,6 +80,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.OutlinedTextField
@@ -89,6 +90,7 @@ import androidx.compose.ui.layout.ContentScale
 import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.data.local.entity.CommunityPost
 import com.jangnal.gaja.data.local.entity.CommunityComment
+import com.jangnal.gaja.data.local.entity.MarketStamp
 import com.jangnal.gaja.util.CommunitySafetyHelper
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -101,6 +103,7 @@ fun MarketDetailSheet(
     communityPosts: List<CommunityPost> = emptyList(),
     comments: Map<String, List<CommunityComment>> = emptyMap(),
     reviews: Map<String, List<com.jangnal.gaja.ui.viewmodel.ShopReview>> = emptyMap(),
+    stamps: List<MarketStamp> = emptyList(),
     userLocation: android.location.Location? = null,
     onFavoriteToggle: (Market) -> Unit = {},
     onVoteClick: (Long, Boolean) -> Unit = { _, _ -> },
@@ -120,6 +123,7 @@ fun MarketDetailSheet(
     onSubmitCommunityComment: (String, String, String) -> Unit = { _, _, _ -> },
     onDeleteCommunityComment: (String) -> Unit = {},
     onReportCommunityComment: (String, String, String, String) -> Unit = { _, _, _, _ -> },
+    onClaimStamp: (String, Uri?) -> Unit = { _, _ -> },
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -252,7 +256,264 @@ fun MarketDetailSheet(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // 🎖️ GPS 장날 방문 스탬프 여권 배너
+                val marketDistance = remember(userLocation, market) {
+                    if (userLocation != null) {
+                        val results = FloatArray(1)
+                        android.location.Location.distanceBetween(
+                            userLocation.latitude, userLocation.longitude,
+                            market.latitude, market.longitude,
+                            results
+                        )
+                        results[0]
+                    } else {
+                        Float.MAX_VALUE
+                    }
+                }
+                val isNearForStamp = marketDistance <= 500f // 500m 이내
+                val currentMarketStamp = remember(stamps, market.id) {
+                    stamps.firstOrNull { it.marketId == market.id }
+                }
+                var showStampClaimDialog by remember { mutableStateOf(false) }
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable { showStampClaimDialog = true },
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (currentMarketStamp != null) {
+                        if (currentMarketStamp.isMarketDay) Color(0xFF2E2405) else Color(0xFF1E2833)
+                    } else if (isNearForStamp) {
+                        Color(0xFFE8F5E9)
+                    } else {
+                        Color(0xFFFFF8E1)
+                    },
+                    border = BorderStroke(
+                        1.dp,
+                        if (currentMarketStamp != null) {
+                            if (currentMarketStamp.isMarketDay) Color(0xFFD4AF37) else Color(0xFF546E7A)
+                        } else if (isNearForStamp) {
+                            Color(0xFF4CAF50)
+                        } else {
+                            Color(0xFFFFCA28)
+                        }
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (currentMarketStamp != null) (if (currentMarketStamp.isMarketDay) "✨" else "💮") else "🎖️",
+                                fontSize = 18.sp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                if (currentMarketStamp != null) {
+                                    val stampDate = SimpleDateFormat("yy.MM.dd", Locale.KOREA).format(Date(currentMarketStamp.visitTimestamp))
+                                    Text(
+                                        text = if (currentMarketStamp.isMarketDay) "여권에 황금 장날도장 획득 완료! ✨" else "여권에 방문 스탬프 획득 완료! 💮",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = if (currentMarketStamp.isMarketDay) Color(0xFFFFD54F) else Color(0xFFECEFF1)
+                                    )
+                                    Text(
+                                        text = "$stampDate 방문 인증됨 (터치하여 기록 보기)",
+                                        fontSize = 10.sp,
+                                        color = if (currentMarketStamp.isMarketDay) Color(0xFFFFE082) else Color(0xFFB0BEC5)
+                                    )
+                                } else if (isNearForStamp) {
+                                    Text(
+                                        text = "📍 현장 방문 감지! 여권 스탬프 찍기",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF2E7D32)
+                                    )
+                                    Text(
+                                        text = if (market.isOpenToday()) "오늘 장날 당일! 황금 스탬프를 획득할 수 있습니다 ✨" else "방문 인증 도장을 여권에 날인해 보세요 👏",
+                                        fontSize = 10.sp,
+                                        color = Color(0xFF388E3C)
+                                    )
+                                } else {
+                                    Text(
+                                        text = "🎖️ 전국 5일장 GPS 방문 스탬프 투어",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = Color(0xFFE65100)
+                                    )
+                                    Text(
+                                        text = if (marketDistance < Float.MAX_VALUE) "현장 500m 이내 도착 시 도장 활성화 (현재 ${(marketDistance/1000).toInt()}km)" else "시장에 방문하여 여권 도장을 모아보세요!",
+                                        fontSize = 10.sp,
+                                        color = Color(0xFF8D6E63)
+                                    )
+                                }
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (currentMarketStamp != null) Color(0xFFD4AF37).copy(alpha = 0.25f) else Color(0xFFE65100),
+                            modifier = Modifier.padding(start = 4.dp)
+                        ) {
+                            Text(
+                                text = if (currentMarketStamp != null) "기록 보기" else "도장 찍기",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (currentMarketStamp != null) Color(0xFFFFD54F) else Color.White,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+
+                if (showStampClaimDialog) {
+                    var stampMemo by remember { mutableStateOf(currentMarketStamp?.userMemo ?: "") }
+                    var stampPhotoUri by remember { mutableStateOf<Uri?>(null) }
+                    val stampPhotoLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.GetContent()
+                    ) { uri: Uri? ->
+                        stampPhotoUri = uri
+                    }
+                    val isMarketDay = market.isOpenToday()
+
+                    AlertDialog(
+                        onDismissRequest = { showStampClaimDialog = false },
+                        title = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(if (isMarketDay) "✨" else "💮", fontSize = 22.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (currentMarketStamp != null) "방문 스탬프 기록" else (if (isMarketDay) "황금 장날 스탬프 날인" else "방문 스탬프 날인"),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        },
+                        text = {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .verticalScroll(rememberScrollState()),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // 전통 인주 도장 프리뷰
+                                val sealColor = if (isMarketDay) Color(0xFFD4AF37) else Color(0xFFD32F2F)
+                                val sealBg = if (isMarketDay) Color(0xFFFFF8E1) else Color(0xFFFFEBEE)
+                                Box(
+                                    modifier = Modifier
+                                        .size(76.dp)
+                                        .clip(CircleShape)
+                                        .background(sealBg)
+                                        .border(2.dp, sealColor, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        val cleanName = market.getDisplayName().replace("전통시장", "").replace("시장", "").take(3)
+                                        Text(
+                                            text = cleanName,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = sealColor
+                                        )
+                                        Text(
+                                            text = if (isMarketDay) "장날 認" else "방문 認",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = sealColor.copy(alpha = 0.85f)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = if (isMarketDay) "🌟 오늘 '${market.getDisplayName()}' 장날 당일 방문!" else "🏪 '${market.getDisplayName()}' 방문!",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = if (currentMarketStamp != null) "나의 장날 여권에 등록된 스탬프입니다." else "나의 장날 여권에 방문 도장을 등록합니다.",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                if (currentMarketStamp == null) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    OutlinedTextField(
+                                        value = stampMemo,
+                                        onValueChange = { if (it.length <= 100) stampMemo = it },
+                                        label = { Text("여행 한줄 메모 (선택)", fontSize = 12.sp) },
+                                        placeholder = { Text("예: 떡볶이 맛집 들렀음! 날씨 좋음", fontSize = 11.sp) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(10.dp),
+                                        maxLines = 2
+                                    )
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = if (stampPhotoUri != null) "📷 사진 첨부 완료" else "📷 현장 사진 추가 (선택)",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        OutlinedButton(
+                                            onClick = { stampPhotoLauncher.launch("image/*") },
+                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text(if (stampPhotoUri != null) "사진 변경" else "사진 선택", fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            if (currentMarketStamp == null) {
+                                Button(
+                                    onClick = {
+                                        onClaimStamp(stampMemo, stampPhotoUri)
+                                        showStampClaimDialog = false
+                                        android.widget.Toast.makeText(context, "🎉 '${market.getDisplayName()}' 방문 스탬프가 여권에 날인되었습니다!", android.widget.Toast.LENGTH_LONG).show()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isMarketDay) Color(0xFFE65100) else MaterialTheme.colorScheme.primary
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("여권에 도장 찍기 💮", fontWeight = FontWeight.Bold)
+                                }
+                            } else {
+                                Button(
+                                    onClick = { showStampClaimDialog = false },
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("확인")
+                                }
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showStampClaimDialog = false }) {
+                                Text("닫기")
+                            }
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
 
                 val detailTabs = remember(festivals.size, shops.size, communityPosts.size) {
                     listOfNotNull(

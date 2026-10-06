@@ -341,4 +341,22 @@ data class Market(
         
         return isOpenOn(satCal.timeInMillis) || isOpenOn(sunCal.timeInMillis)
     }
+
+    fun getProvince(): String {
+        val addr = addressRoad.ifEmpty { addressJibun }
+        return when {
+            addr.startsWith("서울") -> "서울"
+            addr.startsWith("경기") -> "경기"
+            addr.startsWith("인천") -> "인천"
+            addr.startsWith("강원") -> "강원"
+            addr.startsWith("충북") || addr.startsWith("충청북") -> "충북"
+            addr.startsWith("충남") || addr.startsWith("충청남") || addr.startsWith("대전") || addr.startsWith("세종") -> "충남·대전"
+            addr.startsWith("전북") || addr.startsWith("전라북") -> "전북"
+            addr.startsWith("전남") || addr.startsWith("전라남") || addr.startsWith("광주") -> "전남·광주"
+            addr.startsWith("경북") || addr.startsWith("경상북") || addr.startsWith("대구") -> "경북·대구"
+            addr.startsWith("경남") || addr.startsWith("경상남") || addr.startsWith("부산") || addr.startsWith("울산") -> "경남·부산·울산"
+            addr.startsWith("제주") -> "제주"
+            else -> "전국"
+        }
+    }
 }
