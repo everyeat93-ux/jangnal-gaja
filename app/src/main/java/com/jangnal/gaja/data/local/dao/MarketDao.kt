@@ -205,6 +205,9 @@ interface MarketDao {
     @Query("SELECT * FROM community_posts WHERE marketId = :marketId AND isBlind = 0 ORDER BY createdAt DESC")
     suspend fun getCommunityPostsForMarketList(marketId: Long): List<CommunityPost>
 
+    @Query("SELECT * FROM community_posts WHERE isBlind = 0 ORDER BY createdAt DESC LIMIT :limit")
+    fun getAllRecentCommunityPostsFlow(limit: Int = 100): Flow<List<CommunityPost>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCommunityPost(post: CommunityPost): Long
 
@@ -216,4 +219,23 @@ interface MarketDao {
 
     @Query("UPDATE community_posts SET likeCount = likeCount + 1 WHERE postId = :postId")
     suspend fun incrementCommunityPostLike(postId: String)
+
+    // --- Community Comments Operations ---
+    @Query("SELECT * FROM community_comments WHERE marketId = :marketId AND isBlind = 0 ORDER BY createdAt ASC")
+    fun getCommentsForMarketFlow(marketId: Long): Flow<List<com.jangnal.gaja.data.local.entity.CommunityComment>>
+
+    @Query("SELECT * FROM community_comments WHERE postId = :postId AND isBlind = 0 ORDER BY createdAt ASC")
+    fun getCommentsForPostFlow(postId: String): Flow<List<com.jangnal.gaja.data.local.entity.CommunityComment>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertComment(comment: com.jangnal.gaja.data.local.entity.CommunityComment): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertComments(comments: List<com.jangnal.gaja.data.local.entity.CommunityComment>)
+
+    @Query("UPDATE community_comments SET isBlind = 1 WHERE commentId = :commentId")
+    suspend fun blindComment(commentId: String)
+
+    @Query("DELETE FROM community_comments WHERE commentId = :commentId")
+    suspend fun deleteComment(commentId: String)
 }

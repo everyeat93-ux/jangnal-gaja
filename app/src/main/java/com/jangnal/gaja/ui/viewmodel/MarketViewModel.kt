@@ -30,6 +30,7 @@ import java.util.Calendar
 
 import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.data.local.entity.CommunityPost
+import com.jangnal.gaja.data.local.entity.CommunityComment
 
 class MarketViewModel(
     private val repository: MarketRepository
@@ -41,6 +42,7 @@ class MarketViewModel(
     private var reviewsListenerRegistration: ListenerRegistration? = null
     private var festivalsListenerRegistration: ListenerRegistration? = null
     private var communityListenerRegistration: ListenerRegistration? = null
+    private var commentsListenerRegistration: ListenerRegistration? = null
 
     private val _activeShopReviews = MutableStateFlow<Map<String, List<ShopReview>>>(emptyMap())
     val activeShopReviews: StateFlow<Map<String, List<ShopReview>>> = _activeShopReviews.asStateFlow()
@@ -50,6 +52,17 @@ class MarketViewModel(
 
     private val _activeMarketCommunityPosts = MutableStateFlow<List<CommunityPost>>(emptyList())
     val activeMarketCommunityPosts: StateFlow<List<CommunityPost>> = _activeMarketCommunityPosts.asStateFlow()
+
+    private val _activeMarketComments = MutableStateFlow<Map<String, List<CommunityComment>>>(emptyMap())
+    val activeMarketComments: StateFlow<Map<String, List<CommunityComment>>> = _activeMarketComments.asStateFlow()
+
+    // 전국 / 내 주변 최근 동네마당 피드 (최신 100건)
+    val recentCommunityFeed: StateFlow<List<CommunityPost>> = repository.getAllRecentCommunityPostsFlow(100)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     // 오늘 날짜 (Timestamp)
     private val _today = MutableStateFlow(System.currentTimeMillis())
@@ -196,6 +209,7 @@ class MarketViewModel(
         reviewsListenerRegistration?.remove()
         festivalsListenerRegistration?.remove()
         communityListenerRegistration?.remove()
+        commentsListenerRegistration?.remove()
         
         shopsCollectJob = viewModelScope.launch {
             // 1. Prepopulate default mock shops if empty
@@ -224,6 +238,12 @@ class MarketViewModel(
             launch {
                 repository.getCommunityPostsForMarketFlow(market.id).collect { posts ->
                     _activeMarketCommunityPosts.value = posts
+                }
+            }
+
+            launch {
+                repository.getCommentsForMarketFlow(market.id).collect { comments ->
+                    _activeMarketComments.value = comments.groupBy { it.postId }
                 }
             }
 
@@ -288,6 +308,33 @@ class MarketViewModel(
                             }
                             viewModelScope.launch(Dispatchers.IO) {
                                 pList.forEach { repository.insertCommunityPost(it) }
+                            }
+                        }
+                    }
+
+                // Firestore community comments listener
+                commentsListenerRegistration = firestore.collection("markets").document(marketDocId)
+                    .collection("community_comments").addSnapshotListener { snapshot, error ->
+                        if (snapshot != null) {
+                            val cList = snapshot.documents.mapNotNull { doc ->
+                                val content = doc.getString("content") ?: return@mapNotNull null
+                                val isBlind = doc.getBoolean("isBlind") ?: false
+                                if (isBlind) return@mapNotNull null
+                                CommunityComment(
+                                    commentId = doc.id,
+                                    postId = doc.getString("postId") ?: "",
+                                    marketId = market.id,
+                                    authorNickname = doc.getString("authorNickname") ?: "장터이웃",
+                                    authorDeviceIdHash = doc.getString("authorDeviceIdHash") ?: "",
+                                    content = content,
+                                    isNearMarket = doc.getBoolean("isNearMarket") ?: false,
+                                    reportCount = doc.getLong("reportCount")?.toInt() ?: 0,
+                                    isBlind = false,
+                                    createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis()
+                                )
+                            }
+                            viewModelScope.launch(Dispatchers.IO) {
+                                repository.insertComments(cList)
                             }
                         }
                     }
@@ -812,6 +859,131 @@ class MarketViewModel(
         Toast.makeText(context, "🚫 해당 사용자가 차단되었습니다. 앞으로 이 사용자의 글이 보이지 않습니다.", Toast.LENGTH_SHORT).show()
     }
 
+    fun submitCommunityComment(
+        context: Context,
+        market: Market,
+        postId: String,
+        nickname: String,
+        content: String,
+        userLocation: android.location.Location?,
+        onSuccess: () -> Unit = {}
+    ) {
+        val validationError = com.jangnal.gaja.util.CommunitySafetyHelper.validateContent(content)
+        if (validationError != null) {
+            Toast.makeText(context, "⚠️ $validationError", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val sanitizedNickname = if (nickname.trim().isNotEmpty()) nickname.trim().take(12) else com.jangnal.gaja.util.CommunitySafetyHelper.generateRandomNickname()
+        val deviceHash = com.jangnal.gaja.util.CommunitySafetyHelper.getDeviceIdHash(context)
+
+        var isNear = false
+        if (userLocation != null) {
+            val results = FloatArray(1)
+            android.location.Location.distanceBetween(
+                userLocation.latitude, userLocation.longitude,
+                market.latitude, market.longitude,
+                results
+            )
+            isNear = results[0] <= 300f
+        }
+
+        viewModelScope.launch {
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                val docRef = firestore.collection("markets").document(market.id.toString())
+                    .collection("community_comments").document()
+
+                val comment = CommunityComment(
+                    commentId = docRef.id,
+                    postId = postId,
+                    marketId = market.id,
+                    authorNickname = sanitizedNickname,
+                    authorDeviceIdHash = deviceHash,
+                    content = content.trim(),
+                    isNearMarket = isNear,
+                    reportCount = 0,
+                    isBlind = false,
+                    createdAt = System.currentTimeMillis()
+                )
+
+                val commentMap = hashMapOf(
+                    "commentId" to comment.commentId,
+                    "postId" to comment.postId,
+                    "marketId" to comment.marketId,
+                    "authorNickname" to comment.authorNickname,
+                    "authorDeviceIdHash" to comment.authorDeviceIdHash,
+                    "content" to comment.content,
+                    "isNearMarket" to comment.isNearMarket,
+                    "reportCount" to 0L,
+                    "isBlind" to false,
+                    "createdAt" to comment.createdAt
+                )
+
+                docRef.set(commentMap).await()
+                repository.insertComment(comment)
+
+                Toast.makeText(context, "💬 댓글이 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                onSuccess()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Submit community comment failed: ", e)
+                Toast.makeText(context, "댓글 등록 중 네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun deleteCommunityComment(context: Context, marketId: Long, commentId: String) {
+        viewModelScope.launch {
+            try {
+                repository.deleteComment(commentId)
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("community_comments").document(commentId).delete().await()
+                Toast.makeText(context, "🗑️ 댓글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Delete community comment failed: ", e)
+            }
+        }
+    }
+
+    fun reportCommunityComment(context: Context, marketId: Long, postId: String, commentId: String, authorHash: String, reason: String) {
+        viewModelScope.launch {
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                val reportData = hashMapOf(
+                    "marketId" to marketId,
+                    "postId" to postId,
+                    "commentId" to commentId,
+                    "authorHash" to authorHash,
+                    "reason" to reason,
+                    "reportedAt" to System.currentTimeMillis()
+                )
+                firestore.collection("markets").document(marketId.toString())
+                    .collection("community_comment_reports").document().set(reportData).await()
+
+                val commentDoc = firestore.collection("markets").document(marketId.toString())
+                    .collection("community_comments").document(commentId)
+                
+                val currentSnapshot = commentDoc.get().await()
+                val currentReportCount = (currentSnapshot.getLong("reportCount") ?: 0L) + 1L
+                val shouldBlind = currentReportCount >= 3L
+
+                commentDoc.update(mapOf(
+                    "reportCount" to FieldValue.increment(1L),
+                    "isBlind" to shouldBlind
+                )).await()
+
+                if (shouldBlind) {
+                    repository.blindComment(commentId)
+                }
+
+                Toast.makeText(context, "🚨 댓글 신고가 접수되었습니다.", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                android.util.Log.e("FirebaseSync", "Report community comment failed: ", e)
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         shopsListenerRegistration?.remove()
@@ -820,6 +992,7 @@ class MarketViewModel(
         reviewsListenerRegistration?.remove()
         festivalsListenerRegistration?.remove()
         communityListenerRegistration?.remove()
+        commentsListenerRegistration?.remove()
     }
 }
 

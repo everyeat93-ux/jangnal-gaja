@@ -86,6 +86,7 @@ import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.data.local.entity.CommunityPost
+import com.jangnal.gaja.data.local.entity.CommunityComment
 import com.jangnal.gaja.util.CommunitySafetyHelper
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -96,6 +97,7 @@ fun MarketDetailSheet(
     searchResults: List<Shop> = emptyList(),
     festivals: List<Festival> = emptyList(),
     communityPosts: List<CommunityPost> = emptyList(),
+    comments: Map<String, List<CommunityComment>> = emptyMap(),
     reviews: Map<String, List<com.jangnal.gaja.ui.viewmodel.ShopReview>> = emptyMap(),
     userLocation: android.location.Location? = null,
     onFavoriteToggle: (Market) -> Unit = {},
@@ -113,6 +115,9 @@ fun MarketDetailSheet(
     onLikeCommunityPost: (String) -> Unit = {},
     onReportCommunityPost: (String, String, String) -> Unit = { _, _, _ -> },
     onBlockCommunityAuthor: (String) -> Unit = {},
+    onSubmitCommunityComment: (String, String, String) -> Unit = { _, _, _ -> },
+    onDeleteCommunityComment: (String) -> Unit = {},
+    onReportCommunityComment: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -286,11 +291,15 @@ fun MarketDetailSheet(
                 MarketCommunitySection(
                     market = market,
                     posts = communityPosts,
+                    comments = comments,
                     userLocation = userLocation,
                     onSubmitPost = onSubmitCommunityPost,
                     onLikePost = onLikeCommunityPost,
                     onReportPost = onReportCommunityPost,
-                    onBlockAuthor = onBlockCommunityAuthor
+                    onBlockAuthor = onBlockCommunityAuthor,
+                    onSubmitComment = onSubmitCommunityComment,
+                    onDeleteComment = onDeleteCommunityComment,
+                    onReportComment = onReportCommunityComment
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -2691,18 +2700,24 @@ fun MarketFestivalSection(
 fun MarketCommunitySection(
     market: Market,
     posts: List<CommunityPost>,
+    comments: Map<String, List<CommunityComment>> = emptyMap(),
     userLocation: android.location.Location?,
     onSubmitPost: (String, String, String, Uri?) -> Unit,
     onLikePost: (String) -> Unit,
     onReportPost: (String, String, String) -> Unit,
-    onBlockAuthor: (String) -> Unit
+    onBlockAuthor: (String) -> Unit,
+    onSubmitComment: (String, String, String) -> Unit = { _, _, _ -> },
+    onDeleteComment: (String) -> Unit = {},
+    onReportComment: (String, String, String, String) -> Unit = { _, _, _, _ -> }
 ) {
     val context = LocalContext.current
     var showWriteDialog by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf("전체") }
     var postToReport by remember { mutableStateOf<CommunityPost?>(null) }
     var postToBlock by remember { mutableStateOf<CommunityPost?>(null) }
+    var commentToReport by remember { mutableStateOf<CommunityComment?>(null) }
     var zoomPhotoUrl by remember { mutableStateOf<String?>(null) }
+    val myDeviceIdHash = remember { CommunitySafetyHelper.getDeviceIdHash(context) }
 
     val categories = listOf("전체", "실시간 꿀팁", "온누리 장바구니", "축제소식", "동네수다")
 
@@ -2810,6 +2825,9 @@ fun MarketCommunitySection(
                     val dateStr = remember(post.createdAt) {
                         SimpleDateFormat("M/d HH:mm", Locale.KOREA).format(Date(post.createdAt))
                     }
+                    val postComments = comments[post.postId] ?: emptyList()
+                    var isCommentsExpanded by remember { mutableStateOf(false) }
+                    var commentInputText by remember { mutableStateOf("") }
 
                     Surface(
                         shape = RoundedCornerShape(12.dp),
@@ -2906,12 +2924,34 @@ fun MarketCommunitySection(
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
+                            // 액션 버튼 행 (댓글 토글 + 공감)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isCommentsExpanded) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.clickable { isCommentsExpanded = !isCommentsExpanded }
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(text = "💬", fontSize = 12.sp)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = if (postComments.isEmpty()) "댓글 쓰기" else "댓글 ${postComments.size}개",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
                                 Surface(
                                     shape = RoundedCornerShape(6.dp),
                                     color = if (likedLocally) Color(0xFFFFEBEE) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -2935,6 +2975,132 @@ fun MarketCommunitySection(
                                             fontWeight = FontWeight.Bold,
                                             color = if (likedLocally) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
+                                    }
+                                }
+                            }
+
+                            // 댓글 스레드 영역
+                            if (isCommentsExpanded) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        if (postComments.isEmpty()) {
+                                            Text(
+                                                text = "아직 댓글이 없습니다. 첫 번째 댓글을 남겨보세요! 😊",
+                                                fontSize = 11.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(vertical = 4.dp)
+                                            )
+                                        } else {
+                                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                postComments.forEach { c ->
+                                                    val isCommentNear = c.isNearMarket
+                                                    val isMyComment = c.authorDeviceIdHash == myDeviceIdHash
+                                                    val cDateStr = remember(c.createdAt) {
+                                                        SimpleDateFormat("M/d HH:mm", Locale.KOREA).format(Date(c.createdAt))
+                                                    }
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(6.dp))
+                                                            .padding(8.dp)
+                                                    ) {
+                                                        Row(
+                                                            modifier = Modifier.fillMaxWidth(),
+                                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                                            verticalAlignment = Alignment.CenterVertically
+                                                        ) {
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = c.authorNickname,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    fontSize = 11.sp
+                                                                )
+                                                                if (isCommentNear) {
+                                                                    Text(
+                                                                        text = "📍현장인증",
+                                                                        color = Color(0xFF2E7D32),
+                                                                        fontSize = 9.sp,
+                                                                        fontWeight = FontWeight.Bold
+                                                                    )
+                                                                }
+                                                            }
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = cDateStr,
+                                                                    fontSize = 9.sp,
+                                                                    color = MaterialTheme.colorScheme.outline
+                                                                )
+                                                                if (isMyComment) {
+                                                                    IconButton(
+                                                                        onClick = { onDeleteComment(c.commentId) },
+                                                                        modifier = Modifier.size(16.dp)
+                                                                    ) {
+                                                                        Text("🗑️", fontSize = 10.sp)
+                                                                    }
+                                                                } else {
+                                                                    IconButton(
+                                                                        onClick = { commentToReport = c },
+                                                                        modifier = Modifier.size(16.dp)
+                                                                    ) {
+                                                                        Text("🚨", fontSize = 10.sp)
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        Spacer(modifier = Modifier.height(2.dp))
+                                                        Text(
+                                                            text = c.content,
+                                                            fontSize = 12.sp,
+                                                            color = MaterialTheme.colorScheme.onSurface,
+                                                            lineHeight = 16.sp
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        // 댓글 입력창
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            OutlinedTextField(
+                                                value = commentInputText,
+                                                onValueChange = { if (it.length <= 150) commentInputText = it },
+                                                placeholder = { Text("따뜻한 댓글을 남겨보세요...", fontSize = 11.sp) },
+                                                modifier = Modifier.weight(1f),
+                                                shape = RoundedCornerShape(8.dp),
+                                                textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                                maxLines = 2
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Button(
+                                                onClick = {
+                                                    if (commentInputText.isNotBlank()) {
+                                                        onSubmitComment(post.postId, "", commentInputText.trim())
+                                                        commentInputText = ""
+                                                    }
+                                                },
+                                                shape = RoundedCornerShape(8.dp),
+                                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                                                enabled = commentInputText.isNotBlank()
+                                            ) {
+                                                Text("등록", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -3148,6 +3314,50 @@ fun MarketCommunitySection(
             },
             dismissButton = {
                 TextButton(onClick = { postToReport = null }, modifier = Modifier.fillMaxWidth()) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    // 댓글 신고 다이얼로그
+    if (commentToReport != null) {
+        val target = commentToReport!!
+        var reportReason by remember { mutableStateOf("욕설 및 비방 🛑") }
+        val reasons = listOf("욕설 및 비방 🛑", "사기 및 개인정보/계좌 노출 ⚠️", "불법 광고 및 도박 스팸 🚫", "부적절한 내용 ✏️")
+
+        AlertDialog(
+            onDismissRequest = { commentToReport = null },
+            title = { Text("🚨 댓글 신고", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("해당 댓글을 신고하시는 사유를 선택해 주세요. 누적 3회 이상 신고 시 즉시 자동 숨김 처리됩니다.")
+                    reasons.forEach { r ->
+                        val isSel = reportReason == r
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (isSel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            border = BorderStroke(1.dp, if (isSel) MaterialTheme.colorScheme.primary else Color.Transparent),
+                            modifier = Modifier.fillMaxWidth().clickable { reportReason = r }
+                        ) {
+                            Text(text = r, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onReportComment(target.postId, target.commentId, target.authorDeviceIdHash, reportReason)
+                        commentToReport = null
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("신고 접수")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { commentToReport = null }, modifier = Modifier.fillMaxWidth()) {
                     Text("취소")
                 }
             }

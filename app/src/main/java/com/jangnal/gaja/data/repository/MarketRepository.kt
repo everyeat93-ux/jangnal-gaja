@@ -570,6 +570,10 @@ class MarketRepository(
         return marketDao.getCommunityPostsForMarketFlow(marketId)
     }
 
+    fun getAllRecentCommunityPostsFlow(limit: Int = 100): Flow<List<CommunityPost>> {
+        return marketDao.getAllRecentCommunityPostsFlow(limit)
+    }
+
     suspend fun getCommunityPostsForMarket(marketId: Long): List<CommunityPost> {
         return withContext(Dispatchers.IO) {
             marketDao.getCommunityPostsForMarketList(marketId)
@@ -591,6 +595,39 @@ class MarketRepository(
     suspend fun incrementCommunityPostLike(postId: String) {
         withContext(Dispatchers.IO) {
             marketDao.incrementCommunityPostLike(postId)
+        }
+    }
+
+    // --- Community Comments Operations ---
+    fun getCommentsForMarketFlow(marketId: Long): Flow<List<com.jangnal.gaja.data.local.entity.CommunityComment>> {
+        return marketDao.getCommentsForMarketFlow(marketId)
+    }
+
+    fun getCommentsForPostFlow(postId: String): Flow<List<com.jangnal.gaja.data.local.entity.CommunityComment>> {
+        return marketDao.getCommentsForPostFlow(postId)
+    }
+
+    suspend fun insertComment(comment: com.jangnal.gaja.data.local.entity.CommunityComment) {
+        withContext(Dispatchers.IO) {
+            marketDao.insertComment(comment)
+        }
+    }
+
+    suspend fun insertComments(comments: List<com.jangnal.gaja.data.local.entity.CommunityComment>) {
+        withContext(Dispatchers.IO) {
+            marketDao.insertComments(comments)
+        }
+    }
+
+    suspend fun blindComment(commentId: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.blindComment(commentId)
+        }
+    }
+
+    suspend fun deleteComment(commentId: String) {
+        withContext(Dispatchers.IO) {
+            marketDao.deleteComment(commentId)
         }
     }
 }

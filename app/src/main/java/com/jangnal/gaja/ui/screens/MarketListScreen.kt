@@ -2,10 +2,13 @@ package com.jangnal.gaja.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -143,6 +146,12 @@ fun MarketListScreen(
     // State for About Screen
     var showAbout by remember { mutableStateOf(false) }
 
+    // State for Community Feed Sheet
+    var showCommunityFeed by remember { mutableStateOf(false) }
+
+    val recentCommunityPosts by viewModel.recentCommunityFeed.collectAsState()
+    val allMarketsList by viewModel.allMarkets.collectAsState()
+
     LaunchedEffect(selectedMarket) {
         viewModel.clearSearchResults()
         selectedMarket?.let { market ->
@@ -156,6 +165,7 @@ fun MarketListScreen(
         val activeReviews by viewModel.activeShopReviews.collectAsState()
         val activeFestivals by viewModel.activeMarketFestivals.collectAsState()
         val activeCommunityPosts by viewModel.activeMarketCommunityPosts.collectAsState()
+        val activeComments by viewModel.activeMarketComments.collectAsState()
         val kakaoApiKey = context.getString(com.jangnal.gaja.R.string.kakao_rest_api_key)
 
         com.jangnal.gaja.ui.components.MarketDetailSheet(
@@ -164,6 +174,7 @@ fun MarketListScreen(
             searchResults = searchResults,
             festivals = activeFestivals,
             communityPosts = activeCommunityPosts,
+            comments = activeComments,
             reviews = activeReviews,
             userLocation = userLocation,
             onFavoriteToggle = { viewModel.toggleFavorite(it) },
@@ -251,6 +262,28 @@ fun MarketListScreen(
             onBlockCommunityAuthor = { authorHash ->
                 viewModel.blockCommunityAuthor(context, authorHash)
             },
+            onSubmitCommunityComment = { postId, nickname, content ->
+                selectedMarket?.let { market ->
+                    viewModel.submitCommunityComment(
+                        context = context,
+                        market = market,
+                        postId = postId,
+                        nickname = nickname,
+                        content = content,
+                        userLocation = userLocation
+                    )
+                }
+            },
+            onDeleteCommunityComment = { commentId ->
+                selectedMarket?.let { market ->
+                    viewModel.deleteCommunityComment(context, market.id, commentId)
+                }
+            },
+            onReportCommunityComment = { postId, commentId, authorHash, reason ->
+                selectedMarket?.let { market ->
+                    viewModel.reportCommunityComment(context, market.id, postId, commentId, authorHash, reason)
+                }
+            },
             onDismissRequest = { selectedMarket = null }
         )
     }
@@ -260,6 +293,27 @@ fun MarketListScreen(
             onDismiss = { showAbout = false },
             currentScale = currentTextScale,
             onScaleChange = onTextScaleChange
+        )
+    }
+
+    if (showCommunityFeed) {
+        com.jangnal.gaja.ui.components.CommunityFeedSheet(
+            posts = recentCommunityPosts,
+            markets = allMarketsList,
+            onSelectMarket = { market ->
+                showCommunityFeed = false
+                selectedMarket = market
+            },
+            onLikePost = { marketId, postId ->
+                viewModel.likeCommunityPost(marketId, postId)
+            },
+            onReportPost = { marketId, postId, authorHash, reason ->
+                viewModel.reportCommunityPost(context, marketId, postId, authorHash, reason)
+            },
+            onBlockAuthor = { authorHash ->
+                viewModel.blockCommunityAuthor(context, authorHash)
+            },
+            onDismissRequest = { showCommunityFeed = false }
         )
     }
 
@@ -280,6 +334,24 @@ fun MarketListScreen(
                     actionIconContentColor = com.jangnal.gaja.ui.theme.JangnalBrown
                 ),
                 actions = {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = com.jangnal.gaja.ui.theme.JangnalBrown,
+                        modifier = Modifier.clickable { showCommunityFeed = true }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp)
+                        ) {
+                            Text(
+                                text = "💬 동네마당",
+                                fontSize = 11.sp,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = com.jangnal.gaja.ui.theme.JangnalYellow
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(2.dp))
                     IconButton(onClick = { showAbout = true }) {
                         Icon(
                             imageVector = Icons.Default.Info,

@@ -9,12 +9,13 @@ import com.jangnal.gaja.data.local.entity.Market
 import com.jangnal.gaja.data.local.entity.Shop
 import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.data.local.entity.CommunityPost
+import com.jangnal.gaja.data.local.entity.CommunityComment
 
 /**
  * The Room Database for the application.
  * Defines the entities and version.
  */
-@Database(entities = [Market::class, Shop::class, Festival::class, CommunityPost::class], version = 13, exportSchema = false)
+@Database(entities = [Market::class, Shop::class, Festival::class, CommunityPost::class, CommunityComment::class], version = 14, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun marketDao(): MarketDao
