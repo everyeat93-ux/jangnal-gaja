@@ -198,34 +198,27 @@ fun MarketDetailSheet(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             
-                // 💡 상단 사용자 안내 팁 배너
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("💡", fontSize = 14.sp)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "상점의 별점과 결제수단을 확인하고, 한줄평과 실시간 대기줄을 제보해 보세요!",
-                            fontSize = 11.sp,
-                            lineHeight = 15.sp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Medium
+                // 🎖️ GPS 장날 방문 스탬프 상태 계산
+                val marketDistance = remember(userLocation, market) {
+                    if (userLocation != null) {
+                        val results = FloatArray(1)
+                        android.location.Location.distanceBetween(
+                            userLocation.latitude, userLocation.longitude,
+                            market.latitude, market.longitude,
+                            results
                         )
+                        results[0]
+                    } else {
+                        Float.MAX_VALUE
                     }
                 }
+                val isNearForStamp = marketDistance <= 500f // 500m 이내
+                val currentMarketStamp = remember(stamps, market.id) {
+                    stamps.firstOrNull { it.marketId == market.id }
+                }
+                var showStampClaimDialog by remember { mutableStateOf(false) }
 
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // 시장 유형 뱃지 (FlowRow로 좁은 화면에서도 줄바꿈 자연스럽게 처리)
+                // 시장 유형 뱃지 & 스탬프 뱃지 (FlowRow로 콤팩트하게 1~2줄 정리)
                 val onnuriCount = shops.count { it.isOnnuri }
                 val onnuriBadgeText = when {
                     shops.isNotEmpty() && onnuriCount > 0 -> "💳 온누리 가맹 ${onnuriCount}곳 (${onnuriCount * 100 / shops.size}%)"
@@ -262,123 +255,50 @@ fun MarketDetailSheet(
                         bgColor = Color(0xFFE0F2F1),
                         textColor = Color(0xFF00695C)
                     )
-                }
-                
-                Spacer(modifier = Modifier.height(10.dp))
 
-                // 🎖️ GPS 장날 방문 스탬프 여권 배너
-                val marketDistance = remember(userLocation, market) {
-                    if (userLocation != null) {
-                        val results = FloatArray(1)
-                        android.location.Location.distanceBetween(
-                            userLocation.latitude, userLocation.longitude,
-                            market.latitude, market.longitude,
-                            results
-                        )
-                        results[0]
-                    } else {
-                        Float.MAX_VALUE
-                    }
-                }
-                val isNearForStamp = marketDistance <= 500f // 500m 이내
-                val currentMarketStamp = remember(stamps, market.id) {
-                    stamps.firstOrNull { it.marketId == market.id }
-                }
-                var showStampClaimDialog by remember { mutableStateOf(false) }
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { showStampClaimDialog = true },
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (currentMarketStamp != null) {
-                        if (currentMarketStamp.isMarketDay) Color(0xFF2E2405) else Color(0xFF1E2833)
-                    } else if (isNearForStamp) {
-                        Color(0xFFE8F5E9)
-                    } else {
-                        Color(0xFFFFF8E1)
-                    },
-                    border = BorderStroke(
-                        1.dp,
-                        if (currentMarketStamp != null) {
-                            if (currentMarketStamp.isMarketDay) Color(0xFFD4AF37) else Color(0xFF546E7A)
+                    // 🎖️ 콤팩트 장날도장 뱃지 (탭 시 도장 날인/상세 다이얼로그)
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (currentMarketStamp != null) {
+                            if (currentMarketStamp.isMarketDay) Color(0xFFFFF8E1) else Color(0xFFFFEBEE)
                         } else if (isNearForStamp) {
-                            Color(0xFF4CAF50)
+                            Color(0xFFE8F5E9)
                         } else {
-                            Color(0xFFFFCA28)
-                        }
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            Color(0xFFFFF9E6)
+                        },
+                        border = BorderStroke(
+                            1.dp,
+                            if (currentMarketStamp != null) {
+                                if (currentMarketStamp.isMarketDay) Color(0xFFFFB300) else Color(0xFFEF9A9A)
+                            } else if (isNearForStamp) {
+                                Color(0xFF4CAF50)
+                            } else {
+                                Color(0xFFFFCA28)
+                            }
+                        ),
+                        modifier = Modifier.clickable { showStampClaimDialog = true }
                     ) {
                         Row(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = if (currentMarketStamp != null) (if (currentMarketStamp.isMarketDay) "✨" else "💮") else "🎖️",
-                                fontSize = 18.sp
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                if (currentMarketStamp != null) {
-                                    val stampDate = SimpleDateFormat("yy.MM.dd", Locale.KOREA).format(Date(currentMarketStamp.visitTimestamp))
-                                    Text(
-                                        text = if (currentMarketStamp.isMarketDay) "여권에 황금 장날도장 획득 완료! ✨" else "여권에 방문 스탬프 획득 완료! 💮",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp,
-                                        color = if (currentMarketStamp.isMarketDay) Color(0xFFFFD54F) else Color(0xFFECEFF1)
-                                    )
-                                    Text(
-                                        text = "$stampDate 방문 인증됨 (터치하여 기록 보기)",
-                                        fontSize = 10.sp,
-                                        color = if (currentMarketStamp.isMarketDay) Color(0xFFFFE082) else Color(0xFFB0BEC5)
-                                    )
+                                text = if (currentMarketStamp != null) {
+                                    if (currentMarketStamp.isMarketDay) "✨ 황금도장 획득됨" else "💮 방문도장 획득됨"
                                 } else if (isNearForStamp) {
-                                    Text(
-                                        text = "📍 현장 방문 감지! 여권 스탬프 찍기",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp,
-                                        color = Color(0xFF2E7D32)
-                                    )
-                                    Text(
-                                        text = if (market.isOpenToday()) "오늘 장날 당일! 황금 스탬프를 획득할 수 있습니다 ✨" else "방문 인증 도장을 여권에 날인해 보세요 👏",
-                                        fontSize = 10.sp,
-                                        color = Color(0xFF388E3C)
-                                    )
+                                    "📍 현장 도착! 도장찍기 💮"
                                 } else {
-                                    Text(
-                                        text = "🎖️ 전국 5일장 GPS 방문 스탬프 투어",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp,
-                                        color = Color(0xFFE65100)
-                                    )
-                                    Text(
-                                        text = if (marketDistance < Float.MAX_VALUE) "현장 500m 이내 도착 시 도장 활성화 (현재 ${(marketDistance/1000).toInt()}km)" else "시장에 방문하여 여권 도장을 모아보세요!",
-                                        fontSize = 10.sp,
-                                        color = Color(0xFF8D6E63)
-                                    )
-                                }
-                            }
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = if (currentMarketStamp != null) Color(0xFFD4AF37).copy(alpha = 0.25f) else Color(0xFFE65100),
-                            modifier = Modifier.padding(start = 4.dp)
-                        ) {
-                            Text(
-                                text = if (currentMarketStamp != null) "기록 보기" else "도장 찍기",
+                                    "🎖️ 도장깨기 도전"
+                                },
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (currentMarketStamp != null) Color(0xFFFFD54F) else Color.White,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                color = if (currentMarketStamp != null) {
+                                    if (currentMarketStamp.isMarketDay) Color(0xFFD84315) else Color(0xFFC62828)
+                                } else if (isNearForStamp) {
+                                    Color(0xFF2E7D32)
+                                } else {
+                                    Color(0xFFE65100)
+                                }
                             )
                         }
                     }
@@ -1689,6 +1609,7 @@ fun ShopQueueSection(
     onOpenMerchantVerification: () -> Unit = {}
 ) {
     var showAddShopDialog by remember { mutableStateOf(false) }
+    var showFlashSaleDialog by remember { mutableStateOf(false) }
     var prefilledShopName by remember { mutableStateOf("") }
     var activeVotingShop by remember { mutableStateOf<Shop?>(null) }
     var shopToDelete by remember { mutableStateOf<Shop?>(null) }
@@ -1728,7 +1649,7 @@ fun ShopQueueSection(
             onDeleteFlashSale = onDeleteFlashSale
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1736,39 +1657,72 @@ fun ShopQueueSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "🔥 인기 상점 실시간 대기줄 & 온누리 가맹",
+                text = "🔥 상점 · 대기줄",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                modifier = Modifier.weight(1f)
+                fontSize = 15.sp,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 1,
+                softWrap = false
             )
             
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Spacer(modifier = Modifier.width(6.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { showFlashSaleDialog = true },
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.height(28.dp),
+                    border = BorderStroke(1.dp, Color(0xFFE65100))
+                ) {
+                    Text(
+                        text = "🔥 특가등록",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE65100),
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
+
                 OutlinedButton(
                     onClick = onOpenMerchantVerification,
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.height(30.dp),
+                    modifier = Modifier.height(28.dp),
                     border = BorderStroke(1.dp, Color(0xFF2E7D32))
                 ) {
-                    Text("🏛️ 상인인증", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                    Text(
+                        text = "🏛️ 상인인증",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2E7D32),
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
-                
-                Spacer(modifier = Modifier.width(4.dp))
 
-                TextButton(
+                Button(
                     onClick = { 
                         prefilledShopName = ""
                         showAddShopDialog = true 
                     },
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                    modifier = Modifier.height(30.dp)
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.height(28.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
-                        text = "+ 상점 등록",
+                        text = "+ 상점등록",
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 12.sp
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
@@ -2684,6 +2638,19 @@ fun ShopQueueSection(
     }
 
     // --- Dialogs (Item 6: 위치 힌트 지원 & 카테고리 선택) ---
+    if (showFlashSaleDialog) {
+        FlashSaleCreateDialog(
+            market = market,
+            shops = shops,
+            verifications = verifications,
+            onDismiss = { showFlashSaleDialog = false },
+            onSubmit = { sName, iTitle, oPrice, dPrice, qInfo, durHours, isVer ->
+                onSubmitFlashSale(sName, iTitle, oPrice, dPrice, qInfo, durHours, isVer)
+                showFlashSaleDialog = false
+            }
+        )
+    }
+
     if (showAddShopDialog) {
         var searchQuery by remember(prefilledShopName) { mutableStateOf(prefilledShopName) }
         var locationHint by remember { mutableStateOf("") }
@@ -4195,35 +4162,35 @@ fun MarketFlashSaleSection(
     var showFlashSaleDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFFFFF3E0),
-            border = BorderStroke(1.dp, Color(0xFFFFB74D))
+    if (flashSales.isNotEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)
         ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🔥", fontSize = 20.sp)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "오늘 마감 장날 타임세일",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                    color = Color(0xFFD84315)
-                                )
-                                if (flashSales.isNotEmpty()) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFFFFF3E0),
+                border = BorderStroke(1.dp, Color(0xFFFFB74D))
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🔥", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "오늘 마감 장날 타임세일",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        color = Color(0xFFD84315)
+                                    )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Surface(
                                         shape = RoundedCornerShape(10.dp),
@@ -4238,53 +4205,35 @@ fun MarketFlashSaleSection(
                                         )
                                     }
                                 }
+                                Text(
+                                    text = "상인 직등록 · 마감 전 신선 식품 떨이 & 깜짝 특가",
+                                    fontSize = 10.sp,
+                                    color = Color(0xFFBF360C)
+                                )
                             }
+                        }
+                        
+                        Button(
+                            onClick = { showFlashSaleDialog = true },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE65100),
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            modifier = Modifier.height(30.dp)
+                        ) {
                             Text(
-                                text = "상인 직등록 · 마감 전 신선 식품 떨이 & 깜짝 특가",
+                                text = "+ 특가 등록",
                                 fontSize = 11.sp,
-                                color = Color(0xFFBF360C)
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
                     
-                    Button(
-                        onClick = { showFlashSaleDialog = true },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE65100),
-                            contentColor = Color.White
-                        ),
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                        modifier = Modifier.height(34.dp)
-                    ) {
-                        Text("+ 특가 등록", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-                
-                if (flashSales.isEmpty()) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color.White.copy(alpha = 0.85f),
-                        border = BorderStroke(0.5.dp, Color(0xFFFFCC80))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("🏷️", fontSize = 18.sp)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "지금 진행 중인 마감 특가가 없습니다.\n장 마감 전 남은 품목을 판매하실 상인분은 위 버튼으로 특가를 등록해 보세요!",
-                                fontSize = 11.sp,
-                                color = Color(0xFF5D4037),
-                                lineHeight = 16.sp
-                            )
-                        }
-                    }
-                } else {
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         flashSales.forEach { sale ->
                             FlashSaleCard(

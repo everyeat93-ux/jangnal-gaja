@@ -12,7 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
@@ -55,9 +58,19 @@ fun JangnalGajaTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = getResponsiveTypography(textScale),
-        content = content
+    val currentDensity = LocalDensity.current
+    val customDensity = Density(
+        density = currentDensity.density,
+        fontScale = currentDensity.fontScale * textScale
     )
+
+    CompositionLocalProvider(
+        LocalDensity provides customDensity
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = getResponsiveTypography(textScale),
+            content = content
+        )
+    }
 }

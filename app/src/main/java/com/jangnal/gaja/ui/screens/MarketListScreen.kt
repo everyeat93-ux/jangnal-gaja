@@ -436,11 +436,11 @@ fun MarketListScreen(
                     actionIconContentColor = com.jangnal.gaja.ui.theme.JangnalBrown
                 ),
                 actions = {
-                    // 📘 나의 여권 버튼
+                    // 🎖️ 나의 전국 5일장 도장여권 버튼
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = Color(0xFF162433),
-                        border = BorderStroke(1.dp, Color(0xFFD4AF37)),
+                        color = Color(0xFFD84315),
+                        border = BorderStroke(1.dp, Color(0xFFFFD54F)),
                         modifier = Modifier.clickable { showPassport = true }
                     ) {
                         Row(
@@ -448,10 +448,10 @@ fun MarketListScreen(
                             modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp)
                         ) {
                             Text(
-                                text = if (uniqueMarketStampCount > 0) "📘 여권 ${uniqueMarketStampCount}곳" else "📘 여권",
+                                text = if (uniqueMarketStampCount > 0) "🎖️ 장날도장 ${uniqueMarketStampCount}곳" else "🎖️ 장날도장",
                                 fontSize = 11.sp,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                color = Color(0xFFFFD54F)
+                                color = Color.White
                             )
                         }
                     }

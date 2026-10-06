@@ -43,7 +43,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * 📘 나의 전국 5일장 여권 (Market Passport) 바텀시트
+ * 🎖️ 나의 전국 5일장 도장여권 (Market Stamp Passport) 바텀시트
  * 전국 전통시장 GPS 방문 스탬프, 황금도장 수집, 지역별 도장깨기 및 레벨 시스템 UI
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,12 +73,12 @@ fun PassportSheet(
     // 탐험가 레벨 계산
     val (userLevelTitle, userLevelBadge, levelColor) = remember(uniqueCount, goldenCount) {
         when {
-            uniqueCount >= 20 -> Triple("Lv.5 전국 5일장 명예 마스터", "💎", Color(0xFF00E5FF))
-            uniqueCount >= 10 -> Triple("Lv.4 팔도 대동여지도 마스터", "👑", Color(0xFFFFD700))
-            uniqueCount >= 5 -> Triple("Lv.3 전통 장날 유랑단", "🥇", Color(0xFFFFB300))
-            uniqueCount >= 3 -> Triple("Lv.2 골목 핫플 탐험가", "🥈", Color(0xFF90CAF9))
-            uniqueCount >= 1 -> Triple("Lv.1 풋풋한 장돌뱅이", "🥉", Color(0xFFBCAAA4))
-            else -> Triple("Lv.0 예비 장날 여행자", "🌱", Color(0xFFB0BEC5))
+            uniqueCount >= 20 -> Triple("Lv.5 전국 5일장 명예 마스터", "💎", Color(0xFF00838F))
+            uniqueCount >= 10 -> Triple("Lv.4 팔도 대동여지도 마스터", "👑", Color(0xFFE65100))
+            uniqueCount >= 5 -> Triple("Lv.3 전통 장날 유랑단", "🥇", Color(0xFFD84315))
+            uniqueCount >= 3 -> Triple("Lv.2 골목 핫플 탐험가", "🥈", Color(0xFF1565C0))
+            uniqueCount >= 1 -> Triple("Lv.1 풋풋한 장돌뱅이", "🥉", Color(0xFF5D4037))
+            else -> Triple("Lv.0 예비 장날 여행자", "🌱", Color(0xFF689F38))
         }
     }
 
@@ -89,7 +89,7 @@ fun PassportSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color(0xFF0F1A24)
+        containerColor = Color(0xFFFAF7F0)
     ) {
         Column(
             modifier = Modifier
@@ -104,18 +104,18 @@ fun PassportSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("📘", fontSize = 24.sp)
+                    Text("🎖️", fontSize = 24.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "나의 전국 5일장 여권",
-                            color = Color(0xFFF5E6C8),
+                            text = "나의 전국 5일장 도장여권",
+                            color = Color(0xFF3E2723),
                             fontSize = 19.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "TRADITIONAL MARKET PASSPORT",
-                            color = Color(0xFFD4AF37).copy(alpha = 0.85f),
+                            text = "TRADITIONAL MARKET STAMP PASSPORT",
+                            color = Color(0xFFD84315),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 1.sp
@@ -127,19 +127,20 @@ fun PassportSheet(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "닫기",
-                        tint = Color(0xFFE0E0E0)
+                        tint = Color(0xFF5D4037)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 1. 여권 커버 & 유저 레벨 카드
+            // 1. 도장여권 커버 & 유저 레벨 카드 (따뜻한 한지 / 황금 도장 테마)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color(0xFF162433),
-                border = BorderStroke(1.5.dp, Brush.linearGradient(listOf(Color(0xFFD4AF37), Color(0xFF8C7322))))
+                color = Color(0xFFFFF9E6),
+                shadowElevation = 2.dp,
+                border = BorderStroke(1.5.dp, Brush.linearGradient(listOf(Color(0xFFE5A93C), Color(0xFFFFCA28))))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -150,12 +151,12 @@ fun PassportSheet(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Surface(
                                 shape = CircleShape,
-                                color = Color(0xFF203347),
-                                border = BorderStroke(1.dp, Color(0xFFD4AF37)),
-                                modifier = Modifier.size(38.dp)
+                                color = Color(0xFFFFECC8),
+                                border = BorderStroke(1.dp, Color(0xFFE5A93C)),
+                                modifier = Modifier.size(40.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text(userLevelBadge, fontSize = 20.sp)
+                                    Text(userLevelBadge, fontSize = 22.sp)
                                 }
                             }
                             Spacer(modifier = Modifier.width(10.dp))
@@ -168,42 +169,51 @@ fun PassportSheet(
                                 )
                                 Text(
                                     text = "발급: 대한민국 전통 5일장 연합",
-                                    fontSize = 10.sp,
-                                    color = Color(0xFFB0BEC5)
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF8D6E63)
                                 )
                             }
                         }
 
                         // SNS 공유 버튼
-                        IconButton(
-                            onClick = {
-                                val shareText = buildString {
-                                    appendLine("📘 [장날가자] 나의 전국 5일장 여권 기록!")
-                                    appendLine("🏆 $userLevelTitle 달성")
-                                    appendLine("📍 총 방문 시장: ${uniqueCount}곳")
-                                    appendLine("✨ 황금 장날 스탬프: ${goldenCount}개")
-                                    appendLine("🗺️ 정복 권역: ${visitedProvincesCount}개 시도")
-                                    appendLine()
-                                    appendLine("전국의 정겨운 5일장과 맛있는 먹거리를 탐험해보세요! #장날가자 #5일장 #전통시장")
-                                }
-                                val intent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_TEXT, shareText)
-                                }
-                                context.startActivity(Intent.createChooser(intent, "나의 장날 여권 공유"))
-                            }
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFFFF3E0),
+                            border = BorderStroke(1.dp, Color(0xFFFFCC80))
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = "여권 공유",
-                                tint = Color(0xFFD4AF37),
-                                modifier = Modifier.size(20.dp)
-                            )
+                            IconButton(
+                                onClick = {
+                                    val shareText = buildString {
+                                        appendLine("🎖️ [장날가자] 나의 전국 5일장 도장여권 기록!")
+                                        appendLine("🏆 $userLevelTitle 달성")
+                                        appendLine("📍 총 방문 시장: ${uniqueCount}곳")
+                                        appendLine("✨ 황금 장날 스탬프: ${goldenCount}개")
+                                        appendLine("🗺️ 정복 권역: ${visitedProvincesCount}개 시도")
+                                        appendLine()
+                                        appendLine("전국의 정겨운 5일장과 맛있는 먹거리를 탐험해보세요! #장날가자 #5일장 #전통시장 #스탬프투어")
+                                    }
+                                    val intent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, shareText)
+                                    }
+                                    try {
+                                        context.startActivity(Intent.createChooser(intent, "나의 장날 도장여권 공유"))
+                                    } catch (_: Exception) {}
+                                },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "여권 공유",
+                                    tint = Color(0xFFD84315),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Divider(color = Color(0xFF263B50), thickness = 1.dp)
+                    Divider(color = Color(0xFFFFE0B2), thickness = 1.dp)
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // 통계 3열
@@ -211,14 +221,14 @@ fun PassportSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        PassportStatItem(title = "정복 시장", value = "${uniqueCount}곳", sub = "전국 5일장")
-                        PassportStatItem(title = "황금 스탬프", value = "${goldenCount}개", sub = "장날 당일 방문", highlight = true)
-                        PassportStatItem(title = "정복 권역", value = "${visitedProvincesCount}곳", sub = "팔도 유람")
+                        PassportStatItem(title = "정복 시장", value = "${uniqueCount}곳", sub = "전국 5일장", valueColor = Color(0xFF2E7D32))
+                        PassportStatItem(title = "황금 도장", value = "${goldenCount}개", sub = "장날 당일 방문", highlight = true, valueColor = Color(0xFFD84315))
+                        PassportStatItem(title = "정복 권역", value = "${visitedProvincesCount}곳", sub = "팔도 유람", valueColor = Color(0xFF1565C0))
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // 2. 시도 권역 필터 칩
             Row(
@@ -239,23 +249,23 @@ fun PassportSheet(
                                 text = if (provCount > 0) "$prov ($provCount)" else prov,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Color(0xFF0F1A24) else Color(0xFFECEFF1)
+                                color = if (isSelected) Color.White else Color(0xFF5D4037)
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFFD4AF37),
-                            containerColor = Color(0xFF1B2B3C)
+                            selectedContainerColor = Color(0xFFE65100),
+                            containerColor = Color(0xFFFFF3E0)
                         ),
                         border = FilterChipDefaults.filterChipBorder(
-                            borderColor = if (isSelected) Color(0xFFD4AF37) else Color(0xFF2C435A),
-                            selectedBorderColor = Color(0xFFD4AF37)
+                            borderColor = if (isSelected) Color(0xFFE65100) else Color(0xFFFFCC80),
+                            selectedBorderColor = Color(0xFFE65100)
                         ),
                         shape = RoundedCornerShape(8.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // 3. 스탬프북 그리드
             val filteredStamps = remember(stamps, selectedProvince) {
@@ -277,7 +287,7 @@ fun PassportSheet(
                 ) {
                     Text(
                         text = "해당 지역에 등록된 시장이 없습니다.",
-                        color = Color(0xFF90A4AE),
+                        color = Color(0xFF8D6E63),
                         fontSize = 13.sp
                     )
                 }
@@ -322,7 +332,7 @@ fun PassportSheet(
         
         AlertDialog(
             onDismissRequest = { viewingStamp = null },
-            containerColor = Color(0xFF162433),
+            containerColor = Color(0xFFFFFDF9),
             title = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -330,13 +340,13 @@ fun PassportSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (currentStamp.isMarketDay) "✨" else "📍", fontSize = 20.sp)
+                        Text(if (currentStamp.isMarketDay) "✨" else "💮", fontSize = 22.sp)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = currentStamp.marketName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp,
-                            color = Color(0xFFF5E6C8)
+                            color = Color(0xFF3E2723)
                         )
                     }
 
@@ -362,12 +372,12 @@ fun PassportSheet(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (currentStamp.isMarketDay) Color(0xFF332707) else Color(0xFF1E2F40),
-                        border = BorderStroke(1.dp, if (currentStamp.isMarketDay) Color(0xFFD4AF37) else Color(0xFF37526D))
+                        color = if (currentStamp.isMarketDay) Color(0xFFFFF8E1) else Color(0xFFFFEBEE),
+                        border = BorderStroke(1.dp, if (currentStamp.isMarketDay) Color(0xFFFFB300) else Color(0xFFEF9A9A))
                     ) {
                         Text(
                             text = if (currentStamp.isMarketDay) "🌟 정기 장날 당일 방문 (황금 스탬프 획득)" else "🏪 상설/시장 현장 방문 완료",
-                            color = if (currentStamp.isMarketDay) Color(0xFFFFD54F) else Color(0xFF90CAF9),
+                            color = if (currentStamp.isMarketDay) Color(0xFFD84315) else Color(0xFFC62828),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
@@ -378,12 +388,12 @@ fun PassportSheet(
                     Text(
                         text = "📅 방문일시: $dateStr",
                         fontSize = 12.sp,
-                        color = Color(0xFFB0BEC5)
+                        color = Color(0xFF5D4037)
                     )
                     Text(
                         text = "🗺️ 권역: ${currentStamp.province}",
                         fontSize = 12.sp,
-                        color = Color(0xFFB0BEC5)
+                        color = Color(0xFF5D4037)
                     )
 
                     if (!currentStamp.photoUri.isNullOrEmpty()) {
@@ -393,7 +403,7 @@ fun PassportSheet(
                                 .fillMaxWidth()
                                 .height(180.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFF0F1A24))
+                                .background(Color(0xFFEEEEEE))
                         ) {
                             Image(
                                 painter = rememberAsyncImagePainter(currentStamp.photoUri),
@@ -410,18 +420,18 @@ fun PassportSheet(
                             text = "📝 나의 여행 메모",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFECEFF1)
+                            color = Color(0xFF3E2723)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFF0F1A24),
+                            color = Color(0xFFF5EFE6),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
                                 text = currentStamp.userMemo,
                                 fontSize = 13.sp,
-                                color = Color(0xFFECEFF1),
+                                color = Color(0xFF4E342E),
                                 modifier = Modifier.padding(10.dp),
                                 lineHeight = 18.sp
                             )
@@ -432,10 +442,10 @@ fun PassportSheet(
             confirmButton = {
                 Button(
                     onClick = { viewingStamp = null },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("확인", color = Color(0xFF0F1A24), fontWeight = FontWeight.Bold)
+                    Text("확인", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         )
@@ -472,32 +482,33 @@ private fun PassportStatItem(
     title: String,
     value: String,
     sub: String,
-    highlight: Boolean = false
+    highlight: Boolean = false,
+    valueColor: Color = Color(0xFF3E2723)
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = title,
             fontSize = 11.sp,
-            color = Color(0xFF90A4AE)
+            color = Color(0xFF8D6E63)
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = value,
             fontSize = 17.sp,
             fontWeight = FontWeight.Black,
-            color = if (highlight) Color(0xFFFFD54F) else Color(0xFFFFFFFF)
+            color = valueColor
         )
         Spacer(modifier = Modifier.height(1.dp))
         Text(
             text = sub,
             fontSize = 10.sp,
-            color = Color(0xFF78909C)
+            color = Color(0xFF8D6E63)
         )
     }
 }
 
 /**
- * 💮 전통 인주 도장 날인 카드 UI
+ * 💮 전통 인주 도장 날인 카드 UI (밝고 정겨운 장날 테마)
  */
 @Composable
 private fun StampedItemCard(
@@ -505,8 +516,8 @@ private fun StampedItemCard(
     onClick: () -> Unit
 ) {
     val isGolden = stamp.isMarketDay
-    val sealColor = if (isGolden) Color(0xFFFFD54F) else Color(0xFFD32F2F)
-    val sealBgColor = if (isGolden) Color(0xFF2E2405) else Color(0xFF2C1515)
+    val sealColor = if (isGolden) Color(0xFFD4AF37) else Color(0xFFD32F2F)
+    val sealBgColor = if (isGolden) Color(0xFFFFF8E1) else Color(0xFFFFEBEE)
     val dateStr = SimpleDateFormat("yy.MM.dd", Locale.KOREA).format(Date(stamp.visitTimestamp))
 
     Surface(
@@ -514,11 +525,11 @@ private fun StampedItemCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        color = Color(0xFF162433),
+        color = Color.White,
+        shadowElevation = 2.dp,
         border = BorderStroke(
             1.2.dp,
-            if (isGolden) Brush.linearGradient(listOf(Color(0xFFFFD54F), Color(0xFFB78103)))
-            else Brush.linearGradient(listOf(Color(0xFFE57373), Color(0xFF8C2D2D)))
+            if (isGolden) Color(0xFFFFB300) else Color(0xFFEF9A9A)
         )
     ) {
         Column(
@@ -533,7 +544,7 @@ private fun StampedItemCard(
             ) {
                 Surface(
                     shape = RoundedCornerShape(4.dp),
-                    color = if (isGolden) Color(0xFFFFD54F).copy(alpha = 0.2f) else Color(0xFFEF5350).copy(alpha = 0.2f)
+                    color = if (isGolden) Color(0xFFFFF8E1) else Color(0xFFFFEBEE)
                 ) {
                     Text(
                         text = if (isGolden) "✨ 황금장날" else "📍 현장인증",
@@ -547,7 +558,7 @@ private fun StampedItemCard(
                 Text(
                     text = dateStr,
                     fontSize = 10.sp,
-                    color = Color(0xFFB0BEC5)
+                    color = Color(0xFF8D6E63)
                 )
             }
 
@@ -589,7 +600,7 @@ private fun StampedItemCard(
                 text = stamp.marketName,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFFFFF),
+                color = Color(0xFF212121),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -599,7 +610,7 @@ private fun StampedItemCard(
                 Text(
                     text = "💬 \"${stamp.userMemo}\"",
                     fontSize = 11.sp,
-                    color = Color(0xFFB0BEC5),
+                    color = Color(0xFF757575),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -621,8 +632,9 @@ private fun UnstampedItemCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        color = Color(0xFF101B26).copy(alpha = 0.8f),
-        border = BorderStroke(1.dp, Color(0xFF26394D))
+        color = Color(0xFFFCFBF9),
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, Color(0xFFEFE8DD))
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -636,12 +648,12 @@ private fun UnstampedItemCard(
                 Text(
                     text = market.getSimpleTypeText(),
                     fontSize = 9.sp,
-                    color = Color(0xFF78909C)
+                    color = Color(0xFF8D6E63)
                 )
                 Text(
                     text = "도장깨기 도전 ▾",
                     fontSize = 9.sp,
-                    color = Color(0xFFD4AF37),
+                    color = Color(0xFFE65100),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -652,8 +664,8 @@ private fun UnstampedItemCard(
                 modifier = Modifier
                     .size(68.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF182838))
-                    .border(1.dp, Color(0xFF334A61), CircleShape),
+                    .background(Color(0xFFF5EFE6))
+                    .border(1.dp, Color(0xFFE0D8CC), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text("🔒", fontSize = 22.sp)
@@ -665,7 +677,7 @@ private fun UnstampedItemCard(
                 text = market.getDisplayName(),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF90A4AE),
+                color = Color(0xFF424242),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -674,7 +686,7 @@ private fun UnstampedItemCard(
             Text(
                 text = "다음: ${market.getNextMarketText()}",
                 fontSize = 10.sp,
-                color = Color(0xFF78909C)
+                color = Color(0xFFE65100)
             )
         }
     }
