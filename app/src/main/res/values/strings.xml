@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">장날가자</string>
     <string name="kakao_rest_api_key">4143a3f3611788e1bbf29ba670235e14</string>
+    <string name="tour_api_key">fXnq0Rp85fb8coBDMN8mUdYU%2Bh6zh0QAyYOHVO%2BBm1sF8STSTdsZRSOav4rCn%2BTP9%2ByQi61NYhCb0ARmaa%2BOvw%3D%3D</string>
 </resources>
