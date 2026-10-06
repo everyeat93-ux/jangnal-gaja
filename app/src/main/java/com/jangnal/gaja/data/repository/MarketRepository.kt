@@ -403,9 +403,15 @@ class MarketRepository(
                 else -> emptyList()
             }
 
+            // 가상 결제인증 카운트(42명 등) 잔존 방지: 미검증 가상 카운트 리셋
+            val hasFakeConfirmation = realExisting.any { it.onnuriConfirmedCount > 0 && !it.isVerifiedReport }
+            if (hasFakeConfirmation) {
+                marketDao.resetFakeOnnuriConfirmedCounts()
+            }
+
             if (baseShops.isNotEmpty()) {
                 // If existing cache in Room DB has wrong count or outdated data, refresh with official public data
-                val isDataValid = realExisting.isNotEmpty() && realExisting.size >= baseShops.size &&
+                val isDataValid = !hasFakeConfirmation && realExisting.isNotEmpty() && realExisting.size >= baseShops.size &&
                         realExisting.firstOrNull()?.shopName == baseShops.firstOrNull()?.shopName
                 
                 if (!isDataValid) {

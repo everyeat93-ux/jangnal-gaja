@@ -15,7 +15,7 @@ import com.jangnal.gaja.data.local.entity.CommunityComment
  * The Room Database for the application.
  * Defines the entities and version.
  */
-@Database(entities = [Market::class, Shop::class, Festival::class, CommunityPost::class, CommunityComment::class], version = 14, exportSchema = false)
+@Database(entities = [Market::class, Shop::class, Festival::class, CommunityPost::class, CommunityComment::class], version = 15, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun marketDao(): MarketDao

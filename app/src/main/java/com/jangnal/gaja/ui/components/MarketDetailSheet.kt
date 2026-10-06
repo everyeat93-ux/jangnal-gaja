@@ -1303,6 +1303,41 @@ private fun shareMarket(context: Context, market: Market) {
     }
 }
 
+private fun matchesShopCategory(shop: Shop, category: String): Boolean {
+    val name = shop.shopName.lowercase(Locale.KOREA)
+    val cat = shop.category.lowercase(Locale.KOREA)
+    return when (category) {
+        "전체" -> true
+        "식당·먹거리" -> {
+            listOf("식당", "먹거리", "음식", "한식", "중식", "일식", "분식", "칼국수", "국밥", "족발", "순대", "전", "튀김", "통닭", "치킨", "닭강정", "만두", "호떡", "도너츠", "꽈배기", "핫바", "김밥", "냉면", "보리밥", "비빔밥", "찌개", "탕", "구이", "백반", "포차", "주막", "국수").any { name.contains(it) || cat.contains(it) }
+        }
+        "축산·정육" -> {
+            listOf("축산", "정육", "정육점", "한우", "고기", "축산물", "암소", "돈육", "식육", "삼겹살", "생고기").any { name.contains(it) || cat.contains(it) }
+        }
+        "수산·건어물" -> {
+            listOf("수산", "건어물", "젓갈", "활어", "생선", "조개", "해산물", "멸치", "굴", "낙지", "오징어", "미역", "어물", "수산물", "건어", "해물").any { name.contains(it) || cat.contains(it) }
+        }
+        "청과·채소" -> {
+            listOf("청과", "과일", "야채", "채소", "농산", "농산물", "상회", "청과물", "마늘", "양파", "배추", "나물", "유통").any { name.contains(it) || cat.contains(it) }
+        }
+        "떡·방앗간" -> {
+            listOf("특산물", "특산", "떡", "방앗간", "참기름", "들기름", "약초", "인삼", "건재", "한약", "곡물", "잡곡", "쌀", "떡집").any { name.contains(it) || cat.contains(it) }
+        }
+        "카페·디저트" -> {
+            listOf("카페", "커피", "음료", "디저트", "베이커리", "빵", "빙수", "찻집", "주스").any { name.contains(it) || cat.contains(it) }
+        }
+        "의류·잡화" -> {
+            !matchesShopCategory(shop, "식당·먹거리") &&
+            !matchesShopCategory(shop, "축산·정육") &&
+            !matchesShopCategory(shop, "수산·건어물") &&
+            !matchesShopCategory(shop, "청과·채소") &&
+            !matchesShopCategory(shop, "떡·방앗간") &&
+            !matchesShopCategory(shop, "카페·디저트")
+        }
+        else -> cat.contains(category) || name.contains(category)
+    }
+}
+
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun ShopQueueSection(
@@ -1466,29 +1501,44 @@ fun ShopQueueSection(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Item 1: 카테고리 퀵 필터 칩
-            val categories = listOf("전체", "식당", "먹거리", "카페", "기타")
+            // Item 1: 카테고리 퀵 필터 칩 & 10개 단위 페이징
+            var visibleShopCount by remember(selectedCategory, shopSearchText, market.id) { mutableIntStateOf(10) }
+
+            val categoryDefs = listOf(
+                "전체" to "전체",
+                "식당·먹거리" to "🍚 식당·먹거리",
+                "축산·정육" to "🥩 축산·정육",
+                "수산·건어물" to "🐟 수산·건어물",
+                "청과·채소" to "🍎 청과·채소",
+                "떡·방앗간" to "🌾 떡·방앗간",
+                "카페·디저트" to "☕ 카페·디저트",
+                "의류·잡화" to "👕 의류·잡화"
+            )
+
+            val availableCategories = remember(shops) {
+                categoryDefs.map { (key, label) ->
+                    val count = if (key == "전체") shops.size else shops.count { matchesShopCategory(it, key) }
+                    Triple(key, label, count)
+                }.filter { it.first == "전체" || it.third > 0 }
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                categories.forEach { cat ->
-                    val isSelected = selectedCategory == cat
-                    val count = when (cat) {
-                        "전체" -> shops.size
-                        "식당" -> shops.count { it.category.contains("식당") || it.category.contains("음식") || it.category.contains("한식") || it.category.contains("중식") || it.category.contains("일식") || it.category.contains("분식") }
-                        "먹거리" -> shops.count { it.category.contains("먹거리") || it.category.contains("간식") || it.category.contains("떡") || it.category.contains("베이커리") || it.category.contains("호떡") || it.category.contains("닭강정") }
-                        "카페" -> shops.count { it.category.contains("카페") || it.category.contains("음료") || it.category.contains("커피") || it.category.contains("디저트") }
-                        else -> shops.count { !it.category.contains("식당") && !it.category.contains("음식") && !it.category.contains("먹거리") && !it.category.contains("카페") }
-                    }
+                availableCategories.forEach { (catKey, label, count) ->
+                    val isSelected = selectedCategory == catKey
                     FilterChip(
                         selected = isSelected,
-                        onClick = { selectedCategory = cat },
+                        onClick = { 
+                            selectedCategory = catKey 
+                            visibleShopCount = 10
+                        },
                         label = {
                             Text(
-                                text = "$cat ($count)",
+                                text = if (catKey == "전체") "전체 ($count)" else "$label ($count)",
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                             )
@@ -1502,19 +1552,15 @@ fun ShopQueueSection(
 
             val filteredShops = remember(shops, selectedCategory, shopSearchText) {
                 shops.filter { shop ->
-                    val matchesCat = when (selectedCategory) {
-                        "전체" -> true
-                        "식당" -> shop.category.contains("식당") || shop.category.contains("음식") || shop.category.contains("한식") || shop.category.contains("중식") || shop.category.contains("일식") || shop.category.contains("분식")
-                        "먹거리" -> shop.category.contains("먹거리") || shop.category.contains("간식") || shop.category.contains("떡") || shop.category.contains("베이커리") || shop.category.contains("호떡") || shop.category.contains("닭강정")
-                        "카페" -> shop.category.contains("카페") || shop.category.contains("음료") || shop.category.contains("커피") || shop.category.contains("디저트")
-                        "기타" -> !shop.category.contains("식당") && !shop.category.contains("음식") && !shop.category.contains("먹거리") && !shop.category.contains("카페")
-                        else -> shop.category.contains(selectedCategory)
-                    }
+                    val matchesCat = matchesShopCategory(shop, selectedCategory)
                     val matchesQuery = if (shopSearchText.isBlank()) true else {
                         shop.shopName.contains(shopSearchText, ignoreCase = true) || shop.category.contains(shopSearchText, ignoreCase = true)
                     }
                     matchesCat && matchesQuery
                 }
+            }
+            val displayedShops = remember(filteredShops, visibleShopCount) {
+                filteredShops.take(visibleShopCount)
             }
 
             if (filteredShops.isEmpty()) {
@@ -1564,6 +1610,7 @@ fun ShopQueueSection(
                             onClick = {
                                 selectedCategory = "전체"
                                 shopSearchText = ""
+                                visibleShopCount = 10
                                 focusManager.clearFocus()
                                 keyboardController?.hide()
                             }
@@ -1573,7 +1620,7 @@ fun ShopQueueSection(
                     }
                 }
             } else {
-                filteredShops.forEach { shop ->
+                displayedShops.forEach { shop ->
                     val hasRecentReport = shop.lastReportTime > 0 && 
                             (System.currentTimeMillis() - shop.lastReportTime) < 40 * 60 * 1000 // 40 minutes
 
@@ -1960,6 +2007,68 @@ fun ShopQueueSection(
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+
+                // 10개 단위 페이징 / 더보기 / 펼치기 / 접기 컨트롤
+                if (filteredShops.size > 10) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    if (visibleShopCount < filteredShops.size) {
+                        val nextCount = minOf(10, filteredShops.size - visibleShopCount)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { visibleShopCount += nextCount },
+                                modifier = Modifier
+                                    .weight(1.3f)
+                                    .height(44.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                ),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                            ) {
+                                Text(
+                                    text = "👇 상점 ${nextCount}개 더보기 (${visibleShopCount}/${filteredShops.size})",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            if (filteredShops.size - visibleShopCount > nextCount) {
+                                OutlinedButton(
+                                    onClick = { visibleShopCount = filteredShops.size },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = "전체 펼치기 (${filteredShops.size})",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    } else if (visibleShopCount > 10) {
+                        OutlinedButton(
+                            onClick = { visibleShopCount = 10 },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(42.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "상점 목록 접기 ▴ (상위 10개만 보기)",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
