@@ -41,6 +41,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
@@ -250,64 +252,86 @@ fun MarketDetailSheet(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // 2. [First Fold 최적화] 🔥 인기 상점 실시간 대기줄 & 온누리 가맹 (최상단으로 전격 배치)
-                ShopQueueSection(
-                    market = market,
-                    shops = shops,
-                    searchResults = searchResults,
-                    reviews = reviews,
-                    userLocation = userLocation,
-                    onReportQueue = onReportQueue,
-                    onAddShop = onAddShop,
-                    onSearchShops = onSearchShops,
-                    onClearSearchShops = onClearSearchShops,
-                    onSubmitReview = onSubmitReview,
-                    onConfirmOnnuri = onConfirmOnnuri,
-                    onDeleteShop = onDeleteShop,
-                    onReportShopIssue = onReportShopIssue
-                )
-
-                if (festivals.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Divider()
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // 2-1. 🎪 1:1 고유 축제 & 문화공연 섹션
-                    MarketFestivalSection(
-                        market = market,
-                        festivals = festivals
+                val detailTabs = remember(festivals.size, shops.size, communityPosts.size) {
+                    listOfNotNull(
+                        "shops" to "🏪 상점·맛집 (${shops.size})",
+                        if (festivals.isNotEmpty()) "festivals" to "🎪 축제·공연 (${festivals.size})" else null,
+                        "community" to "💬 동네마당 (${communityPosts.size})",
+                        "info" to "ℹ️ 시장정보·장날"
                     )
                 }
+                var selectedTabIndex by remember { mutableIntStateOf(0) }
+                val currentTabKey = detailTabs.getOrNull(selectedTabIndex)?.first ?: "shops"
 
-                Spacer(modifier = Modifier.height(20.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(20.dp))
+                ScrollableTabRow(
+                    selectedTabIndex = selectedTabIndex.coerceIn(0, detailTabs.size - 1),
+                    edgePadding = 0.dp,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    divider = { Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)) }
+                ) {
+                    detailTabs.forEachIndexed { index, (_, title) ->
+                        Tab(
+                            selected = selectedTabIndex == index,
+                            onClick = { selectedTabIndex = index },
+                            text = {
+                                Text(
+                                    text = title,
+                                    fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 13.sp,
+                                    color = if (selectedTabIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        )
+                    }
+                }
 
-                // 2-2. 💬 시장 동네마당 커뮤니티 섹션
-                MarketCommunitySection(
-                    market = market,
-                    posts = communityPosts,
-                    comments = comments,
-                    userLocation = userLocation,
-                    onSubmitPost = onSubmitCommunityPost,
-                    onLikePost = onLikeCommunityPost,
-                    onReportPost = onReportCommunityPost,
-                    onBlockAuthor = onBlockCommunityAuthor,
-                    onSubmitComment = onSubmitCommunityComment,
-                    onDeleteComment = onDeleteCommunityComment,
-                    onReportComment = onReportCommunityComment
-                )
+                Spacer(modifier = Modifier.height(14.dp))
 
-                Spacer(modifier = Modifier.height(20.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 3. [P1 & P5] 🛒 장날 LIVE DROP 고전환 커머스 카드 (구체적 음식명 + 고화질 사진 1장 + 명확한 택배 주문 CTA)
-                val dropItem = remember(market.marketName, displaySpecialty) {
+                when (currentTabKey) {
+                    "shops" -> {
+                        ShopQueueSection(
+                            market = market,
+                            shops = shops,
+                            searchResults = searchResults,
+                            reviews = reviews,
+                            userLocation = userLocation,
+                            onReportQueue = onReportQueue,
+                            onAddShop = onAddShop,
+                            onSearchShops = onSearchShops,
+                            onClearSearchShops = onClearSearchShops,
+                            onSubmitReview = onSubmitReview,
+                            onConfirmOnnuri = onConfirmOnnuri,
+                            onDeleteShop = onDeleteShop,
+                            onReportShopIssue = onReportShopIssue
+                        )
+                    }
+                    "festivals" -> {
+                        MarketFestivalSection(
+                            market = market,
+                            festivals = festivals
+                        )
+                    }
+                    "community" -> {
+                        MarketCommunitySection(
+                            market = market,
+                            posts = communityPosts,
+                            comments = comments,
+                            userLocation = userLocation,
+                            onSubmitPost = onSubmitCommunityPost,
+                            onLikePost = onLikeCommunityPost,
+                            onReportPost = onReportCommunityPost,
+                            onBlockAuthor = onBlockCommunityAuthor,
+                            onSubmitComment = onSubmitCommunityComment,
+                            onDeleteComment = onDeleteCommunityComment,
+                            onReportComment = onReportCommunityComment
+                        )
+                    }
+                    "info" -> {
+                        // 3. [P1 & P5] 🛒 장날 LIVE DROP 고전환 커머스 카드 (구체적 음식명 + 고화질 사진 1장 + 명확한 택배 주문 CTA)
+                        val dropItem = remember(market.marketName, displaySpecialty) {
                     val name = market.marketName
                     when {
                         name.contains("구로") -> LiveDropItem(
@@ -910,6 +934,8 @@ fun MarketDetailSheet(
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
+                    }
+                }
             }
 
             // [P4] Sticky 고정 하단 액션바 (좁은 화면 대응 및 줄바꿈 방지)
@@ -1501,8 +1527,8 @@ fun ShopQueueSection(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Item 1: 카테고리 퀵 필터 칩 & 10개 단위 페이징
-            var visibleShopCount by remember(selectedCategory, shopSearchText, market.id) { mutableIntStateOf(10) }
+            // Item 1: 카테고리 퀵 필터 칩 & 5개 단위 컴팩트 페이징
+            var visibleShopCount by remember(selectedCategory, shopSearchText, market.id) { mutableIntStateOf(5) }
 
             val categoryDefs = listOf(
                 "전체" to "전체",
@@ -1534,7 +1560,7 @@ fun ShopQueueSection(
                         selected = isSelected,
                         onClick = { 
                             selectedCategory = catKey 
-                            visibleShopCount = 10
+                            visibleShopCount = 5
                         },
                         label = {
                             Text(
@@ -1561,6 +1587,56 @@ fun ShopQueueSection(
             }
             val displayedShops = remember(filteredShops, visibleShopCount) {
                 filteredShops.take(visibleShopCount)
+            }
+
+            if (filteredShops.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "총 ${filteredShops.size}곳 중 ${displayedShops.size}곳 표시",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (visibleShopCount > 5) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                                modifier = Modifier.clickable { visibleShopCount = 5 }
+                            ) {
+                                Text(
+                                    text = "5개만 보기 ▴",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+                        if (visibleShopCount < filteredShops.size) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.clickable { visibleShopCount = filteredShops.size }
+                            ) {
+                                Text(
+                                    text = "전체 펼치기 ▾",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             if (filteredShops.isEmpty()) {
@@ -2011,11 +2087,11 @@ fun ShopQueueSection(
                     }
                 }
 
-                // 10개 단위 페이징 / 더보기 / 펼치기 / 접기 컨트롤
-                if (filteredShops.size > 10) {
+                // 5개 단위 페이징 / 더보기 / 펼치기 / 접기 컨트롤
+                if (filteredShops.size > 5) {
                     Spacer(modifier = Modifier.height(10.dp))
                     if (visibleShopCount < filteredShops.size) {
-                        val nextCount = minOf(10, filteredShops.size - visibleShopCount)
+                        val nextCount = minOf(5, filteredShops.size - visibleShopCount)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -2039,32 +2115,33 @@ fun ShopQueueSection(
                                 )
                             }
 
-                            if (filteredShops.size - visibleShopCount > nextCount) {
-                                OutlinedButton(
-                                    onClick = { visibleShopCount = filteredShops.size },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(44.dp),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Text(
-                                        text = "전체 펼치기 (${filteredShops.size})",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
+                            OutlinedButton(
+                                onClick = { visibleShopCount = filteredShops.size },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "전체 펼치기 (${filteredShops.size})",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
                         }
-                    } else if (visibleShopCount > 10) {
+                    } else if (visibleShopCount > 5) {
                         OutlinedButton(
-                            onClick = { visibleShopCount = 10 },
+                            onClick = { visibleShopCount = 5 },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(42.dp),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                            )
                         ) {
                             Text(
-                                text = "상점 목록 접기 ▴ (상위 10개만 보기)",
+                                text = "상점 목록 접기 ▴ (상위 5개만 보기)",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
