@@ -59,7 +59,6 @@ object OnnuriAssetLoader {
         if (matchedTupleList.isEmpty()) return null
 
         return matchedTupleList.mapIndexed { i, tuple ->
-            val initialConfirm = ((marketId + tuple.confirmOffset + i) % 6 + 3).toInt()
             Shop(
                 marketId = marketId,
                 shopName = tuple.shopName,
@@ -68,7 +67,7 @@ object OnnuriAssetLoader {
                 longitude = longitude,
                 isOnnuri = true,
                 onnuriType = tuple.onnuriType,
-                onnuriConfirmedCount = initialConfirm,
+                onnuriConfirmedCount = 0,
                 isMock = false
             )
         }

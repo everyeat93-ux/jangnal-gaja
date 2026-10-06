@@ -36,6 +36,7 @@ import com.jangnal.gaja.data.local.entity.Market
 @Composable
 fun MarketItem(
     market: Market,
+    hasActiveFestival: Boolean = false,
     onItemClick: (Market) -> Unit
 ) {
     Card(
@@ -103,6 +104,19 @@ fun MarketItem(
                             .background(badgeBg, RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
+
+                    if (hasActiveFestival) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "🎪 축제·행사",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFC2185B),
+                            modifier = Modifier
+                                .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))

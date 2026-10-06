@@ -542,6 +542,8 @@ class MarketRepository(
     }
 
     // --- Festivals / Cultural Events Operations ---
+    val allFestivalsFlow: Flow<List<Festival>> = marketDao.getAllFestivalsFlow()
+
     fun getFestivalsForMarketFlow(marketId: Long): Flow<List<Festival>> {
         return marketDao.getFestivalsForMarketFlow(marketId)
     }

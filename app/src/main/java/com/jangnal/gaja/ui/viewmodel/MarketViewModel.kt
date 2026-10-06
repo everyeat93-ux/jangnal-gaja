@@ -50,6 +50,13 @@ class MarketViewModel(
     private val _activeMarketFestivals = MutableStateFlow<List<Festival>>(emptyList())
     val activeMarketFestivals: StateFlow<List<Festival>> = _activeMarketFestivals.asStateFlow()
 
+    val allFestivals: StateFlow<List<Festival>> = repository.allFestivalsFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     private val _activeMarketCommunityPosts = MutableStateFlow<List<CommunityPost>>(emptyList())
     val activeMarketCommunityPosts: StateFlow<List<CommunityPost>> = _activeMarketCommunityPosts.asStateFlow()
 

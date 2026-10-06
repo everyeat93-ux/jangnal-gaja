@@ -180,6 +180,9 @@ interface MarketDao {
     suspend fun updateMarketParking(marketId: Long, value: String)
 
     // --- Festivals / Cultural Events Operations ---
+    @Query("SELECT * FROM festivals ORDER BY startDate ASC")
+    fun getAllFestivalsFlow(): Flow<List<Festival>>
+
     @Query("SELECT * FROM festivals WHERE marketId = :marketId ORDER BY startDate ASC")
     fun getFestivalsForMarketFlow(marketId: Long): Flow<List<Festival>>
 

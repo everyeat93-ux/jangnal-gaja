@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.jangnal.gaja.data.local.entity.Market
+import com.jangnal.gaja.data.local.entity.Festival
 import com.jangnal.gaja.ui.components.MarketItem
 import com.jangnal.gaja.ui.viewmodel.MarketViewModel
 import kotlinx.coroutines.launch
@@ -103,31 +104,57 @@ fun MarketListScreen(
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             try {
-                LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener { 
-                    userLocation = it
+                val fused = LocationServices.getFusedLocationProviderClient(context)
+                fused.lastLocation.addOnSuccessListener { loc ->
+                    if (loc != null) {
+                        userLocation = loc
+                    } else {
+                        fused.getCurrentLocation(
+                            com.google.android.gms.location.Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                            null
+                        ).addOnSuccessListener { cur ->
+                            if (cur != null) userLocation = cur
+                        }
+                    }
                 }
-            } catch (e: SecurityException) {
-                // Ignore
-            }
+            } catch (_: SecurityException) {}
         }
     }
-    
-    LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener { 
-                userLocation = it
-            }
+
+    val fetchLocation: () -> Unit = {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                val fused = LocationServices.getFusedLocationProviderClient(context)
+                fused.lastLocation.addOnSuccessListener { loc ->
+                    if (loc != null) {
+                        userLocation = loc
+                    } else {
+                        fused.getCurrentLocation(
+                            com.google.android.gms.location.Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                            null
+                        ).addOnSuccessListener { cur ->
+                            if (cur != null) userLocation = cur
+                        }
+                    }
+                }
+            } catch (_: SecurityException) {}
         } else {
-            // 권한 없으면 요청 (선택 사항, 지도 탭에서 이미 했을 수도 있음)
+            android.widget.Toast.makeText(context, "📍 가까운 시장 거리순 정렬을 위해 위치 권한을 허용해 주세요.", android.widget.Toast.LENGTH_SHORT).show()
             locationPermissionLauncher.launch(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
             )
         }
     }
+    
+    LaunchedEffect(Unit) {
+        fetchLocation()
+    }
 
     val todayMarkets by viewModel.todayMarkets.collectAsState()
     val allMarkets by viewModel.allMarkets.collectAsState()
     val todayDate by viewModel.today.collectAsState()
+    val allFestivals by viewModel.allFestivals.collectAsState()
     
     // 날짜 포맷팅
     val dateFormat = remember { SimpleDateFormat("M월 d일 (E)", Locale.KOREA) }
@@ -409,7 +436,14 @@ fun MarketListScreen(
                         }
                     }
                     1 -> { // All List + Today Filter
-                        MarketList(markets = allMarkets, dateLabel = formattedDate, userLocation = userLocation, onMarketClick = { selectedMarket = it })
+                        MarketList(
+                            markets = allMarkets,
+                            festivals = allFestivals,
+                            dateLabel = formattedDate,
+                            userLocation = userLocation,
+                            onRequestLocation = fetchLocation,
+                            onMarketClick = { selectedMarket = it }
+                        )
                     }
                 }
             }
@@ -421,8 +455,10 @@ fun MarketListScreen(
 @Composable
 fun MarketList(
     markets: List<Market>, 
+    festivals: List<Festival> = emptyList(),
     dateLabel: String?, 
     userLocation: Location?,
+    onRequestLocation: () -> Unit = {},
     onMarketClick: (Market) -> Unit
 ) {
     if (markets.isEmpty()) {
@@ -433,14 +469,18 @@ fun MarketList(
         var sortType by remember(userLocation != null) { mutableIntStateOf(if (userLocation != null) 1 else 0) }
         var filterOpenToday by remember { mutableStateOf(false) }
         var filterOpenWeekend by remember { mutableStateOf(false) }
-        // 0: 전국, 1: 수도권, 2: 강원, 3: 충청/대전, 4: 전라/광주, 5: 경상/부산, 6: 제주
+        // 0: 전국, 1: 서울, 2: 경기, 3: 인천, 4: 강원, 5: 충청/대전, 6: 전라/광주, 7: 경상/부산, 8: 제주
         var selectedRegionIndex by remember { mutableIntStateOf(0) }
-        val regions = listOf("전국", "수도권", "강원", "충청/대전", "전라/광주", "경상/부산", "제주")
+        val regions = listOf("전국", "서울", "경기", "인천", "강원", "충청/대전", "전라/광주", "경상/부산", "제주")
         
         // 3차 필터: 시장 유형 및 장날 주기 필터
         var selectedScheduleFilter by remember { mutableStateOf("전체 유형") }
-        val scheduleFilters = listOf("전체 유형", "🏪 상설시장", "🎪 5일장", "1·6일장", "2·7일장", "3·8일장", "4·9일장", "5·10일장")
+        val scheduleFilters = listOf("전체 유형", "🎪 축제·행사 열리는 장", "🏪 상설시장", "🎪 5일장", "1·6일장", "2·7일장", "3·8일장", "4·9일장", "5·10일장")
         
+        val activeFestivalMarketIds = remember(festivals) {
+            festivals.filter { !it.isExpired() }.map { it.marketId }.toSet()
+        }
+
         val focusManager = LocalFocusManager.current
         val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -454,7 +494,7 @@ fun MarketList(
             }
         }
         
-        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, selectedRegionIndex, selectedScheduleFilter, userLocation) {
+        val filteredMarkets = remember(markets, searchQuery, sortType, filterOpenToday, filterOpenWeekend, selectedRegionIndex, selectedScheduleFilter, userLocation, activeFestivalMarketIds) {
             var filtered = if (searchQuery.isBlank()) markets
             else markets.filter { 
                 it.marketName.contains(searchQuery, ignoreCase = true) ||
@@ -471,30 +511,34 @@ fun MarketList(
                 filtered = filtered.filter { it.isOpenThisWeekend() }
             }
             
-            // 2차: 광역 지역 필터링
+            // 2차: 광역 지역 필터링 (수도권을 서울/경기/인천으로 세분화)
             filtered = when (selectedRegionIndex) {
-                1 -> filtered.filter { m -> // 수도권
-                    m.addressRoad.contains("서울") || m.addressJibun.contains("서울") ||
-                    m.addressRoad.contains("경기") || m.addressJibun.contains("경기") ||
+                1 -> filtered.filter { m -> // 서울
+                    m.addressRoad.contains("서울") || m.addressJibun.contains("서울")
+                }
+                2 -> filtered.filter { m -> // 경기
+                    m.addressRoad.contains("경기") || m.addressJibun.contains("경기")
+                }
+                3 -> filtered.filter { m -> // 인천
                     m.addressRoad.contains("인천") || m.addressJibun.contains("인천")
                 }
-                2 -> filtered.filter { m -> // 강원
+                4 -> filtered.filter { m -> // 강원
                     m.addressRoad.contains("강원") || m.addressJibun.contains("강원")
                 }
-                3 -> filtered.filter { m -> // 충청/대전/세종
+                5 -> filtered.filter { m -> // 충청/대전/세종
                     m.addressRoad.contains("충북") || m.addressJibun.contains("충북") ||
                     m.addressRoad.contains("충남") || m.addressJibun.contains("충남") ||
                     m.addressRoad.contains("충청") || m.addressJibun.contains("충청") ||
                     m.addressRoad.contains("대전") || m.addressJibun.contains("대전") ||
                     m.addressRoad.contains("세종") || m.addressJibun.contains("세종")
                 }
-                4 -> filtered.filter { m -> // 전라/광주
+                6 -> filtered.filter { m -> // 전라/광주
                     m.addressRoad.contains("전북") || m.addressJibun.contains("전북") ||
                     m.addressRoad.contains("전남") || m.addressJibun.contains("전남") ||
                     m.addressRoad.contains("전라") || m.addressJibun.contains("전라") ||
                     m.addressRoad.contains("광주") || m.addressJibun.contains("광주")
                 }
-                5 -> filtered.filter { m -> // 경상/부산/대구/울산
+                7 -> filtered.filter { m -> // 경상/부산/대구/울산
                     m.addressRoad.contains("경북") || m.addressJibun.contains("경북") ||
                     m.addressRoad.contains("경남") || m.addressJibun.contains("경남") ||
                     m.addressRoad.contains("경상") || m.addressJibun.contains("경상") ||
@@ -502,14 +546,16 @@ fun MarketList(
                     m.addressRoad.contains("대구") || m.addressJibun.contains("대구") ||
                     m.addressRoad.contains("울산") || m.addressJibun.contains("울산")
                 }
-                6 -> filtered.filter { m -> // 제주
+                8 -> filtered.filter { m -> // 제주
                     m.addressRoad.contains("제주") || m.addressJibun.contains("제주")
                 }
                 else -> filtered // 전국
             }
 
             // 3차: 시장 유형 및 장날 주기 필터링
-            if (selectedScheduleFilter != "전체 유형") {
+            if (selectedScheduleFilter == "🎪 축제·행사 열리는 장") {
+                filtered = filtered.filter { activeFestivalMarketIds.contains(it.id) }
+            } else if (selectedScheduleFilter != "전체 유형") {
                 filtered = filtered.filter { it.matchesScheduleType(selectedScheduleFilter) }
             }
             
@@ -596,13 +642,17 @@ fun MarketList(
                 )
                 FilterChip(
                     selected = sortType == 1,
-                    onClick = { sortType = 1 },
-                    label = { Text("거리순") },
+                    onClick = { 
+                        sortType = 1
+                        if (userLocation == null) {
+                            onRequestLocation()
+                        }
+                    },
+                    label = { Text(if (userLocation != null) "거리순 📍" else "거리순 📍 (위치 켜기)") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
                         selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
-                    ),
-                    enabled = userLocation != null
+                    )
                 )
                 FilterChip(
                     selected = filterOpenToday,
@@ -632,7 +682,7 @@ fun MarketList(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 2차 필터: 전국 시/도 광역 지역 칩
+            // 2차 필터: 전국 시/도 광역 지역 칩 (서울/경기/인천 세분화)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -644,12 +694,14 @@ fun MarketList(
                     val isSelected = selectedRegionIndex == index
                     val icon = when (index) {
                         0 -> "🌐"
-                        1 -> "🏢"
-                        2 -> "🌲"
-                        3 -> "🌾"
-                        4 -> "🍲"
-                        5 -> "🌊"
-                        else -> "🍊"
+                        1 -> "🏢" // 서울
+                        2 -> "🏙️" // 경기
+                        3 -> "⚓" // 인천
+                        4 -> "🌲" // 강원
+                        5 -> "🌾" // 충청
+                        6 -> "🍲" // 전라
+                        7 -> "🌊" // 경상
+                        else -> "🍊" // 제주
                     }
                     FilterChip(
                         selected = isSelected,
@@ -803,7 +855,11 @@ fun MarketList(
                         }
                     }
                     items(filteredMarkets) { market ->
-                        MarketItem(market = market, onItemClick = onMarketClick)
+                        MarketItem(
+                            market = market,
+                            hasActiveFestival = activeFestivalMarketIds.contains(market.id),
+                            onItemClick = onMarketClick
+                        )
                     }
                     item { Spacer(modifier = Modifier.height(16.dp)) }
                 }
