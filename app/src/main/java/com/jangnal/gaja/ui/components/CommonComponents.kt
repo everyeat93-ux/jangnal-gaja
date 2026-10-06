@@ -27,6 +27,8 @@ fun Badge(
             .padding(horizontal = 8.dp, vertical = 4.dp),
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.Bold,
-        color = textColor
+        color = textColor,
+        maxLines = 1,
+        softWrap = false
     )
 }

@@ -101,6 +101,8 @@ fun MarketItem(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = badgeColor,
+                        maxLines = 1,
+                        softWrap = false,
                         modifier = Modifier
                             .background(badgeBg, RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -109,10 +111,12 @@ fun MarketItem(
                     if (hasActiveFestival) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "🎪 축제·행사",
+                            text = "🎪 축제",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFC2185B),
+                            maxLines = 1,
+                            softWrap = false,
                             modifier = Modifier
                                 .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -133,6 +137,8 @@ fun MarketItem(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0277BD),
+                            maxLines = 1,
+                            softWrap = false,
                             modifier = Modifier
                                 .background(Color(0xFFE1F5FE), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 5.dp, vertical = 2.dp)

@@ -451,7 +451,9 @@ fun MarketListScreen(
                                 text = if (uniqueMarketStampCount > 0) "🎖️ 장날도장 ${uniqueMarketStampCount}곳" else "🎖️ 장날도장",
                                 fontSize = 11.sp,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                color = Color.White
+                                color = Color.White,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
@@ -469,7 +471,9 @@ fun MarketListScreen(
                                 text = "💬 동네마당",
                                 fontSize = 11.sp,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                color = com.jangnal.gaja.ui.theme.JangnalYellow
+                                color = com.jangnal.gaja.ui.theme.JangnalYellow,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }

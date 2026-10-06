@@ -194,6 +194,7 @@ fun CommunityFeedSheet(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Row(
+                                        modifier = Modifier.weight(1f, fill = false),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
@@ -220,7 +221,9 @@ fun CommunityFeedSheet(
                                                     text = post.marketName,
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                    maxLines = 1,
+                                                    softWrap = false
                                                 )
                                             }
                                         }
@@ -228,7 +231,10 @@ fun CommunityFeedSheet(
                                         Text(
                                             text = post.authorNickname,
                                             fontWeight = FontWeight.Bold,
-                                            fontSize = 12.sp
+                                            fontSize = 12.sp,
+                                            maxLines = 1,
+                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                            modifier = Modifier.weight(1f, fill = false)
                                         )
 
                                         if (post.isNearMarket) {
@@ -241,11 +247,15 @@ fun CommunityFeedSheet(
                                                     color = Color(0xFF2E7D32),
                                                     fontSize = 9.sp,
                                                     fontWeight = FontWeight.Bold,
+                                                    maxLines = 1,
+                                                    softWrap = false,
                                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                                                 )
                                             }
                                         }
                                     }
+
+                                    Spacer(modifier = Modifier.width(4.dp))
 
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -254,7 +264,9 @@ fun CommunityFeedSheet(
                                         Text(
                                             text = dateStr,
                                             fontSize = 10.sp,
-                                            color = MaterialTheme.colorScheme.outline
+                                            color = MaterialTheme.colorScheme.outline,
+                                            maxLines = 1,
+                                            softWrap = false
                                         )
                                         IconButton(
                                             onClick = { postToReport = post },

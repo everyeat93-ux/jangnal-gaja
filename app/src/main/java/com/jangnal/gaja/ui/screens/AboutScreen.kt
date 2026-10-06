@@ -451,12 +451,13 @@ fun SizeButton(text: String, scale: Float, currentScale: Float, onScaleChange: (
     Button(
         onClick = { onScaleChange(scale) },
         modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surfaceVariant,
             contentColor = if (isSelected) Color.White else Color.Black
         ),
-        border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color.Gray) else null
+        border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f)) else null
     ) {
-        Text(text, fontSize = 14.sp * scale, maxLines = 1) 
+        Text(text, fontSize = 14.sp, maxLines = 1, softWrap = false, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium) 
     }
 }

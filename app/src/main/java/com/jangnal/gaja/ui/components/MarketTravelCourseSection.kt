@@ -2,25 +2,20 @@ package com.jangnal.gaja.ui.components
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Directions
-import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -72,7 +67,9 @@ fun MarketTravelCourseSection(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
@@ -98,6 +95,7 @@ fun MarketTravelCourseSection(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CourseCard(
     course: MarketTravelCourse,
@@ -123,10 +121,11 @@ private fun CourseCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Theme Badges
-            Row(
+            // Theme Badges (FlowRow to prevent single vertical character squishing)
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 CourseBadge(text = course.theme, bgColor = Color(0xFFFFF3E0), textColor = Color(0xFFE65100))
                 CourseBadge(text = course.durationText, bgColor = Color(0xFFE8F5E9), textColor = Color(0xFF2E7D32))
@@ -166,7 +165,8 @@ private fun CourseCard(
             // Multi-stop Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedButton(
                     onClick = {
@@ -187,27 +187,31 @@ private fun CourseCard(
                         }
                         context.startActivity(Intent.createChooser(intent, "여행 코스 공유"))
                     },
-                    modifier = Modifier.weight(1f).height(42.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 40.dp),
                     shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(15.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("코스 공유", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("코스 공유", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                 }
 
                 Button(
                     onClick = {
                         MarketTravelCourseRepository.launchMultiRouteNavigation(context, course)
                     },
-                    modifier = Modifier.weight(1.6f).height(42.dp),
+                    modifier = Modifier
+                        .weight(1.5f)
+                        .heightIn(min = 40.dp),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(15.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("🧭 전체 동선 지도 길안내", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("🧭 전체 지도 길안내", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                 }
             }
         }
@@ -221,12 +225,16 @@ private fun TimelineSpotItem(
     onNavigate: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
     ) {
-        // Left Column: Step Circle + Vertical Line
+        // Left Column: Step Circle + Dynamic Vertical Line
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(32.dp)
+            modifier = Modifier
+                .width(28.dp)
+                .fillMaxHeight()
         ) {
             Surface(
                 shape = CircleShape,
@@ -253,8 +261,9 @@ private fun TimelineSpotItem(
                 Box(
                     modifier = Modifier
                         .width(2.dp)
-                        .height(84.dp)
-                        .background(Color(0xFFFFB74D).copy(alpha = 0.4f))
+                        .weight(1f)
+                        .padding(vertical = 2.dp)
+                        .background(Color(0xFFFFB74D).copy(alpha = 0.5f))
                 )
             }
         }
@@ -273,7 +282,7 @@ private fun TimelineSpotItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    modifier = Modifier.weight(1f, fill = false),
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -282,7 +291,8 @@ private fun TimelineSpotItem(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Surface(
@@ -294,10 +304,14 @@ private fun TimelineSpotItem(
                             fontSize = 9.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.width(6.dp))
 
                 // Small Navigation Button
                 Surface(
@@ -320,26 +334,35 @@ private fun TimelineSpotItem(
                             text = "길안내",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(3.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
                     text = "⏱️ ${spot.timeEstimate}",
                     fontSize = 11.sp,
                     color = Color(0xFFE65100),
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    softWrap = false
                 )
                 if (spot.travelFromPrev != "여행 출발지") {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "• ${spot.travelFromPrev}",
                         fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -383,7 +406,9 @@ private fun CourseBadge(text: String, bgColor: Color, textColor: Color) {
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             color = textColor,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            maxLines = 1,
+            softWrap = false
         )
     }
 }

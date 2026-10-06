@@ -493,6 +493,8 @@ fun MerchantVerificationAdminCard(
                         },
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
                         color = when (verif.status) {
                             "APPROVED" -> Color(0xFF2E7D32)
                             "REJECTED" -> Color(0xFFC62828)
@@ -532,7 +534,7 @@ fun MerchantVerificationAdminCard(
                                 ) {
                                     Icon(Icons.Default.Phone, contentDescription = null, modifier = Modifier.size(11.dp), tint = Color(0xFF1976D2))
                                     Spacer(modifier = Modifier.width(2.dp))
-                                    Text("전화연결", fontSize = 10.sp, color = Color(0xFF1976D2), fontWeight = FontWeight.Bold)
+                                    Text("전화연결", fontSize = 10.sp, color = Color(0xFF1976D2), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                                 }
                             }
                         }
@@ -601,7 +603,7 @@ fun MerchantVerificationAdminCard(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
                         contentPadding = PaddingValues(vertical = 6.dp)
                     ) {
-                        Text("❌ 심사 반려", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("❌ 심사 반려", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                     }
 
                     Button(
@@ -611,7 +613,7 @@ fun MerchantVerificationAdminCard(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         contentPadding = PaddingValues(vertical = 6.dp)
                     ) {
-                        Text("✅ 공식 승인 완료", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("✅ 공식 승인 완료", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                     }
                 } else if (verif.isApproved()) {
                     OutlinedButton(
@@ -620,7 +622,7 @@ fun MerchantVerificationAdminCard(
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(vertical = 6.dp)
                     ) {
-                        Text("⏳ 대기 상태로 되돌리기", fontSize = 11.sp)
+                        Text("⏳ 대기로 되돌리기", fontSize = 11.sp, maxLines = 1, softWrap = false)
                     }
                     OutlinedButton(
                         onClick = onReject,
@@ -630,7 +632,7 @@ fun MerchantVerificationAdminCard(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
                         contentPadding = PaddingValues(vertical = 6.dp)
                     ) {
-                        Text("인증 취소 (반려)", fontSize = 11.sp)
+                        Text("인증 취소 (반려)", fontSize = 11.sp, maxLines = 1, softWrap = false)
                     }
                 } else {
                     Button(
@@ -640,7 +642,7 @@ fun MerchantVerificationAdminCard(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         contentPadding = PaddingValues(vertical = 6.dp)
                     ) {
-                        Text("✅ 재심사 및 승인하기", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("✅ 재심사 및 승인", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                     }
                 }
             }

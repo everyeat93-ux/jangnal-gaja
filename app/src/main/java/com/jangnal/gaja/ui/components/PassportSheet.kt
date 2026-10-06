@@ -551,6 +551,8 @@ private fun StampedItemCard(
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         color = sealColor,
+                        maxLines = 1,
+                        softWrap = false,
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                     )
                 }
@@ -558,7 +560,9 @@ private fun StampedItemCard(
                 Text(
                     text = dateStr,
                     fontSize = 10.sp,
-                    color = Color(0xFF8D6E63)
+                    color = Color(0xFF8D6E63),
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
 
@@ -648,13 +652,17 @@ private fun UnstampedItemCard(
                 Text(
                     text = market.getSimpleTypeText(),
                     fontSize = 9.sp,
-                    color = Color(0xFF8D6E63)
+                    color = Color(0xFF8D6E63),
+                    maxLines = 1,
+                    softWrap = false
                 )
                 Text(
                     text = "도장깨기 도전 ▾",
                     fontSize = 9.sp,
                     color = Color(0xFFE65100),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
 
