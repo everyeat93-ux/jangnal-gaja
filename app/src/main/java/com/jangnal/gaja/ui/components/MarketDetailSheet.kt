@@ -1610,6 +1610,7 @@ fun ShopQueueSection(
 ) {
     var showAddShopDialog by remember { mutableStateOf(false) }
     var showFlashSaleDialog by remember { mutableStateOf(false) }
+    var flashSalePrefilledShop by remember { mutableStateOf("") }
     var prefilledShopName by remember { mutableStateOf("") }
     var activeVotingShop by remember { mutableStateOf<Shop?>(null) }
     var shopToDelete by remember { mutableStateOf<Shop?>(null) }
@@ -1646,7 +1647,8 @@ fun ShopQueueSection(
             shops = shops,
             verifications = verifications,
             onSubmitFlashSale = onSubmitFlashSale,
-            onDeleteFlashSale = onDeleteFlashSale
+            onDeleteFlashSale = onDeleteFlashSale,
+            onOpenMerchantVerification = onOpenMerchantVerification
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -1657,7 +1659,7 @@ fun ShopQueueSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "🔥 상점 · 대기줄",
+                text = "🔥 인기 상점 & 실시간 대기줄",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
@@ -1665,66 +1667,25 @@ fun ShopQueueSection(
                 maxLines = 1,
                 softWrap = false
             )
-            
-            Spacer(modifier = Modifier.width(6.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            Button(
+                onClick = { 
+                    prefilledShopName = ""
+                    showAddShopDialog = true 
+                },
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.height(30.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                OutlinedButton(
-                    onClick = { showFlashSaleDialog = true },
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.height(28.dp),
-                    border = BorderStroke(1.dp, Color(0xFFE65100))
-                ) {
-                    Text(
-                        text = "🔥 특가등록",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE65100),
-                        maxLines = 1,
-                        softWrap = false
-                    )
-                }
-
-                OutlinedButton(
-                    onClick = onOpenMerchantVerification,
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.height(28.dp),
-                    border = BorderStroke(1.dp, Color(0xFF2E7D32))
-                ) {
-                    Text(
-                        text = "🏛️ 상인인증",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2E7D32),
-                        maxLines = 1,
-                        softWrap = false
-                    )
-                }
-
-                Button(
-                    onClick = { 
-                        prefilledShopName = ""
-                        showAddShopDialog = true 
-                    },
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.height(28.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(
-                        text = "+ 상점등록",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        fontSize = 11.sp,
-                        maxLines = 1,
-                        softWrap = false
-                    )
-                }
+                Text(
+                    text = "➕ 상점 등록",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    softWrap = false
+                )
             }
         }
         
@@ -2310,6 +2271,37 @@ fun ShopQueueSection(
                                 }
                             }
 
+                            if (isVerifiedShop) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = {
+                                        flashSalePrefilledShop = shop.shopName
+                                        showFlashSaleDialog = true
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(36.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                ) {
+                                    Text("🔥 [상인전용] 오늘 마감 특가 등록", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
+                                }
+                            } else if (!isPendingShop) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedButton(
+                                    onClick = onOpenMerchantVerification,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(34.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, Color(0xFF2E7D32).copy(alpha = 0.4f)),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                ) {
+                                    Text("🏛️ 상점 사장님이신가요? 상인 공식인증 신청", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF2E7D32), maxLines = 1, softWrap = false)
+                                }
+                            }
+
                             val photos = shopReviews.map { it.photoUrl }.filter { it.isNotEmpty() }
                             if (photos.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -2471,6 +2463,48 @@ fun ShopQueueSection(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
+                        }
+                    }
+                }
+
+                // 상인 공식 인증 유도 안내 배너
+                Spacer(modifier = Modifier.height(14.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "🏪 시장 상점 사장님이신가요?",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "공식 상인 인증을 받으시면 오늘 마감 특가를 직접 등록하여 방문객들에게 홍보할 수 있습니다.",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 15.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = onOpenMerchantVerification,
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("인증 신청 ➔", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -2643,10 +2677,16 @@ fun ShopQueueSection(
             market = market,
             shops = shops,
             verifications = verifications,
-            onDismiss = { showFlashSaleDialog = false },
+            prefilledShopName = flashSalePrefilledShop,
+            onOpenMerchantVerification = onOpenMerchantVerification,
+            onDismiss = { 
+                showFlashSaleDialog = false 
+                flashSalePrefilledShop = ""
+            },
             onSubmit = { sName, iTitle, oPrice, dPrice, qInfo, durHours, isVer ->
                 onSubmitFlashSale(sName, iTitle, oPrice, dPrice, qInfo, durHours, isVer)
                 showFlashSaleDialog = false
+                flashSalePrefilledShop = ""
             }
         )
     }
@@ -4156,11 +4196,20 @@ fun MarketFlashSaleSection(
     flashSales: List<MarketFlashSale>,
     shops: List<Shop>,
     verifications: List<MerchantVerification> = emptyList(),
+    onOpenMerchantVerification: () -> Unit = {},
     onSubmitFlashSale: (shopName: String, itemTitle: String, originalPrice: Int, discountPrice: Int, quantityInfo: String, durationHours: Int, isVerified: Boolean) -> Unit,
     onDeleteFlashSale: (Long) -> Unit
 ) {
     var showFlashSaleDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    
+    val verifiedShops = remember(shops, verifications) {
+        shops.filter { s ->
+            verifications.any { it.marketId == market.id && it.shopName.trim().equals(s.shopName.trim(), ignoreCase = true) && it.isApproved() } ||
+            VoteTracker.isVerifiedMerchant(context, market.id, s.shopName)
+        }
+    }
+    val hasVerifiedShop = verifiedShops.isNotEmpty()
     
     if (flashSales.isNotEmpty()) {
         Column(
@@ -4213,23 +4262,44 @@ fun MarketFlashSaleSection(
                             }
                         }
                         
-                        Button(
-                            onClick = { showFlashSaleDialog = true },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFE65100),
-                                contentColor = Color.White
-                            ),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                            modifier = Modifier.height(30.dp)
-                        ) {
-                            Text(
-                                text = "+ 특가 등록",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                softWrap = false
-                            )
+                        if (hasVerifiedShop) {
+                            Button(
+                                onClick = { showFlashSaleDialog = true },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFE65100),
+                                    contentColor = Color.White
+                                ),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                modifier = Modifier.height(30.dp)
+                            ) {
+                                Text(
+                                    text = "+ 특가 등록",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = onOpenMerchantVerification,
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, Color(0xFFE65100).copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color(0xFFE65100)
+                                ),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                modifier = Modifier.height(30.dp)
+                            ) {
+                                Text(
+                                    text = "🏛️ 상인인증",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
                         }
                     }
                     
@@ -4267,6 +4337,7 @@ fun MarketFlashSaleSection(
             market = market,
             shops = shops,
             verifications = verifications,
+            onOpenMerchantVerification = onOpenMerchantVerification,
             onDismiss = { showFlashSaleDialog = false },
             onSubmit = { shopName, itemTitle, origPrice, discPrice, qtyInfo, durationHours, isVerified ->
                 onSubmitFlashSale(shopName, itemTitle, origPrice, discPrice, qtyInfo, durationHours, isVerified)
@@ -4433,29 +4504,98 @@ fun FlashSaleCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun FlashSaleCreateDialog(
     market: Market,
     shops: List<Shop>,
     verifications: List<MerchantVerification> = emptyList(),
+    prefilledShopName: String = "",
+    onOpenMerchantVerification: () -> Unit = {},
     onDismiss: () -> Unit,
     onSubmit: (shopName: String, itemTitle: String, originalPrice: Int, discountPrice: Int, quantityInfo: String, durationHours: Int, isVerified: Boolean) -> Unit
 ) {
     val context = LocalContext.current
-    var shopName by remember { mutableStateOf(shops.firstOrNull()?.shopName ?: "") }
+    val verifiedShops = remember(shops, verifications, prefilledShopName) {
+        val list = shops.filter { s ->
+            verifications.any { it.marketId == market.id && it.shopName.trim().equals(s.shopName.trim(), ignoreCase = true) && it.isApproved() } ||
+            VoteTracker.isVerifiedMerchant(context, market.id, s.shopName)
+        }.toMutableList()
+        if (prefilledShopName.isNotBlank() && list.none { it.shopName.equals(prefilledShopName, ignoreCase = true) }) {
+            if (verifications.any { it.marketId == market.id && it.shopName.trim().equals(prefilledShopName.trim(), ignoreCase = true) && it.isApproved() } ||
+                VoteTracker.isVerifiedMerchant(context, market.id, prefilledShopName)) {
+                list.add(0, Shop(marketId = market.id, shopName = prefilledShopName, category = "공식인증점포"))
+            }
+        }
+        list
+    }
+
+    if (verifiedShops.isEmpty()) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("🔒", fontSize = 22.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("공식 상인 전용 기능", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "오늘 마감 타임세일은 서류 심사가 승인된 '공식 상인인증 완료 점포' 사장님만 직접 등록하실 수 있습니다.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 18.sp
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0xFFF1F8E9),
+                        border = BorderStroke(1.dp, Color(0xFFA5D6A7)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text("💡 공식 상인 인증 혜택", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF2E7D32))
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "• 장날 마감 떨이 & 깜짝 타임세일 직접 등록\n• 상점 목록 및 검색 결과에 '✓ 상인인증' 뱃지 부여\n• 단골 고객 대기줄 알림 및 신뢰도 향상",
+                                fontSize = 11.sp,
+                                color = Color(0xFF33691E),
+                                lineHeight = 16.sp
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDismiss()
+                        onOpenMerchantVerification()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("📄 상인인증 신청하기 ➔", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("닫기")
+                }
+            }
+        )
+        return
+    }
+
+    var selectedShopName by remember(verifiedShops, prefilledShopName) {
+        mutableStateOf(if (prefilledShopName.isNotBlank()) prefilledShopName else verifiedShops.first().shopName)
+    }
     var itemTitle by remember { mutableStateOf("") }
     var originalPriceStr by remember { mutableStateOf("") }
     var discountPriceStr by remember { mutableStateOf("") }
     var quantityInfo by remember { mutableStateOf("") }
     var durationHours by remember { mutableIntStateOf(3) }
-    
-    val isOfficiallyVerified = remember(shopName, verifications) {
-        val verifiedInDb = verifications.any { it.shopName.equals(shopName, ignoreCase = true) && it.isApproved() }
-        val verifiedInLocal = VoteTracker.isVerifiedMerchant(context, market.id, shopName)
-        verifiedInDb || verifiedInLocal
-    }
-    var isVerifiedMerchant by remember(isOfficiallyVerified) { mutableStateOf(isOfficiallyVerified) }
 
     val origPrice = originalPriceStr.toIntOrNull() ?: 0
     val discPrice = discountPriceStr.toIntOrNull() ?: 0
@@ -4487,17 +4627,49 @@ fun FlashSaleCreateDialog(
                 
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                OutlinedTextField(
-                    value = shopName,
-                    onValueChange = { if (it.length <= 25) shopName = it },
-                    label = { Text("상점 상호명 *", fontSize = 12.sp) },
-                    placeholder = { Text("예: 삼거리 할머니 떡집, 대박정육점", fontSize = 12.sp) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
-                )
+                Text("인증 점포 선택", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
                 
-                Spacer(modifier = Modifier.height(8.dp))
+                if (verifiedShops.size == 1) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFE8F5E9),
+                        border = BorderStroke(1.dp, Color(0xFF81C784))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("✓", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color(0xFF2E7D32))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "${selectedShopName} (공식 인증 점포)",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = Color(0xFF1B5E20)
+                            )
+                        }
+                    }
+                } else {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        verifiedShops.forEach { s ->
+                            val isSel = selectedShopName == s.shopName
+                            FilterChip(
+                                selected = isSel,
+                                onClick = { selectedShopName = s.shopName },
+                                label = { Text("✓ ${s.shopName}", fontSize = 11.sp, fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal) },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(10.dp))
                 
                 OutlinedTextField(
                     value = itemTitle,
@@ -4580,38 +4752,24 @@ fun FlashSaleCreateDialog(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                if (isOfficiallyVerified) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFE8F5E9),
-                        border = BorderStroke(0.5.dp, Color(0xFF81C784))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("✓", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color(0xFF2E7D32))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "서류 심사 통과 공식 상인 인증 점포 (✓ 상인인증 뱃지 자동 부착)",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32)
-                            )
-                        }
-                    }
-                } else {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFE8F5E9),
+                    border = BorderStroke(0.5.dp, Color(0xFF81C784))
+                ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        androidx.compose.material3.Checkbox(
-                            checked = isVerifiedMerchant,
-                            onCheckedChange = { isVerifiedMerchant = it }
+                        Text("✓", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color(0xFF2E7D32))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "서류 심사 통과 공식 상인 인증 점포 (✓ 상인인증 뱃지 자동 부착)",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2E7D32)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("상인회 회원 또는 실제 점포 운영자입니다", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -4619,11 +4777,11 @@ fun FlashSaleCreateDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (shopName.isNotBlank() && itemTitle.isNotBlank() && discPrice > 0) {
-                        onSubmit(shopName.trim(), itemTitle.trim(), origPrice, discPrice, quantityInfo.trim(), durationHours, isVerifiedMerchant)
+                    if (selectedShopName.isNotBlank() && itemTitle.isNotBlank() && discPrice > 0) {
+                        onSubmit(selectedShopName.trim(), itemTitle.trim(), origPrice, discPrice, quantityInfo.trim(), durationHours, true)
                     }
                 },
-                enabled = shopName.isNotBlank() && itemTitle.isNotBlank() && discPrice > 0,
+                enabled = selectedShopName.isNotBlank() && itemTitle.isNotBlank() && discPrice > 0,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
                 shape = RoundedCornerShape(8.dp)
             ) {
