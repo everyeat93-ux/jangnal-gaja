@@ -14,8 +14,8 @@ android {
         applicationId = "com.jangnal.gaja"
         minSdk = 24
         targetSdk = 36
-        versionCode = 22
-        versionName = "2.0.1"
+        versionCode = 23
+        versionName = "2.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -25,8 +25,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
