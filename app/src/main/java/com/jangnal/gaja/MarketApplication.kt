@@ -42,5 +42,12 @@ class MarketApplication : Application() {
         
         // Kakao Map SDK 초기화
         KakaoMapSdk.init(this, "e88d8e377ad7672c2ecdc80df4123e1a")
+
+        // Google AdMob SDK 초기화 (백그라운드 비동기 최적화)
+        try {
+            com.google.android.gms.ads.MobileAds.initialize(this) {}
+        } catch (e: Exception) {
+            android.util.Log.e("AdMob", "Failed to initialize MobileAds", e)
+        }
     }
 }

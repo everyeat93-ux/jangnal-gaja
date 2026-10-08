@@ -486,6 +486,13 @@ fun MarketListScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            com.jangnal.gaja.ui.components.AdMobBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+            )
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).background(com.jangnal.gaja.ui.theme.BackgroundCream)) {
