@@ -3,6 +3,17 @@
   "cleanUrls": true,
   "routes": [
     {
+      "src": "/app-ads.txt",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8"
+      },
+      "dest": "/app-ads.txt"
+    },
+    {
+      "src": "/privacy",
+      "dest": "/privacy.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
