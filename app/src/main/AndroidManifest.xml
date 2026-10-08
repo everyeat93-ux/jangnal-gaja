@@ -26,10 +26,10 @@
             android:name="com.kakao.sdk.AppKey"
             android:value="e88d8e377ad7672c2ecdc80df4123e1a" />
 
-        <!-- Google AdMob App ID (테스트용 샘플 ID / 실배포 시 본인 앱 ID로 교체) -->
+        <!-- Google AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-5159285704643995~6861095777" />
 
         <activity
             android:name=".MainActivity"
