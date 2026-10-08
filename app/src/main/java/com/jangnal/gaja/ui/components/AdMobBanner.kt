@@ -33,7 +33,7 @@ import com.google.android.gms.ads.LoadAdError
 @Composable
 fun AdMobBanner(
     modifier: Modifier = Modifier,
-    adUnitId: String = "ca-app-pub-3940256099942544/6300978111" // Google 공식 테스트 배너 ID
+    adUnitId: String = com.jangnal.gaja.util.AdMobConfig.getBannerAdUnitId()
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
