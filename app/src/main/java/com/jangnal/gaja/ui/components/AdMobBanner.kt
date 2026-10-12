@@ -24,6 +24,9 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.Surface
+
 /**
  * Google AdMob Banner Composable.
  * 
@@ -40,37 +43,42 @@ fun AdMobBanner(
     val screenWidthDp = configuration.screenWidthDp
     var isAdLoaded by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .background(MaterialTheme.colorScheme.surface),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface
     ) {
-        AndroidView(
-            modifier = Modifier.fillMaxWidth(),
-            factory = { ctx ->
-                AdView(ctx).apply {
-                    setAdUnitId(adUnitId)
-                    // 적응형 배너 크기 계산 (화면 너비에 맞춰 최적의 비율 제공)
-                    val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(ctx, screenWidthDp)
-                    setAdSize(adSize)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .wrapContentHeight(),
+            contentAlignment = Alignment.Center
+        ) {
+            AndroidView(
+                modifier = Modifier.fillMaxWidth(),
+                factory = { ctx ->
+                    AdView(ctx).apply {
+                        setAdUnitId(adUnitId)
+                        // 적응형 배너 크기 계산 (화면 너비에 맞춰 최적의 비율 제공)
+                        val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(ctx, screenWidthDp)
+                        setAdSize(adSize)
 
-                    adListener = object : AdListener() {
-                        override fun onAdLoaded() {
-                            super.onAdLoaded()
-                            isAdLoaded = true
+                        adListener = object : AdListener() {
+                            override fun onAdLoaded() {
+                                super.onAdLoaded()
+                                isAdLoaded = true
+                            }
+
+                            override fun onAdFailedToLoad(error: LoadAdError) {
+                                super.onAdFailedToLoad(error)
+                                isAdLoaded = false
+                            }
                         }
 
-                        override fun onAdFailedToLoad(error: LoadAdError) {
-                            super.onAdFailedToLoad(error)
-                            isAdLoaded = false
-                        }
+                        loadAd(AdRequest.Builder().build())
                     }
-
-                    loadAd(AdRequest.Builder().build())
                 }
-            }
-        )
+            )
+        }
     }
 }
