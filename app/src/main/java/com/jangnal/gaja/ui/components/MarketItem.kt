@@ -38,14 +38,15 @@ import com.jangnal.gaja.data.local.entity.Market
 fun MarketItem(
     market: Market,
     hasActiveFestival: Boolean = false,
+    distanceText: String? = null,
     onItemClick: (Market) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 5.dp)
             .clickable { onItemClick(market) },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -54,7 +55,7 @@ fun MarketItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 왼쪽: 시장 아이콘
@@ -63,7 +64,7 @@ fun MarketItem(
                 contentDescription = null,
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(8.dp),
                 tint = MaterialTheme.colorScheme.primary
@@ -71,11 +72,11 @@ fun MarketItem(
             
             Spacer(modifier = Modifier.width(12.dp))
             
-            // 중앙: 시장 정보
+            // 중앙: 시장 정보 (깔끔한 3단 구성: 이름+배지 / 실시간 영업상태 / 주소+거리)
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // 시장 이름 + 구분 배지
+                // 1단: 시장 이름 + 구분 배지
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
@@ -89,12 +90,12 @@ fun MarketItem(
                         modifier = Modifier.weight(1f, fill = false)
                     )
                     
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     
                     val isPerm = market.isPermanent()
                     val badgeColor = if (isPerm) Color(0xFF2E7D32) else Color(0xFFE65100)
                     val badgeBg = if (isPerm) Color(0xFFE8F5E9) else Color(0xFFFFF3E0)
-                    val badgeText = if (isPerm) "전통시장 (상설)" else market.getShortCycleName()
+                    val badgeText = if (isPerm) "상설시장" else market.getShortCycleName()
                     
                     Text(
                         text = badgeText,
@@ -104,7 +105,7 @@ fun MarketItem(
                         maxLines = 1,
                         softWrap = false,
                         modifier = Modifier
-                            .background(badgeBg, RoundedCornerShape(4.dp))
+                            .background(badgeBg, RoundedCornerShape(5.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
 
@@ -118,7 +119,7 @@ fun MarketItem(
                             maxLines = 1,
                             softWrap = false,
                             modifier = Modifier
-                                .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
+                                .background(Color(0xFFFFEBEE), RoundedCornerShape(5.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
@@ -140,7 +141,7 @@ fun MarketItem(
                             maxLines = 1,
                             softWrap = false,
                             modifier = Modifier
-                                .background(Color(0xFFE1F5FE), RoundedCornerShape(4.dp))
+                                .background(Color(0xFFE1F5FE), RoundedCornerShape(5.dp))
                                 .padding(horizontal = 5.dp, vertical = 2.dp)
                         )
                     }
@@ -148,47 +149,55 @@ fun MarketItem(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // 시장 유형 (예: "5일장 (1일부터)")
-                Text(
-                    text = market.getSimpleTypeText(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(2.dp))
-                
-                // 다음 장날 또는 시간대별 실시간 운영 상태
+                // 2단: 시간대별 실시간 운영 상태 (중복 문구 제거)
                 val isCurrentlyOpen = market.isCurrentlyOperating()
                 val isClosingSoon = market.isClosingSoon()
                 Text(
-                    text = "• ${market.getStatusText()}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = market.getStatusText(),
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     color = when {
                         isClosingSoon -> Color(0xFFE65100)
                         isCurrentlyOpen -> Color(0xFF2E7D32)
                         else -> MaterialTheme.colorScheme.onSurfaceVariant
                     },
-                    fontWeight = if (isCurrentlyOpen) FontWeight.Bold else FontWeight.Normal
+                    fontWeight = if (isCurrentlyOpen) FontWeight.Bold else FontWeight.Medium
                 )
                 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 
-                // 주소
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // 3단: 주소 및 거리
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = market.addressRoad.ifEmpty { market.addressJibun },
-                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
+                    if (distanceText != null) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = distanceText,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
                 }
             }
         }

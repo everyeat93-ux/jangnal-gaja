@@ -351,7 +351,7 @@ data class Market(
         }
     }
 
-    // 오늘 기준 상태 텍스트 (목록용)
+    // 오늘 기준 상태 텍스트 (목록용 - 간결하고 중복 없는 표기)
     fun getStatusText(nowMillis: Long = System.currentTimeMillis()): String {
         val cal = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
         val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
@@ -360,22 +360,22 @@ data class Market(
         val closeHr = getClosingHour()
 
         if (isPermanent()) {
-            if (isReportedClosedToday(nowMillis)) return "상설 · 현장제보 금일 휴무 ⚠️"
+            if (isReportedClosedToday(nowMillis)) return "⚠️ 현장제보 금일 휴무"
             return when {
-                hour < openHr -> "상설 · 개장 준비중 🌅 (08:00~20:00)"
-                hour >= closeHr -> "상설 · 금일 영업 종료 🌙 (내일 08시 개장)"
-                hour >= warnHr -> "상설 · 마감 무렵 ⚠️ (통상 ~20:00)"
-                else -> "상설 · 현재 영업중 ☀️ (통상 08:00~20:00)"
+                hour < openHr -> "🌅 개장 준비중 (08:00~20:00)"
+                hour >= closeHr -> "🌙 금일 영업 종료 (내일 08:00 개장)"
+                hour >= warnHr -> "🟠 마감 임박 (통상 ~20:00 마감)"
+                else -> "🟢 현재 영업중 (08:00~20:00)"
             }
         }
         
         if (isOpenToday()) {
-            if (isReportedClosedToday(nowMillis)) return "오늘 장날 · 현장제보 닫힘 ⚠️"
+            if (isReportedClosedToday(nowMillis)) return "⚠️ 오늘 장날 · 현장제보 닫힘"
             return when {
-                hour < openHr -> "오늘 장날 · 개장 준비중 🌅 (07:00~18:00)"
-                hour >= closeHr -> "오늘 장날 · 금일 장 마감 🌙 (18시 종료)"
-                hour >= warnHr -> "오늘 장날 · 파장 무렵 ⚠️ (통상 ~18:00 마감)"
-                else -> "오늘 장날! 🎉 · 현재 영업중 ☀️ (~18:00)"
+                hour < openHr -> "🌅 오늘 장날 · 개장 준비중 (07:00~18:00)"
+                hour >= closeHr -> "🌙 오늘 장 마감 (18:00 종료)"
+                hour >= warnHr -> "🟠 오늘 장날 · 파장 무렵 (~18:00 마감)"
+                else -> "🟢 오늘 장날! 현재 영업중 (07:00~18:00)"
             }
         }
         
@@ -384,9 +384,9 @@ data class Market(
         
         return if (nextDate != null && daysUntil != null) {
             val (month, day) = nextDate
-            "금일 휴장 ⚪ · 다음 장날: ${month}/${day}"
+            "⚪ 금일 휴장 · 다음 장날: ${month}월 ${day}일"
         } else {
-            "일정 확인 필요"
+            "⚪ 일정 확인 필요"
         }
     }
     

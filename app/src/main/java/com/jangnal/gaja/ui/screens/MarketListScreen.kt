@@ -693,15 +693,25 @@ fun MarketList(
             }
         }
 
+        var showScheduleRow by remember { mutableStateOf(false) }
+        val hasActiveFilters = searchQuery.isNotBlank() || selectedRegionIndex != 0 || selectedScheduleFilter != "전체 유형" || filterOpenToday || filterOpenWeekend
+
         Column(modifier = Modifier.fillMaxSize()) {
-            // Search Bar
+            // 1. 한 줄 깔끔한 검색창
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("시장 이름(예: 구로, 속초), 특산물 또는 주소 검색", fontSize = 13.sp) },
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                placeholder = { 
+                    Text(
+                        text = "시장 이름, 특산물, 지역 검색 (예: 속초, 구로)",
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    ) 
+                },
                 leadingIcon = { 
                     Icon(imageVector = Icons.Default.Search, contentDescription = "검색") 
                 },
@@ -724,79 +734,21 @@ fun MarketList(
                     onSearch = {
                         focusManager.clearFocus()
                         keyboardController?.hide()
-                        // 검색 결과가 현재 지역에서 0건이지만 전국에 있을 경우 자동으로 전국으로 전환
                         if (filteredMarkets.isEmpty() && nationwideMatches.isNotEmpty() && selectedRegionIndex != 0) {
                             selectedRegionIndex = 0
                         }
                     }
                 ),
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                 )
             )
             
-            // 1차 필터: 정렬 & 개장일 필터 옵션
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = sortType == 0,
-                    onClick = { sortType = 0 },
-                    label = { Text("가나다순") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
-                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
-                    )
-                )
-                FilterChip(
-                    selected = sortType == 1,
-                    onClick = { 
-                        sortType = 1
-                        if (userLocation == null) {
-                            onRequestLocation()
-                        }
-                    },
-                    label = { Text(if (userLocation != null) "거리순 📍" else "거리순 📍 (위치 켜기)") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
-                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
-                    )
-                )
-                FilterChip(
-                    selected = filterOpenToday,
-                    onClick = { 
-                        filterOpenToday = !filterOpenToday 
-                        if (filterOpenToday) filterOpenWeekend = false
-                    },
-                    label = { Text(if (filterOpenToday) "오늘 개장 ☀️ ✓" else "오늘 개장 ☀️") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
-                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
-                    )
-                )
-                FilterChip(
-                    selected = filterOpenWeekend,
-                    onClick = { 
-                        filterOpenWeekend = !filterOpenWeekend 
-                        if (filterOpenWeekend) filterOpenToday = false
-                    },
-                    label = { Text(if (filterOpenWeekend) "이번 주말 개장 🚗 ✓" else "이번 주말 개장 🚗") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
-                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // 2차 필터: 전국 시/도 광역 지역 칩 (서울/경기/인천 세분화)
+            // 2. 광역 지역 칩 바 (1줄 정리)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -806,33 +758,26 @@ fun MarketList(
             ) {
                 regions.forEachIndexed { index, regionName ->
                     val isSelected = selectedRegionIndex == index
-                    val icon = when (index) {
-                        0 -> "🌐"
-                        1 -> "🏢" // 서울
-                        2 -> "🏙️" // 경기
-                        3 -> "⚓" // 인천
-                        4 -> "🌲" // 강원
-                        5 -> "🌾" // 충청
-                        6 -> "🍲" // 전라
-                        7 -> "🌊" // 경상
-                        else -> "🍊" // 제주
-                    }
                     FilterChip(
                         selected = isSelected,
                         onClick = { selectedRegionIndex = index },
-                        label = { Text("$icon $regionName", fontSize = 12.sp) },
+                        label = { 
+                            Text(
+                                text = regionName, 
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            ) 
+                        },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                            selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
                         ),
                         shape = RoundedCornerShape(8.dp)
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(4.dp))
 
-            // 3차 필터: 시장 유형 및 장날 주기 필터 (신설!)
+            // 3. 핵심 정렬 & 개장/유형 필터 바 (컴팩트 통합)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -840,46 +785,183 @@ fun MarketList(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                scheduleFilters.forEach { schedule ->
-                    val isSelected = selectedScheduleFilter == schedule
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { selectedScheduleFilter = schedule },
-                        label = { Text(schedule, fontSize = 12.sp) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                }
-            }
+                FilterChip(
+                    selected = sortType == 1,
+                    onClick = { 
+                        sortType = 1
+                        if (userLocation == null) {
+                            onRequestLocation()
+                        }
+                    },
+                    label = { 
+                        Text(
+                            text = if (userLocation != null) "📍 거리순" else "📍 거리순(위치켜기)",
+                            fontSize = 12.sp,
+                            fontWeight = if (sortType == 1) FontWeight.Bold else FontWeight.Medium
+                        ) 
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                FilterChip(
+                    selected = sortType == 0,
+                    onClick = { sortType = 0 },
+                    label = { 
+                        Text(
+                            text = "가나다순",
+                            fontSize = 12.sp,
+                            fontWeight = if (sortType == 0) FontWeight.Bold else FontWeight.Medium
+                        ) 
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                FilterChip(
+                    selected = filterOpenToday,
+                    onClick = { 
+                        filterOpenToday = !filterOpenToday 
+                        if (filterOpenToday) filterOpenWeekend = false
+                    },
+                    label = { 
+                        Text(
+                            text = if (filterOpenToday) "☀️ 오늘 영업 ✓" else "☀️ 오늘 영업",
+                            fontSize = 12.sp,
+                            fontWeight = if (filterOpenToday) FontWeight.Bold else FontWeight.Medium
+                        ) 
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                FilterChip(
+                    selected = filterOpenWeekend,
+                    onClick = { 
+                        filterOpenWeekend = !filterOpenWeekend 
+                        if (filterOpenWeekend) filterOpenToday = false
+                    },
+                    label = { 
+                        Text(
+                            text = if (filterOpenWeekend) "🚗 주말 개장 ✓" else "🚗 주말 개장",
+                            fontSize = 12.sp,
+                            fontWeight = if (filterOpenWeekend) FontWeight.Bold else FontWeight.Medium
+                        ) 
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // 💡 친절한 안내 팁 (상황에 따라 동적 가이드)
-            val guideTipText = when {
-                searchQuery.isNotBlank() -> "🔍 '${searchQuery}' 검색 결과: 총 ${filteredMarkets.size}곳의 시장"
-                selectedScheduleFilter != "전체 유형" -> "📅 '${selectedScheduleFilter}' 조건의 시장을 모아보고 있습니다."
-                filterOpenToday -> "☀️ 오늘 열리는 5일장 및 매일 열리는 상설시장 목록입니다."
-                filterOpenWeekend -> "🚗 이번 주말(토/일)에 열리는 시장 목록입니다."
-                else -> "💡 '오늘 개장'이나 장날 주기(1·6일, 2·7일 등)를 선택해 맞춤 시장을 찾아보세요."
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = guideTipText,
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                val isScheduleFiltered = selectedScheduleFilter != "전체 유형"
+                FilterChip(
+                    selected = isScheduleFiltered || showScheduleRow,
+                    onClick = { showScheduleRow = !showScheduleRow },
+                    label = { 
+                        val arrow = if (showScheduleRow) "▴" else "▾"
+                        val chipText = if (isScheduleFiltered) "$selectedScheduleFilter $arrow" else "🎪 장날·유형 $arrow"
+                        Text(
+                            text = chipText,
+                            fontSize = 12.sp,
+                            fontWeight = if (isScheduleFiltered) FontWeight.Bold else FontWeight.Medium
+                        ) 
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = com.jangnal.gaja.ui.theme.JangnalYellow,
+                        selectedLabelColor = com.jangnal.gaja.ui.theme.JangnalBrown
+                    ),
+                    shape = RoundedCornerShape(8.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            // 4. 접이식 장날·유형 상세 칩 바 (필요할 때만 깔끔하게 펼침)
+            if (showScheduleRow || selectedScheduleFilter != "전체 유형") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    scheduleFilters.forEach { schedule ->
+                        val isSelected = selectedScheduleFilter == schedule
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { 
+                                selectedScheduleFilter = schedule
+                                if (schedule == "전체 유형") showScheduleRow = false
+                            },
+                            label = { Text(schedule, fontSize = 11.5.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+            }
+
+            // 5. 날짜 + 검색 건수 + 필터 초기화 한 줄 요약 바
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (dateLabel != null) {
+                        Text(
+                            text = "📅 $dateLabel",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = com.jangnal.gaja.ui.theme.JangnalBrown
+                        )
+                        Text(
+                            text = "·",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        text = "${regions[selectedRegionIndex]} ${filteredMarkets.size}곳",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                if (hasActiveFilters) {
+                    Text(
+                        text = "필터 초기화 ↺",
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            searchQuery = ""
+                            selectedRegionIndex = 0
+                            selectedScheduleFilter = "전체 유형"
+                            filterOpenToday = false
+                            filterOpenWeekend = false
+                            showScheduleRow = false
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        }
+                    )
+                }
+            }
 
             if (filteredMarkets.isEmpty()) {
                 Surface(
@@ -949,6 +1031,7 @@ fun MarketList(
                                 selectedScheduleFilter = "전체 유형"
                                 filterOpenToday = false
                                 filterOpenWeekend = false
+                                showScheduleRow = false
                                 focusManager.clearFocus()
                                 keyboardController?.hide()
                             }
@@ -959,19 +1042,23 @@ fun MarketList(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    if (dateLabel != null) {
-                        item {
-                            Text(
-                                text = "오늘 날짜: $dateLabel",
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
                     items(filteredMarkets) { market ->
+                        val distanceStr = remember(userLocation, market.id) {
+                            if (userLocation != null && market.latitude != 0.0 && market.longitude != 0.0) {
+                                val results = FloatArray(1)
+                                Location.distanceBetween(
+                                    userLocation.latitude, userLocation.longitude,
+                                    market.latitude, market.longitude,
+                                    results
+                                )
+                                val dist = results[0]
+                                if (dist >= 1000f) String.format(Locale.KOREA, "%.1fkm", dist / 1000f) else "${dist.toInt()}m"
+                            } else null
+                        }
                         MarketItem(
                             market = market,
                             hasActiveFestival = activeFestivalMarketIds.contains(market.id),
+                            distanceText = distanceStr,
                             onItemClick = onMarketClick
                         )
                     }
