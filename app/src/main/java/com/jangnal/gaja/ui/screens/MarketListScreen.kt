@@ -611,7 +611,12 @@ fun MarketList(
             
             if (filterOpenToday) {
                 val todayMillis = System.currentTimeMillis()
-                filtered = filtered.filter { it.isPermanent() || it.isOpenOn(todayMillis) }
+                val currentlyOpen = filtered.filter { it.isCurrentlyOperating(todayMillis) }
+                filtered = if (currentlyOpen.isNotEmpty()) {
+                    currentlyOpen
+                } else {
+                    filtered.filter { it.isPermanent() || it.isOpenOn(todayMillis) }
+                }
             }
             if (filterOpenWeekend) {
                 filtered = filtered.filter { it.isOpenThisWeekend() }

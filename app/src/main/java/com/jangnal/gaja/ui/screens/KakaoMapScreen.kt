@@ -423,7 +423,81 @@ fun KakaoMapScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                         LegendItem(color = android.graphics.Color.parseColor("#FF6B35"), label = "장날")
                         LegendItem(color = android.graphics.Color.parseColor("#4CAF50"), label = "전통시장")
-                        LegendItem(color = android.graphics.Color.parseColor("#AAAAAA"), label = "휴장")
+                        LegendItem(color = android.graphics.Color.parseColor("#AAAAAA"), label = "휴장·마감")
+                    }
+                }
+
+                // 현재 시간 기준 영업 안내 배너 (오늘 조회 시)
+                val isViewingToday = android.text.format.DateUtils.isToday(selectedDateMillis)
+                val currentHour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+                val timeNotice = if (isViewingToday) {
+                    when {
+                        currentHour < 7 -> "🌅 현재 개장 전 시간대입니다 (5일장 07시~, 상설시장 08시~ 개장)"
+                        currentHour == 17 -> "⚠️ 오후 5시 이후에는 5일장 노점이 조기 파장할 수 있으니 방문 전 확인하세요"
+                        currentHour in 18..19 -> "🌆 5일장은 18시경 파장하며, 상설시장은 20시경 영업이 종료됩니다"
+                        currentHour >= 20 -> "🌙 현재 야간 영업 종료 시간입니다 (5일장 ~18시, 상설 ~20시 마감)"
+                        else -> null
+                    }
+                } else null
+
+                if (timeNotice != null) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (currentHour >= 18 || currentHour < 7) Color(0xFFECEFF1) else Color(0xFFFFF3E0),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = timeNotice,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (currentHour >= 18 || currentHour < 7) Color(0xFF37474F) else Color(0xFFE65100),
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (currentHour >= 18) {
+                                Text(
+                                    text = "내일 장 보기 →",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
+                                        .clickable {
+                                            val tom = java.util.Calendar.getInstance().apply {
+                                                add(java.util.Calendar.DAY_OF_YEAR, 1)
+                                            }
+                                            selectedDateMillis = tom.timeInMillis
+                                        }
+                                )
+                            }
+                        }
+                    }
+                } else if (!isViewingToday) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "📅 선택한 날짜 기준 개장 예정 시장을 표시 중입니다",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "오늘로 복귀 ↺",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable {
+                                selectedDateMillis = System.currentTimeMillis()
+                            }
+                        )
                     }
                 }
                 
@@ -462,7 +536,15 @@ fun KakaoMapScreen(
                     ) {
                         items(displayMarkets.size) { idx ->
                             val market = displayMarkets[idx]
-                            val isOpened = market.isPermanent() || market.isOpenOn(selectedDateMillis)
+                            val nowMillis = System.currentTimeMillis()
+                            val isOpened = market.isOperatingOnDateAndTime(selectedDateMillis, nowMillis)
+                            val isClosingSoon = isViewingToday && market.isClosingSoon(nowMillis)
+                            val statusText = market.getMapCardStatusText(selectedDateMillis, nowMillis)
+                            val statusColor = when {
+                                !isOpened -> Color.Gray
+                                isClosingSoon -> Color(0xFFE65100)
+                                else -> Color(0xFF2E7D32)
+                            }
                             
                             val distanceText = if (currentLoc != null) {
                                 val results = FloatArray(1)
@@ -477,7 +559,7 @@ fun KakaoMapScreen(
 
                             Surface(
                                 modifier = Modifier
-                                    .width(170.dp)
+                                    .width(185.dp)
                                     .clickable { onMarketClick(market) },
                                 shape = RoundedCornerShape(10.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
@@ -497,16 +579,19 @@ fun KakaoMapScreen(
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         Text(
-                                            text = if (isOpened) "개장중 ☀️" else "휴장 ⚪",
+                                            text = statusText,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isOpened) Color(0xFF2E7D32) else Color.Gray
+                                            color = statusColor,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         if (distanceText != null) {
                                             Text(
                                                 text = "• $distanceText",
                                                 fontSize = 11.sp,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1
                                             )
                                         }
                                     }
@@ -797,20 +882,21 @@ fun KakaoMapScreen(
             // 따라서 여기서 로직을 다시 짜는 게 아니라, 위쪽 'filteredMarkets' 로직 수정 tool call을 하나 더 보내야 함.
             // 일단 이 tool call은 UI 렌더링 부분임.
            
+            val nowMillis = System.currentTimeMillis()
             filteredMarkets.forEach { market ->
                 if (market.latitude != 0.0 && market.longitude != 0.0) {
                     try {
                         val isPermanent = market.isPermanent()
                         val isFavorite = market.isFavorite
-                        // 선택된 날짜에 열리는지 확인
-                        val isOpenOnSelectedDate = market.isOpenOn(selectedDateMillis)
+                        // 선택된 날짜 및 현재 시각(오늘인 경우)에 실제 영업 중인지 확인
+                        val isOperating = market.isOperatingOnDateAndTime(selectedDateMillis, nowMillis)
                         
                         // 즐겨찾기인 경우 다른 색상이나 스타일을 적용할 수 있으면 좋음
                         // 여기서는 우선 순위를 가장 높게 둠 (Rank)
                         val style = when {
+                            !isOperating -> normalStyle
                             isPermanent -> permanentStyle ?: todayStyle
-                            isOpenOnSelectedDate -> todayStyle
-                            else -> normalStyle
+                            else -> todayStyle
                         }
                         
                         val position = LatLng.from(market.latitude, market.longitude)
@@ -820,8 +906,8 @@ fun KakaoMapScreen(
                             // 즐겨찾기면 텍스트 라벨을 추가하거나 랭크를 더 높임
                             val rank = when {
                                 isFavorite -> 10L // 즐겨찾기 최우선
-                                !isPermanent && isOpenOnSelectedDate -> 2L
-                                isPermanent -> 1L
+                                !isPermanent && isOperating -> 2L
+                                isPermanent && isOperating -> 1L
                                 else -> 0L
                             }
                             setRank(rank)

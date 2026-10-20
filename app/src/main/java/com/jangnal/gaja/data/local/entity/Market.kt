@@ -269,12 +269,114 @@ data class Market(
         }
     }
     
+    // 통상 운영 시작 시간 (상설 08시, 5일장 07시)
+    fun getOpeningHour(): Int = if (isPermanent()) 8 else 7
+
+    // 파장/마감 임박 주의 시간 (상설 19시, 5일장 17시)
+    fun getClosingWarningHour(): Int = if (isPermanent()) 19 else 17
+
+    // 통상 영업 종료 시간 (상설 20시, 5일장 18시)
+    fun getClosingHour(): Int = if (isPermanent()) 20 else 18
+
+    // 오늘 현장 투표에서 '닫혔어요'가 더 많은지 여부
+    fun isReportedClosedToday(nowMillis: Long = System.currentTimeMillis()): Boolean {
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val todayStr = String.format(
+            java.util.Locale.US,
+            "%04d-%02d-%02d",
+            cal.get(java.util.Calendar.YEAR),
+            cal.get(java.util.Calendar.MONTH) + 1,
+            cal.get(java.util.Calendar.DAY_OF_MONTH)
+        )
+        return lastVoteDate == todayStr && voteClosedTodayCount > voteOpenTodayCount && voteClosedTodayCount >= 1
+    }
+
+    // 두 시각이 같은 날짜(연/월/일)인지 확인
+    private fun isSameDay(millis1: Long, millis2: Long): Boolean {
+        val cal1 = java.util.Calendar.getInstance().apply { timeInMillis = millis1 }
+        val cal2 = java.util.Calendar.getInstance().apply { timeInMillis = millis2 }
+        return cal1.get(java.util.Calendar.YEAR) == cal2.get(java.util.Calendar.YEAR) &&
+               cal1.get(java.util.Calendar.DAY_OF_YEAR) == cal2.get(java.util.Calendar.DAY_OF_YEAR)
+    }
+
+    // 현재 시각 기준 실제 운영 중인지 여부 (날짜 + 영업시간 + 현장제보 모두 반영)
+    fun isCurrentlyOperating(nowMillis: Long = System.currentTimeMillis()): Boolean {
+        if (!isOpenOn(nowMillis)) return false
+        if (isReportedClosedToday(nowMillis)) return false
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        return hour in getOpeningHour() until getClosingHour()
+    }
+
+    // 현재 마감/파장 임박 시간대인지 여부 (5일장 17~18시, 상설 19~20시)
+    fun isClosingSoon(nowMillis: Long = System.currentTimeMillis()): Boolean {
+        if (!isCurrentlyOperating(nowMillis)) return false
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        return hour >= getClosingWarningHour()
+    }
+
+    // 선택된 날짜(selectedDateMillis) 기준 영업 상태 (오늘이면 현재 시간까지 반영, 다른 날짜면 해당 날짜 개장 여부)
+    fun isOperatingOnDateAndTime(selectedDateMillis: Long, nowMillis: Long = System.currentTimeMillis()): Boolean {
+        return if (isSameDay(selectedDateMillis, nowMillis)) {
+            isCurrentlyOperating(nowMillis)
+        } else {
+            isPermanent() || isOpenOn(selectedDateMillis)
+        }
+    }
+
+    // 지도 하단 카드용 컴팩트 상태 문구
+    fun getMapCardStatusText(selectedDateMillis: Long, nowMillis: Long = System.currentTimeMillis()): String {
+        if (!isSameDay(selectedDateMillis, nowMillis)) {
+            return if (isPermanent() || isOpenOn(selectedDateMillis)) "개장 예정 ☀️" else "휴장 ⚪"
+        }
+        if (!isOpenOn(nowMillis)) {
+            val nextDate = getNextMarketDate()
+            return if (nextDate != null) "휴장 ⚪ (${nextDate.first}/${nextDate.second} 장)" else "휴장 ⚪"
+        }
+        if (isReportedClosedToday(nowMillis)) {
+            return "현장제보 닫힘 ⚠️"
+        }
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        val openHr = getOpeningHour()
+        val warnHr = getClosingWarningHour()
+        val closeHr = getClosingHour()
+
+        return when {
+            hour < openHr -> "개장 전 🌅 (${openHr}시~)"
+            hour >= closeHr -> if (isPermanent()) "영업 종료 🌙 (${closeHr}시 마감)" else "장 마감 🌙 (${closeHr}시 종료)"
+            hour >= warnHr -> if (isPermanent()) "마감 임박 ⚠️ (~${closeHr}시)" else "파장 무렵 ⚠️ (~${closeHr}시)"
+            else -> if (isPermanent()) "영업중 ☀️ (~${closeHr}시)" else "장날 영업중 ☀️ (~${closeHr}시)"
+        }
+    }
+
     // 오늘 기준 상태 텍스트 (목록용)
-    fun getStatusText(): String {
-        if (isPermanent()) return "매일 운영"
+    fun getStatusText(nowMillis: Long = System.currentTimeMillis()): String {
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        val openHr = getOpeningHour()
+        val warnHr = getClosingWarningHour()
+        val closeHr = getClosingHour()
+
+        if (isPermanent()) {
+            if (isReportedClosedToday(nowMillis)) return "상설 · 현장제보 금일 휴무 ⚠️"
+            return when {
+                hour < openHr -> "상설 · 개장 준비중 🌅 (08:00~20:00)"
+                hour >= closeHr -> "상설 · 금일 영업 종료 🌙 (내일 08시 개장)"
+                hour >= warnHr -> "상설 · 마감 무렵 ⚠️ (통상 ~20:00)"
+                else -> "상설 · 현재 영업중 ☀️ (통상 08:00~20:00)"
+            }
+        }
         
         if (isOpenToday()) {
-            return "오늘 장날! 🎉"
+            if (isReportedClosedToday(nowMillis)) return "오늘 장날 · 현장제보 닫힘 ⚠️"
+            return when {
+                hour < openHr -> "오늘 장날 · 개장 준비중 🌅 (07:00~18:00)"
+                hour >= closeHr -> "오늘 장날 · 금일 장 마감 🌙 (18시 종료)"
+                hour >= warnHr -> "오늘 장날 · 파장 무렵 ⚠️ (통상 ~18:00 마감)"
+                else -> "오늘 장날! 🎉 · 현재 영업중 ☀️ (~18:00)"
+            }
         }
         
         val nextDate = getNextMarketDate()
@@ -282,7 +384,7 @@ data class Market(
         
         return if (nextDate != null && daysUntil != null) {
             val (month, day) = nextDate
-            "다음 장날: ${month}/${day}"
+            "금일 휴장 ⚪ · 다음 장날: ${month}/${day}"
         } else {
             "일정 확인 필요"
         }

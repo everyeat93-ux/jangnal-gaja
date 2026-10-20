@@ -22,7 +22,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.JangnalGaja"
-        tools:targetApi="31">
+        tools:targetApi="36">
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="e88d8e377ad7672c2ecdc80df4123e1a" />

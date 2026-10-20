@@ -237,18 +237,51 @@ fun MarketDetailSheet(
                         bgColor = MaterialTheme.colorScheme.primaryContainer,
                         textColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    if (market.isOpenToday()) {
-                        Badge(
-                            text = "🟢 오늘 개장",
-                            bgColor = Color(0xFFE8F5E9),
-                            textColor = Color(0xFF2E7D32)
-                        )
-                    } else if (!market.isPermanent()) {
-                        Badge(
-                            text = "📅 다음: ${market.getNextMarketText()}",
-                            bgColor = Color(0xFFFFF3E0),
-                            textColor = Color(0xFFE65100)
-                        )
+                    val currentHourHeader = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                    when {
+                        market.isReportedClosedToday() -> {
+                            Badge(
+                                text = "⚠️ 현장제보: 금일 휴장",
+                                bgColor = Color(0xFFFFEBEE),
+                                textColor = Color(0xFFC62828)
+                            )
+                        }
+                        market.isClosingSoon() -> {
+                            Badge(
+                                text = if (market.isPermanent()) "🟡 마감 임박 (~20시)" else "🟡 파장 무렵 (~18시)",
+                                bgColor = Color(0xFFFFF3E0),
+                                textColor = Color(0xFFE65100)
+                            )
+                        }
+                        market.isCurrentlyOperating() -> {
+                            Badge(
+                                text = if (market.isPermanent()) "🟢 현재 영업중 (08~20시)" else "🟢 오늘 장날 · 영업중 (~18시)",
+                                bgColor = Color(0xFFE8F5E9),
+                                textColor = Color(0xFF2E7D32)
+                            )
+                        }
+                        market.isOpenToday() -> {
+                            if (currentHourHeader < market.getOpeningHour()) {
+                                Badge(
+                                    text = "🌅 개장 전 (${market.getOpeningHour()}시 개장)",
+                                    bgColor = Color(0xFFFFF3E0),
+                                    textColor = Color(0xFFE65100)
+                                )
+                            } else {
+                                Badge(
+                                    text = if (market.isPermanent()) "🌙 영업 종료 (20시 마감)" else "🌙 오늘 장 마감 (18시 종료)",
+                                    bgColor = Color(0xFFECEFF1),
+                                    textColor = Color(0xFF455A64)
+                                )
+                            }
+                        }
+                        else -> {
+                            Badge(
+                                text = "⚪ 금일 휴장 · 다음: ${market.getNextMarketText()}",
+                                bgColor = Color(0xFFF5F5F5),
+                                textColor = Color(0xFF616161)
+                            )
+                        }
                     }
                     Badge(
                         text = onnuriBadgeText,
@@ -301,6 +334,43 @@ fun MarketDetailSheet(
                                 }
                             )
                         }
+                    }
+                }
+
+                // 현재 시각 기준 방문 주의/마감 안내 배너
+                val currentHourBanner = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                if (!market.isCurrentlyOperating() || market.isClosingSoon()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val isWarning = market.isClosingSoon()
+                    val bannerText = when {
+                        market.isReportedClosedToday() -> "⚠️ 현장 방문자 제보로 금일 휴장/조기마감이 확인된 시장입니다."
+                        isWarning -> if (market.isPermanent()) {
+                            "🌆 현재 상설시장 마감 무렵(19~20시)입니다. 일부 점포가 영업을 종료했을 수 있으니 방문 전 확인하세요."
+                        } else {
+                            "🌆 현재 5일장 파장 무렵(17~18시)입니다. 노점들이 철수 중일 수 있으니 방문에 유의하세요!"
+                        }
+                        !market.isOpenToday() -> "⚪ 오늘은 5일장 휴장일입니다. 다음 장날(${market.getNextMarketText()})에 방문해 주세요."
+                        currentHourBanner < market.getOpeningHour() -> "🌅 아직 개장 전 시간입니다. (통상 ${market.getOpeningHour()}:00부터 개장)"
+                        else -> if (market.isPermanent()) {
+                            "🌙 금일 영업이 종료되었습니다. (통상 운영시간 08:00 ~ 20:00)"
+                        } else {
+                            "🌙 금일 5일장 장이 마감되었습니다. (통상 운영시간 07:00 ~ 18:00)"
+                        }
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (isWarning) Color(0xFFFFF3E0) else Color(0xFFECEFF1),
+                        border = BorderStroke(1.dp, if (isWarning) Color(0xFFFFB74D) else Color(0xFFCFD8DC)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = bannerText,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (isWarning) Color(0xFFE65100) else Color(0xFF37474F),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            lineHeight = 16.sp
+                        )
                     }
                 }
 
@@ -774,6 +844,8 @@ fun MarketDetailSheet(
 
                 if (market.isPermanent()) {
                     var showFullCalendar by remember { mutableStateOf(false) }
+                    val isPermOpenNow = market.isCurrentlyOperating()
+                    val isPermClosingSoon = market.isClosingSoon()
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(14.dp),
@@ -784,10 +856,23 @@ fun MarketDetailSheet(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text("🏪", fontSize = 18.sp)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("상설 시장 (연중무휴 매일 개장 🟢)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF2E7D32))
+                                Text(
+                                    text = when {
+                                        isPermClosingSoon -> "상설 시장 (현재 마감 임박 🟡)"
+                                        isPermOpenNow -> "상설 시장 (현재 영업중 🟢)"
+                                        else -> "상설 시장 (현재 영업 종료 🌙)"
+                                    },
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = when {
+                                        isPermClosingSoon -> Color(0xFFE65100)
+                                        isPermOpenNow -> Color(0xFF2E7D32)
+                                        else -> Color(0xFF455A64)
+                                    }
+                                )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("🕒 권장 방문 시간: 09:00 ~ 21:00 (점포별 상이)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("🕒 통상 영업 시간: 08:00 ~ 20:00 (점포별 상이, 야간에는 대부분 폐점)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(modifier = Modifier.height(3.dp))
                             Text("📅 정기 휴무: 점포별 자율 휴무 (일요일/공휴일 정상 영업 점포 다수)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             
@@ -820,10 +905,12 @@ fun MarketDetailSheet(
                         InfoItem(label = "개장 주기", value = "${cycle}일 주기")
                         Spacer(modifier = Modifier.height(8.dp))
                     }
+                    InfoItem(label = "통상 운영시간", value = "07:00 ~ 18:00 (17시 이후 파장 주의)")
+                    Spacer(modifier = Modifier.height(8.dp))
                     InfoItem(
-                        label = "다음 개장일", 
-                        value = market.getNextMarketText(),
-                        highlight = market.isOpenToday()
+                        label = "현재 상태", 
+                        value = market.getStatusText(),
+                        highlight = market.isCurrentlyOperating()
                     )
                 }
 

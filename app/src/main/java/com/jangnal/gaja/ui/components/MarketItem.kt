@@ -157,16 +157,18 @@ fun MarketItem(
                 
                 Spacer(modifier = Modifier.height(2.dp))
                 
-                // 다음 장날 또는 상태
+                // 다음 장날 또는 시간대별 실시간 운영 상태
+                val isCurrentlyOpen = market.isCurrentlyOperating()
+                val isClosingSoon = market.isClosingSoon()
                 Text(
                     text = "• ${market.getStatusText()}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (market.isOpenToday()) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                    color = when {
+                        isClosingSoon -> Color(0xFFE65100)
+                        isCurrentlyOpen -> Color(0xFF2E7D32)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
                     },
-                    fontWeight = if (market.isOpenToday()) FontWeight.Bold else FontWeight.Normal
+                    fontWeight = if (isCurrentlyOpen) FontWeight.Bold else FontWeight.Normal
                 )
                 
                 Spacer(modifier = Modifier.height(4.dp))
