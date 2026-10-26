@@ -156,6 +156,10 @@
         <button onclick="filterCategory('mealkit')" class="cat-chip shrink-0 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition">🍲 맛집 밀키트</button>
         <button onclick="filterCategory('fresh')" class="cat-chip shrink-0 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition">🥬 햇특산물</button>
         <button onclick="filterCategory('snack')" class="cat-chip shrink-0 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition">🍗 닭강정·먹거리</button>
+        <button onclick="filterCategory('coupang')" id="cat-chip-coupang" class="cat-chip shrink-0 px-3 py-1 rounded-full bg-gradient-to-r from-red-500 via-rose-500 to-orange-500 text-white font-black shadow-sm transition flex items-center space-x-1 hover:brightness-105 border border-red-300/40">
+          <i data-lucide="rocket" class="w-3.5 h-3.5"></i>
+          <span>🚀 쿠팡 로켓특가</span>
+        </button>
         <button onclick="openApplyModal()" class="shrink-0 px-3 py-1 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center space-x-1">
           <span>✍️ 상점 입점신청</span>
         </button>
@@ -1450,6 +1454,187 @@
     // =========================================================================
     // RENDERING FUNCTIONS
     // =========================================================================
+    
+    // =========================================================================
+    // COUPANG PARTNERS CURATED PRODUCTS DATA & RENDERER
+    // =========================================================================
+    const COUPANG_PRODUCTS = [
+      {
+            "id": "cp-8728890987",
+            "title": "속초동해닭강정/지역주민추천맛집/",
+            "marketTag": "속초 중앙시장 5일장",
+            "categoryTag": "전통 맛집 밀키트",
+            "image": "https://ads-partners.coupang.com/image1/XKosmWtGoIPyW5gTXJXQ7mZGrzsevUcn3W1B-vww3hrqvg43s269nlCSZAB_zOHV5AknnTioiBp71gcCrds8FrOtSni7LRggH8vJnTZNvqPfEckq0fvRXL1mZez1KZxpOZobGkvakx01bZrcXuerGfg3P_ICGvm1m4l4ld4Nz-V3HD8AAVKz5QYpOot2_YHzZU5FLU8XZzbmagOLyXWSBJ2RfNfXrTT3xkXZN6HthVxlPe8HOnhX1muik3nuVfD-JUJRvd7IYSDbRckGt-ohZiXC0NZRPhyplcMfbpgvZYFaf-NQ8XNvzulGkI3VdW8Lzb2CHJWipbgm2U8w01OOfuNgYD3zDFlGGoo8LkaL6gpg5G8dGCplNSJDIPQdMdePc0Zs9l0IBy6NFlJ678m_Td_rSZw2Vctw6psjhwZT12KsAYOVQgBtSpQuiRxSS_lbDYXWWPnAOG134IQlsb4OV-MZ1oslDPSgQYu2bdHBpSD38Dmp8y-hruisuchzYILa8mvdOVBEfKSa0NK9UtqMaBXvhf-oHIc4Iskcn6GX4Q==",
+            "originalPrice": 24837,
+            "salePrice": 19870,
+            "discountRate": 20,
+            "isRocket": false,
+            "rating": 4.9,
+            "reviewCount": 1850,
+            "link": "https://holy-glitter-127a.everyeat93.workers.dev?target=https%3A%2F%2Flink.coupang.com%2Fre%2FAFFSDP%3Flptag%3DAF8089805%26pageKey%3D8728890987%26itemId%3D25360810565%26vendorItemId%3D74875649379%26traceid%3DV0-153-39eb8a14aabc9453%26requestid%3D20261026230639754169275826%26token%3D31850C%257CGM%26pt%3D0%26slot%3D1"
+      },
+      {
+            "id": "cp-9442807178",
+            "title": "법성포 영광 굴비 가정용 선물세트, 1세트, 2.05kg (30마리)",
+            "marketTag": "영광 5일장 명품",
+            "categoryTag": "수산물 특산품",
+            "image": "https://ads-partners.coupang.com/image1/sikL5lq_Fvwwx3e_sudCI6J60NM3yQC9ntDM_U2Q7OlXbgOgT1JsZ8eHFLfosZhhyTsF2HzbtuthT2u7-wBgVxMLyxbTNxLExmNP-6xxJoXUoOgVIHpYuJynrr_KihzfJ3TFt4TkjBaQ_uGOZ_KUzfWctgh5b0ymzSOHpfM1L2JQng-RbtAjVYD-xURUnwhe7PzlmJyd3FE6mBZXBqbw-drtt9bpymkRQ94HkbqxWaXXXMNtZ9wNmLzlF_RyAcRZlCMPaxQgadl-O6MFROCh6JljxKEAD6WYl7tKyhbfNuBHHpBRGk8U5BqRq-U0RBWyhVtpySVYTFiZxGex0v6t4SRgUu4m8dHbzpQsreGABZf8pT70FsyQp5kQ_NFvi_cHMQXvjcJBjNW8Sr-ySnbx7Kpvhyr8Mot4umI6MB_HZsv2vrCXy5Cz9qmLtbNs4wnpQwAWPnZ5i39GDMaO_njFBlMaUd1RIQX20DWsYkPP-qIOaxHY0ubD3XPGFArrpvDz5jwRJ4Ybqu-20EYEmZ3S1ElJtCDZgO5xVw==",
+            "originalPrice": 51875,
+            "salePrice": 41500,
+            "discountRate": 20,
+            "isRocket": false,
+            "rating": 4.9,
+            "reviewCount": 1850,
+            "link": "https://holy-glitter-127a.everyeat93.workers.dev?target=https%3A%2F%2Flink.coupang.com%2Fre%2FAFFSDP%3Flptag%3DAF8089805%26pageKey%3D9442807178%26itemId%3D28086358585%26vendorItemId%3D73908117349%26traceid%3DV0-153-de02f271e0ea2f85%26clickBeacon%3D77384b90-d146-11f1-b632-01ddaedeba47%257E3%26requestid%3D20261026230640250282562708%26token%3D31850C%257CCMG%26pt%3D1%26slot%3D1"
+      },
+      {
+            "id": "cp-7484253365",
+            "title": "행복미트 통오겹살 수입산 바베큐 수육용, 2kg, 1개",
+            "marketTag": "지리산 산지직송",
+            "categoryTag": "산지 정육 특선",
+            "image": "https://ads-partners.coupang.com/image1/f44RJ9PRhszERxu2f_l4oOuJyp4OEfd9qh4obMDkuVs07pQFQcgRYnj0baU2UyYc1RqMn_wiydsh7SlrZImBS2I7qZc6rr5CtFIZEBrJvS-BwpPkLNwis97RwHENzBjdj7MDXuGk5Z10wBYn1ZNV4J8m7lhUmy6YvMr-1f058mDIDNG-VA1tkhvNqvz01ESoVgIS0VQVhiAZwW-tasw1D2x1999j6qIRo8j_nDHgQ7yO3BiqY02MwIa9Yc6ZgrooYTRd7u79dGt10w_lPNhPxCYyLPz7D9egcUTzT1gm5ib5lJ2LphyUCWp5Z6Kkbt2_91wo9vpLqTOcU_m7UIieiReqBrS-WXfgHJIonmfEgKMHSB2LKQPV43Pk0_ay2lxUd_Jjom7YWU4FudtIkLiVIecyO-Xm4Gy6COt9MU84Fv9KZM7GlyRZ3L4WThR_LoEPRYpl_43M23eoLWiAwocZcZBYNmVM_8mvMoRT4ZiWUkqAe2lSAX8me1HE13916R-76rv2ttQiHVauZPAl-BI2hAwXnP1l4yvM",
+            "originalPrice": 43625,
+            "salePrice": 34900,
+            "discountRate": 20,
+            "isRocket": false,
+            "rating": 4.9,
+            "reviewCount": 1850,
+            "link": "https://holy-glitter-127a.everyeat93.workers.dev?target=https%3A%2F%2Flink.coupang.com%2Fre%2FAFFSDP%3Flptag%3DAF8089805%26pageKey%3D7484253365%26itemId%3D19557233124%26vendorItemId%3D84001875488%26traceid%3DV0-153-ec1528fa5e82b472%26clickBeacon%3D779119f0-d146-11f1-9184-41aaec6fe461%257E3%26requestid%3D20261026230640836221428255%26token%3D31850C%257CCMG%26pt%3D1%26slot%3D1"
+      },
+      {
+            "id": "cp-9748616401",
+            "title": "[최고15brix] 고당도 제주 감귤 S-M, 1박스, 5kg 인기추천",
+            "marketTag": "제주 민속오일장",
+            "categoryTag": "제주 산지직송",
+            "image": "https://ads-partners.coupang.com/image1/ABNL__E8KdMEim86APuNkQS6pTMU02bQuSl-ZFQgUEjKaQgm8O2aB7z4g7TW0CnRAER5XiEvsJi1rgBXzwUNuLybcK0c9bSb2LT2Lg_fx7m6bti5FyVII2eScOnGZUaRj15H4WSrrpTojndJv0DzyTHmqLFnAYLlmFUOV-GmCwZDZ6XtWSS7CPX2kx3o34AYOYqja9KGIvaqYNmviWhm8WgegCbuvfZDU0cuaoH04ccGWbLhjF9LDZyf0mm_QquCunLV1PnKqTeTUFnkmy1c4Qb8tEONmr9XJnYtWQmx1iXsyBfJ9oJpZHn_RV2uzm3_m5-9jhVIRSxORf5hH7ZOEGG8Tjxg3WSzSG9pG4FWeZWWBb2rSXMmsabcWksQdzh97eqQXaLJ2m9A4qNetEHy5k37uJPlLawcsz3ORtgOg6wyiGKKDNXCMp1Jk5P4dHsZjmE21_O-m506kkUKHb7J8P9qWdn270fC7C2X-H7GNR21k6cxKe2Kd0iba6qbUMJtdQF6neoHO74wXWNwLCwq29HVE79uCNsazQ==",
+            "originalPrice": 151000,
+            "salePrice": 120800,
+            "discountRate": 20,
+            "isRocket": false,
+            "rating": 4.9,
+            "reviewCount": 1850,
+            "link": "https://holy-glitter-127a.everyeat93.workers.dev?target=https%3A%2F%2Flink.coupang.com%2Fre%2FAFFSDP%3Flptag%3DAF8089805%26pageKey%3D9748616401%26itemId%3D29188449833%26vendorItemId%3D96109468543%26traceid%3DV0-153-c41b364f2bf91630%26clickBeacon%3D77ffe150-d146-11f1-b18d-2058d41f9046%257E3%26requestid%3D20261026230641578298653243%26token%3D31850C%257CCMG%26pt%3D1%26slot%3D1"
+      },
+      {
+            "id": "cp-9754767687",
+            "title": "[200개 초특가] 고당도 신고배 가정용 나주배 배, 1개, 곧마감 _5kg 중과 (오늘특가!",
+            "marketTag": "나주 영산포 5일장",
+            "categoryTag": "산지직송 제철과일",
+            "image": "https://ads-partners.coupang.com/image1/0UJoEyilPtyP5VGK0cVHv0lcAAMTd_-EQ4vLUxX3JXMWG9aCtESRu4f8Gd2nSTCL4cesembfc-OqPRhwsRPwsYm7XqOSxcLrewwAdkIbqJZWB9m0HraaxHtT0MOMn9lm_09SZDzTCHUW2DTzFvDx0Orr9RxwhwtBdJMXCLvL1YAU7j2-lp2INI461eOEvO3-gnjwdqTmSaGywPqZmo6GoKSRhpiO7qRs8zkElRi2PHFBMhsXO_Z9nOgZ2vTSXC0zHl8nKvBVmI3EfZLeXNw653htFpmLrLiCAWiJve7fz5tIMgwHDGm8iGOwLseR3CFgrFbKTJGz0cAyAZyGSygYQcSoZxFvgsq501YkrU_KpvBZQ8AhBHHTibkdA0k8RJzAyi2kdOdMJ-r_kmaQfAM2SDgq4QEs85AZTAae4ENMXm7Jc4H5bnaWJOkFQhzyjrbqoYUaY2peGHYK9lOduWVipoOZ7rZnXVq4NA9XKqShc_ai8ZjaiFMGyUKJ89HI83kGG_cfV7k9Rq1zTDjOBXxlgjim9zaUu6Pr",
+            "originalPrice": 32375,
+            "salePrice": 25900,
+            "discountRate": 20,
+            "isRocket": false,
+            "rating": 4.9,
+            "reviewCount": 1850,
+            "link": "https://holy-glitter-127a.everyeat93.workers.dev?target=https%3A%2F%2Flink.coupang.com%2Fre%2FAFFSDP%3Flptag%3DAF8089805%26pageKey%3D9754767687%26itemId%3D29264867217%26vendorItemId%3D94714330695%26traceid%3DV0-153-fe1bf8260708a902%26clickBeacon%3D78635e10-d146-11f1-a7d8-3719f2a372c0%257E3%26requestid%3D20261026230642269032792667%26token%3D31850C%257CCMG%26pt%3D1%26slot%3D1"
+      },
+      {
+            "id": "cp-7975746216",
+            "title": "코코리 스피드 압력솥 2인용, 0.8L, 실버 + 블랙 + 우드, 1개",
+            "marketTag": "안성 가마솥 장인",
+            "categoryTag": "주방 살림 특선",
+            "image": "https://ads-partners.coupang.com/image1/C0CsKj72-bL-_NopCxwWyehX2iM-PdpQRQoKB9Hep5M90bQJXdtJ44SyWx6G0rFEK_OvUUqP7D5DjWvldghVvBKWFVkHX9W-CYMEakEMvlykeGMFMvxxVlu2Gj-hMSuy4ugbDeQEk8lbnjVyfPEUWQWjZFAPI0WgozurTK_BWymUCckmwjjLzzEcHi1Pr0YFGwhuy5G09yBZfk3y2r3zH-1R_bvpbnPsZLgE-XVKnREUdtuWrt8q5ab4_llMakuvpDdzvz2fMAiIadiiMcb0o0_22-Uq6oUyU9Nua_-FeEYBVLnaQu7Vmmk-1es19e-O0xyzlChub58XCPe2ZTNeb5ZXpzDuNRXD-O0jJIDetqDrDISl0A5FVVw2AjCc0IWf-gbzLsBdPj-lvazLJjwuQYT2mNz3SfJ4zbmonDtWSwkMj3dJbaJXw9xgRK-UpxMdJLcGKDDv75ftOjU1uoCxsfdR9lpkY7GSWq_A8LtzUNMdr55G1xpBdDm8DzIbxGnZQMBUvHyJcZA=",
+            "originalPrice": 74750,
+            "salePrice": 59800,
+            "discountRate": 20,
+            "isRocket": true,
+            "rating": 4.9,
+            "reviewCount": 1850,
+            "link": "https://holy-glitter-127a.everyeat93.workers.dev?target=https%3A%2F%2Flink.coupang.com%2Fre%2FAFFSDP%3Flptag%3DAF8089805%26pageKey%3D7975746216%26itemId%3D22107755057%26vendorItemId%3D89544767268%26traceid%3DV0-153-09afbbbf13b1271b%26clickBeacon%3D78b0bac0-d146-11f1-b0df-cfb5fc88b76c%257E3%26requestid%3D20261026230642725179485152%26token%3D31850C%257CCMG%26pt%3D1%26slot%3D1"
+      }
+];
+
+    function renderCoupangSection(container) {
+      container.innerHTML = `
+        <!-- COUPANG HEADER BANNER -->
+        <div class="col-span-full bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 rounded-3xl p-5 sm:p-7 text-white shadow-lg relative overflow-hidden">
+          <div class="relative z-10 space-y-2.5 max-w-2xl">
+            <div class="inline-flex items-center space-x-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black tracking-wide">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-yellow-300"></i>
+              <span>장날가자 x 쿠팡 파트너스 공식 기획전</span>
+            </div>
+            <h2 class="text-lg sm:text-2xl font-black leading-tight">
+              전국 5일장 명물 먹거리 & 산지직송 특산물<br class="hidden sm:inline"/>
+              <span class="text-yellow-200">쿠팡 로켓배송 최저가 특가관 🚀</span>
+            </h2>
+            <p class="text-xs sm:text-sm text-red-100 leading-relaxed">
+              장날가자가 엄선한 전국 산지 명물과 장보기 필수템을 쿠팡 로켓배송으로 내일 아침 바로 받아보세요!
+            </p>
+          </div>
+          <!-- Watermark icon -->
+          <div class="absolute -right-6 -bottom-8 opacity-15 pointer-events-none">
+            <i data-lucide="shopping-cart" class="w-48 h-48 text-white"></i>
+          </div>
+        </div>
+
+        <!-- PRODUCTS GRID -->
+        ${COUPANG_PRODUCTS.map(p => `
+          <div class="bg-white rounded-3xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group hover:-translate-y-1">
+            <!-- Product Image -->
+            <div class="relative aspect-[4/3] bg-stone-900 overflow-hidden cursor-pointer" onclick="window.open('${p.link}', '_blank')">
+              <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+              
+              <!-- Badges -->
+              <div class="absolute top-2.5 left-2.5 flex flex-wrap gap-1">
+                <span class="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                  ${p.marketTag}
+                </span>
+                ${p.isRocket ? `
+                  <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center space-x-0.5 shadow-sm">
+                    <span>🚀 로켓배송</span>
+                  </span>
+                ` : ''}
+              </div>
+
+              <!-- Discount Tag -->
+              <span class="absolute bottom-2.5 right-2.5 bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-md">
+                ${p.discountRate}% OFF
+              </span>
+            </div>
+
+            <!-- Content -->
+            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <div class="text-[11px] font-bold text-orange-600 mb-1 flex items-center space-x-1">
+                  <span>${p.categoryTag}</span>
+                  <span class="text-gray-300">·</span>
+                  <span class="text-amber-500 flex items-center">★ ${p.rating} (${p.reviewCount.toLocaleString()})</span>
+                </div>
+                <h3 class="font-black text-xs sm:text-sm text-gray-950 line-clamp-2 leading-snug cursor-pointer group-hover:text-red-600 transition" onclick="window.open('${p.link}', '_blank')">
+                  ${p.title}
+                </h3>
+              </div>
+
+              <!-- Pricing & CTA -->
+              <div class="space-y-2.5 pt-1 border-t border-gray-100">
+                <div class="flex items-baseline justify-between">
+                  <span class="text-xs text-gray-400 line-through">${p.originalPrice.toLocaleString()}원</span>
+                  <div class="text-right">
+                    <span class="text-base sm:text-lg font-black text-red-600">${p.salePrice.toLocaleString()}원</span>
+                  </div>
+                </div>
+
+                <!-- CTA Button -->
+                <a href="${p.link}" target="_blank" rel="noopener noreferrer nofollow" class="w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-700 hover:to-rose-700 text-white font-black py-2.5 px-3 rounded-2xl shadow-md active:scale-98 transition flex items-center justify-center space-x-1.5 text-xs text-center">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                  <span>쿠팡 최저가 및 후기 확인</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+
+        <!-- FTC DISCLAIMER NOTICE -->
+        <div class="col-span-full bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-3.5 text-center text-xs text-gray-500 space-y-1">
+          <p class="font-bold text-gray-600">📢 공정거래위원회 안내</p>
+          <p class="text-[11px]">이 포스팅 및 기획전은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+    
+
     function renderApp() {
       renderHeroDrop();
       renderDrops();
@@ -1593,6 +1778,13 @@
     function renderDrops() {
       const container = document.getElementById('drops-grid');
       if (!container) return;
+
+      if (currentCategory === 'coupang') {
+        renderCoupangSection(container);
+        return;
+      }
+
+      
 
       const filtered = drops.filter(d => {
         if (currentCategory === 'all') return true;
@@ -1903,7 +2095,11 @@
       document.querySelectorAll('.cat-chip').forEach(btn => {
         btn.className = 'cat-chip shrink-0 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition font-bold text-xs';
       });
-      event.target.className = 'cat-chip active shrink-0 px-3 py-1 rounded-full bg-orange-600 text-white shadow-sm transition font-bold text-xs';
+      if (cat === 'coupang') {
+        event.target.className = 'cat-chip active shrink-0 px-3 py-1 rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 text-white font-black shadow-md transition font-bold text-xs border border-red-400/50';
+      } else {
+        event.target.className = 'cat-chip active shrink-0 px-3 py-1 rounded-full bg-orange-600 text-white shadow-sm transition font-bold text-xs';
+      }
       renderDrops();
       lucide.createIcons();
     }
