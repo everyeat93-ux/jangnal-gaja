@@ -2377,19 +2377,40 @@ fun ShopQueueSection(
                             lineHeight = 15.sp
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        Button(
-                            onClick = onOpenMerchantVerification,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(38.dp),
-                            shape = RoundedCornerShape(9.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF4E342E),
-                                contentColor = Color(0xFFFFD54F)
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("👑 우리 가게 공식 입점 · 상인인증 신청하기", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Button(
+                                onClick = onOpenMerchantVerification,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(38.dp),
+                                shape = RoundedCornerShape(9.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF4E342E),
+                                    contentColor = Color(0xFFFFD54F)
+                                )
+                            ) {
+                                Text("👑 앱 상인인증 신청", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    val mallUrl = "https://jangnal-gaja.vercel.app/?market=" + Uri.encode(market.getDisplayName())
+                                    try {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(mallUrl)))
+                                    } catch (_: Exception) {}
+                                },
+                                modifier = Modifier
+                                    .weight(1.1f)
+                                    .height(38.dp),
+                                shape = RoundedCornerShape(9.dp),
+                                border = BorderStroke(1.dp, Color(0xFF4E342E).copy(alpha = 0.5f)),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text("🌐 장날가자 몰 (입점·요청) ➔", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4E342E), maxLines = 1)
+                            }
                         }
                     }
                 }
