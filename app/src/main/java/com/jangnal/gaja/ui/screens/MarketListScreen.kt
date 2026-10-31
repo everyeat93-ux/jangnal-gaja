@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -379,6 +379,17 @@ fun MarketListScreen(
             verifications = allVerifications,
             onUpdateVerificationStatus = { verif, newStatus, reason ->
                 viewModel.updateMerchantVerificationStatus(context, verif, newStatus, reason)
+            },
+            favoriteCount = allMarkets.count { it.isFavorite },
+            stampCount = uniqueMarketStampCount,
+            totalMarketCount = allMarkets.size.coerceAtLeast(987),
+            onOpenPassport = {
+                showAbout = false
+                showPassport = true
+            },
+            onOpenCommunity = {
+                showAbout = false
+                showCommunityFeed = true
             }
         )
     }
@@ -480,8 +491,8 @@ fun MarketListScreen(
                     Spacer(modifier = Modifier.width(2.dp))
                     IconButton(onClick = { showAbout = true }) {
                         Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "앱 정보"
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "설정 및 더보기"
                         )
                     }
                 }

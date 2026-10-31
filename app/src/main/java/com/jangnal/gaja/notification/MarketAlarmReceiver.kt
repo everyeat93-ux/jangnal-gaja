@@ -17,6 +17,10 @@ import kotlinx.coroutines.launch
 
 class MarketAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("morning_alarm_enabled", true)) {
+            return
+        }
         val database = AppDatabase.getDatabase(context)
         val marketDao = database.marketDao()
 

@@ -131,6 +131,14 @@ object CommunitySafetyHelper {
         prefs.edit().putStringSet(KEY_BLOCKED_AUTHORS, currentSet).apply()
     }
 
+    fun getBlockedAuthorCount(context: Context): Int {
+        return getPrefs(context).getStringSet(KEY_BLOCKED_AUTHORS, emptySet())?.size ?: 0
+    }
+
+    fun clearBlockedAuthors(context: Context) {
+        getPrefs(context).edit().remove(KEY_BLOCKED_AUTHORS).apply()
+    }
+
     /**
      * 기본 랜덤 닉네임 생성기 (어르신들도 친근하게 느끼는 장날 테마)
      */
