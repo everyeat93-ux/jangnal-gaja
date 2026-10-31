@@ -221,10 +221,8 @@ fun MarketDetailSheet(
                 // 시장 유형 뱃지 & 스탬프 뱃지 (FlowRow로 콤팩트하게 1~2줄 정리)
                 val onnuriCount = shops.count { it.isOnnuri }
                 val onnuriBadgeText = when {
-                    shops.isNotEmpty() && onnuriCount > 0 -> "💳 온누리 가맹 ${onnuriCount}곳 (${onnuriCount * 100 / shops.size}%)"
-                    shops.isNotEmpty() && onnuriCount == 0 -> "💳 온누리 가맹 확인중"
-                    market.isPermanent() -> "💳 온누리 10% 가맹 상설시장"
-                    else -> "💳 온누리상품권 10% 가맹"
+                    shops.isNotEmpty() && onnuriCount > 0 -> "💳 온누리 가맹 ${onnuriCount}곳"
+                    else -> "💳 온누리 가맹점 수록"
                 }
 
                 FlowRow(
@@ -602,168 +600,7 @@ fun MarketDetailSheet(
                         )
                     }
                     "info" -> {
-                        // 📢 상인회 공식 소식 및 온누리 10~20% 환급 홍보관
-                        MerchantNoticeSection(
-                            market = market,
-                            onOpenVerificationDialog = { showMerchantVerificationDialog = true }
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // 3. [전략 2 중심 + 전략 1 서브 믹스] 공식 파트너 점포 모집 구좌 & 지역 특산물 온라인 탐색
-                        val specialtyKeyword = remember(market.marketName, displaySpecialty) {
-                            val rawWords = displaySpecialty.split(",", " ", "/").map { it.trim() }
-                            val cleanWords = rawWords.filter { w ->
-                                w.isNotEmpty() &&
-                                !w.contains("가공식품") &&
-                                !w.contains("농산물") &&
-                                !w.contains("수산물") &&
-                                !w.contains("축산물") &&
-                                !w.contains("잡화") &&
-                                !w.contains("의류") &&
-                                !w.contains("공산품") &&
-                                !w.contains("식료품") &&
-                                !w.contains("근린") &&
-                                !w.contains("기타") &&
-                                !w.contains("특산물")
-                            }
-                            cleanWords.firstOrNull() ?: "대표 먹거리·특산물"
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(1.dp, Color(0xFFFFB74D)),
-                            color = Color(0xFFFFF8F0),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Surface(
-                                            shape = RoundedCornerShape(6.dp),
-                                            color = Color(0xFF4E342E)
-                                        ) {
-                                            Text(
-                                                text = "👑 공식 파트너 점포 모집",
-                                                color = Color(0xFFFFD54F),
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.ExtraBold,
-                                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                                            )
-                                        }
-                                        Surface(
-                                            shape = RoundedCornerShape(6.dp),
-                                            color = Color(0xFFE8F5E9)
-                                        ) {
-                                            Text(
-                                                text = "초기 입점 혜택",
-                                                color = Color(0xFF2E7D32),
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                                            )
-                                        }
-                                    }
-
-                                    Text(
-                                        text = "AD · 입점안내",
-                                        color = Color(0xFF8D6E63),
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                Text(
-                                    text = "🏪 [${market.getDisplayName()}]의 첫 번째 공식 대표 점포를 찾습니다!",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = Color(0xFF3E2723),
-                                    lineHeight = 19.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "• 시장 상세화면 상단 고정 노출 및 '✓ 상인인증' 공식 배지 부여\n• 오늘 마감특가 실시간 등록 & 전국 택배·스마트스토어 주문 링크 직접 연결",
-                                    fontSize = 11.5.sp,
-                                    color = Color(0xFF5D4037),
-                                    lineHeight = 16.sp
-                                )
-
-                                Spacer(modifier = Modifier.height(12.dp))
-
-                                // 메인 버튼 (전략 2: 사장님 공식 입점/인증 신청)
-                                Button(
-                                    onClick = { showMerchantVerificationDialog = true },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF4E342E),
-                                        contentColor = Color(0xFFFFD54F)
-                                    ),
-                                    shape = RoundedCornerShape(10.dp),
-                                    contentPadding = PaddingValues(vertical = 10.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(42.dp)
-                                ) {
-                                    Text(
-                                        text = "👑 우리 가게 공식 입점 · 파트너 신청하기",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                // 서브 버튼 (전략 1 살짝 믹스: 쿠팡 파트너스 로켓프레시·산지직송 장보기 연결)
-                                OutlinedButton(
-                                    onClick = {
-                                        val coupangPartnersUrl = "https://link.coupang.com/a/iiDKYyLqYm"
-                                        try {
-                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(coupangPartnersUrl)))
-                                        } catch (_: Exception) {}
-                                    },
-                                    shape = RoundedCornerShape(10.dp),
-                                    border = BorderStroke(1.dp, Color(0xFFE65100).copy(alpha = 0.45f)),
-                                    contentPadding = PaddingValues(vertical = 8.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(36.dp)
-                                ) {
-                                    Text(
-                                        text = "🛒 산지직송 제철 먹거리 · 로켓프레시 장보기 ➔",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFE65100)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "※ 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.",
-                                    fontSize = 9.5.sp,
-                                    color = Color(0xFF8D6E63),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-
-                Spacer(modifier = Modifier.height(20.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 4. [P3] 📅 개장 일정 & 스마트 캘린더 (상설시장은 슬림 요약 칩 + 아코디언)
+                        // 1. 📅 개장 일정 & 스마트 캘린더를 최상단에 배치 (실제 데이터만 표시)
                 Text(
                     text = "📅 개장 정보 및 일정",
                     style = MaterialTheme.typography.titleMedium,
@@ -2470,6 +2307,7 @@ fun ShopQueueSection(
                 }
 
                 // [전략 2 중심 + 전략 1 서브 믹스] 공식 파트너 입점 모집 & 지역 특산물 온라인 탐색 배너
+                // 1) [전략 2] 상인 전용 공식 파트너 점포 모집 카드 (쿠팡 링크와 완전 분리)
                 Spacer(modifier = Modifier.height(14.dp))
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -2517,7 +2355,7 @@ fun ShopQueueSection(
                                 }
                             }
                             Text(
-                                text = "입점·제휴 안내",
+                                text = "상인 전용",
                                 fontSize = 10.sp,
                                 color = Color(0xFF8D6E63),
                                 fontWeight = FontWeight.Medium
@@ -2533,46 +2371,92 @@ fun ShopQueueSection(
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "공식 파트너 인증 시 상단 고정 노출, 오늘 마감특가 등록, 온라인/택배 주문 연결을 무료로 지원합니다.",
+                            text = "공식 파트너 인증 시 상단 고정 노출, 오늘 마감특가 등록, 가게 전용 택배 주문 연결을 무료로 지원합니다.",
                             fontSize = 11.sp,
                             color = Color(0xFF5D4037),
                             lineHeight = 15.sp
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        Button(
+                            onClick = onOpenMerchantVerification,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(38.dp),
+                            shape = RoundedCornerShape(9.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF4E342E),
+                                contentColor = Color(0xFFFFD54F)
+                            )
+                        ) {
+                            Text("👑 우리 가게 공식 입점 · 상인인증 신청하기", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                        }
+                    }
+                }
+
+                // 2) [전략 1] 방문객용 쿠팡 로켓프레시 제휴 배너 (별도 박스로 분리 및 '쿠팡 로켓프레시' 명시)
+                Spacer(modifier = Modifier.height(10.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Button(
-                                onClick = onOpenMerchantVerification,
-                                modifier = Modifier.weight(1.1f).height(38.dp),
-                                shape = RoundedCornerShape(9.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF4E342E),
-                                    contentColor = Color(0xFFFFD54F)
+                            Text(
+                                text = "🚀 오늘 직접 장보러 가기 어려우신가요?",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF3E2723)
+                            )
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color(0xFFECEFF1)
+                            ) {
+                                Text(
+                                    text = "제휴 안내",
+                                    fontSize = 9.5.sp,
+                                    color = Color(0xFF546E7A),
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
                                 )
-                            ) {
-                                Text("👑 공식 입점·인증 신청", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    val coupangPartnersUrl = "https://link.coupang.com/a/iiDKYyLqYm"
-                                    try {
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(coupangPartnersUrl)))
-                                    } catch (_: Exception) {}
-                                },
-                                modifier = Modifier.weight(1f).height(38.dp),
-                                shape = RoundedCornerShape(9.dp),
-                                border = BorderStroke(1.dp, Color(0xFFE65100).copy(alpha = 0.5f)),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Text("🛒 산지직송 특가 장보기", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100), maxLines = 1)
                             }
                         }
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "※ 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.",
+                            text = "장날이 아니거나 직접 방문이 힘든 날엔 쿠팡 로켓프레시로 신선 식재료를 집 앞에서 받아보세요.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                val coupangPartnersUrl = "https://link.coupang.com/a/iiDKYyLqYm"
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(coupangPartnersUrl)))
+                                } catch (_: Exception) {}
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(36.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, Color(0xFFE65100).copy(alpha = 0.5f)),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text("🛒 쿠팡 로켓프레시 신선 장보기 바로가기 ➔", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100), maxLines = 1)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "※ 이 영역은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.",
                             fontSize = 9.5.sp,
                             color = Color(0xFF8D6E63),
                             modifier = Modifier.fillMaxWidth(),
