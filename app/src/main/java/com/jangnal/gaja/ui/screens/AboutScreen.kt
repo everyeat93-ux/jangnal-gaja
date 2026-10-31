@@ -397,7 +397,7 @@ fun AboutScreen(
                             border = BorderStroke(0.5.dp, Color(0xFF81C784))
                         ) {
                             Text(
-                                text = "v2.0.6 최신",
+                                text = "v2.0.7 최신",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF2E7D32),
