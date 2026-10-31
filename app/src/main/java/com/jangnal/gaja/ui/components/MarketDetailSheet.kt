@@ -725,18 +725,12 @@ fun MarketDetailSheet(
 
                                 Spacer(modifier = Modifier.height(6.dp))
 
-                                // 서브 버튼 (전략 1 살짝 믹스: 방문객용 실제 지역 명물·특산물 온라인 구경하기)
+                                // 서브 버튼 (전략 1 살짝 믹스: 쿠팡 파트너스 로켓프레시·산지직송 장보기 연결)
                                 OutlinedButton(
                                     onClick = {
-                                        val cleanMarketName = market.getDisplayName().replace("전통시장", "").replace("시장", "").trim()
-                                        val query = if (specialtyKeyword != "대표 먹거리·특산물") {
-                                            "${cleanMarketName}시장 $specialtyKeyword"
-                                        } else {
-                                            "${market.getDisplayName()} 특산물 먹거리"
-                                        }
-                                        val shoppingUrl = "https://search.shopping.naver.com/search/all?query=" + Uri.encode(query)
+                                        val coupangPartnersUrl = "https://link.coupang.com/a/iiDKYyLqYm"
                                         try {
-                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(shoppingUrl)))
+                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(coupangPartnersUrl)))
                                         } catch (_: Exception) {}
                                     },
                                     shape = RoundedCornerShape(10.dp),
@@ -747,12 +741,21 @@ fun MarketDetailSheet(
                                         .height(36.dp)
                                 ) {
                                     Text(
-                                        text = "🛒 [${market.getDisplayName()}] 명물·지역특산물 온라인 구경하기 ➔",
+                                        text = "🛒 산지직송 제철 먹거리 · 로켓프레시 장보기 ➔",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFFE65100)
                                     )
                                 }
+
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "※ 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.",
+                                    fontSize = 9.5.sp,
+                                    color = Color(0xFF8D6E63),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
 
@@ -2554,10 +2557,9 @@ fun ShopQueueSection(
                             }
                             OutlinedButton(
                                 onClick = {
-                                    val cleanMarketName = market.getDisplayName().replace("전통시장", "").replace("시장", "").trim()
-                                    val shoppingUrl = "https://search.shopping.naver.com/search/all?query=" + Uri.encode("${cleanMarketName}시장 먹거리 특산물")
+                                    val coupangPartnersUrl = "https://link.coupang.com/a/iiDKYyLqYm"
                                     try {
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(shoppingUrl)))
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(coupangPartnersUrl)))
                                     } catch (_: Exception) {}
                                 },
                                 modifier = Modifier.weight(1f).height(38.dp),
@@ -2565,9 +2567,17 @@ fun ShopQueueSection(
                                 border = BorderStroke(1.dp, Color(0xFFE65100).copy(alpha = 0.5f)),
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text("🛒 지역 명물 온라인 보기", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100), maxLines = 1)
+                                Text("🛒 산지직송 특가 장보기", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100), maxLines = 1)
                             }
                         }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "※ 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.",
+                            fontSize = 9.5.sp,
+                            color = Color(0xFF8D6E63),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
