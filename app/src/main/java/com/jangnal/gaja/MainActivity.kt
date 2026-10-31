@@ -174,9 +174,8 @@ class MainActivity : ComponentActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UPDATE_REQUEST_CODE) {
             if (resultCode != RESULT_OK) {
-                // If update was cancelled or failed, show message and exit
-                Toast.makeText(this, "앱 사용을 위해 최신 버전 업데이트가 필수적입니다.", Toast.LENGTH_LONG).show()
-                finish()
+                // 사용자가 업데이트를 잠시 미루더라도 앱이 강제 종료되지 않도록 안내만 표시
+                Toast.makeText(this, "최신 버전 업데이트를 진행하시면 더 정확한 장날 정보를 확인하실 수 있습니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }

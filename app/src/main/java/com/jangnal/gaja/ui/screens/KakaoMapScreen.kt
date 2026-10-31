@@ -90,6 +90,9 @@ fun KakaoMapScreen(
     // Search Query State
     var searchQuery by remember { mutableStateOf("") }
     
+    // Quick Filter Mode: "ALL", "TODAY_OPEN", "WEEKEND", "FAVORITE"
+    var quickFilterMode by remember { mutableStateOf("ALL") }
+
     // Detailed Filter States
     var selectedRegions by remember { mutableStateOf<Set<String>>(emptySet()) }
     var selectedMarketDays by remember { mutableStateOf<Set<String>>(emptySet()) } // "1일", "2일"... "주말", "전통시장"
@@ -98,8 +101,21 @@ fun KakaoMapScreen(
     val marketDayOptions = (1..10).map { "${it}일" } + listOf("주말", "전통시장")
 
     // Filter Logic Calculation
-    val filteredMarkets = remember(markets, filterShowPermanent, filterShowPeriodic, selectedDateMillis, searchQuery, selectedRegions, selectedMarketDays) {
+    val filteredMarkets = remember(markets, quickFilterMode, filterShowPermanent, filterShowPeriodic, selectedDateMillis, searchQuery, selectedRegions, selectedMarketDays) {
         markets.filter { market ->
+            // 0. 상단 원터치 퀵 필터 (전체 / 오늘 개장만 / 이번 주말 / 내 단골)
+            when (quickFilterMode) {
+                "TODAY_OPEN" -> {
+                    if (!market.isPermanent() && !market.isOpenOn(selectedDateMillis)) return@filter false
+                }
+                "WEEKEND" -> {
+                    if (!market.isOpenThisWeekend()) return@filter false
+                }
+                "FAVORITE" -> {
+                    if (!market.isFavorite) return@filter false
+                }
+            }
+
             // 1. 검색어 필터 (이름 또는 주소)
             val matchesSearch = searchQuery.isBlank() || 
                 market.marketName.contains(searchQuery, ignoreCase = true) || 
@@ -265,36 +281,116 @@ fun KakaoMapScreen(
             }
         )
 
-        // 검색창 (지도 위에 띄움)
-        androidx.compose.foundation.layout.Column(
+        // 검색창 + 원터치 퀵 필터 바 (지도 상단 오버레이)
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .align(Alignment.TopCenter)
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+                .align(Alignment.TopCenter),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, androidx.compose.foundation.shape.RoundedCornerShape(8.dp)),
-                placeholder = { Text("시장 이름 또는 주소 검색") },
-                leadingIcon = { 
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "검색") 
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "지우기")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp)
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp)),
+                    placeholder = { Text("시장 이름 또는 주소 검색", fontSize = 13.sp, maxLines = 1) },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "검색")
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(imageVector = Icons.Default.Clear, contentDescription = "지우기")
+                            }
                         }
-                    }
-                },
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    )
                 )
+
+                val activeDetailFilterCount = selectedRegions.size + selectedMarketDays.size +
+                    (if (!filterShowPermanent || !filterShowPeriodic) 1 else 0)
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (activeDetailFilterCount > 0) com.jangnal.gaja.ui.theme.JangnalYellow else MaterialTheme.colorScheme.surface,
+                    shadowElevation = 3.dp,
+                    border = BorderStroke(
+                        1.dp,
+                        if (activeDetailFilterCount > 0) com.jangnal.gaja.ui.theme.JangnalBrown else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+                    ),
+                    modifier = Modifier
+                        .height(50.dp)
+                        .clickable { showFilterSheet = true }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "상세조건",
+                            tint = com.jangnal.gaja.ui.theme.JangnalBrown,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = if (activeDetailFilterCount > 0) "조건($activeDetailFilterCount)" else "상세조건",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = com.jangnal.gaja.ui.theme.JangnalBrown
+                        )
+                    }
+                }
+            }
+
+            // 원터치 퀵 필터 칩 (전체 / 오늘 개장만 / 이번 주말 / 내 단골)
+            val quickFilterItems = listOf(
+                "ALL" to "🌐 전체 시장",
+                "TODAY_OPEN" to "☀️ 오늘 개장만",
+                "WEEKEND" to "🎉 이번 주말",
+                "FAVORITE" to "❤️ 내 단골"
             )
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(quickFilterItems.size) { idx ->
+                    val (modeKey, label) = quickFilterItems[idx]
+                    val isSelected = quickFilterMode == modeKey
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isSelected) com.jangnal.gaja.ui.theme.JangnalBrown else MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                        shadowElevation = 2.dp,
+                        border = BorderStroke(
+                            1.dp,
+                            if (isSelected) com.jangnal.gaja.ui.theme.JangnalBrown else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        ),
+                        modifier = Modifier.clickable {
+                            quickFilterMode = if (isSelected && modeKey != "ALL") "ALL" else modeKey
+                        }
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 12.sp,
+                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                            color = if (isSelected) com.jangnal.gaja.ui.theme.JangnalYellow else com.jangnal.gaja.ui.theme.JangnalBrown,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+            }
         }
         
         // Loading indicator
@@ -326,34 +422,13 @@ fun KakaoMapScreen(
             }
         }
         
-        // 범례 (Legend) 및 컨트롤
+        // 우측 내 위치 버튼 (상단 검색창/필터칩과 겹치지 않도록 아래에 배치)
         Column(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(16.dp),
+                .padding(top = 116.dp, end = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 필터 버튼
-            FloatingActionButton(
-                onClick = { showFilterSheet = true },
-                containerColor = MaterialTheme.colorScheme.surface
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = "필터 (상세조건)"
-                    )
-                    Text(
-                        text = "상세조건",
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-            }
-            
-            // 현재 위치 버튼
             FloatingActionButton(
                 onClick = {
                     userLocation?.let { location ->
