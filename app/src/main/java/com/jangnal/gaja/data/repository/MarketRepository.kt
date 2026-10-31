@@ -404,7 +404,7 @@ class MarketRepository(
             }
 
             // 가상 결제인증 카운트(42명 등) 잔존 방지: 미검증 가상 카운트 리셋
-            val hasFakeConfirmation = realExisting.any { it.onnuriConfirmedCount > 0 && !it.isVerifiedReport }
+            val hasFakeConfirmation = realExisting.any { it.onnuriConfirmedCount > 0 }
             if (hasFakeConfirmation) {
                 marketDao.resetFakeOnnuriConfirmedCounts()
             }
@@ -424,11 +424,12 @@ class MarketRepository(
 
             // 미매칭 시장: 사용자가 직접 추가한 상점이 있으면 유지, 없으면 빈 리스트
             if (realExisting.isNotEmpty()) {
-                if (existing.size != realExisting.size) {
+                val cleanedExisting = realExisting.map { it.copy(onnuriConfirmedCount = 0) }
+                if (existing.size != realExisting.size || hasFakeConfirmation) {
                     marketDao.deleteShopsForMarket(marketId)
-                    marketDao.insertShops(realExisting)
+                    marketDao.insertShops(cleanedExisting)
                 }
-                return@withContext realExisting
+                return@withContext cleanedExisting
             }
 
             if (existing.isNotEmpty()) {

@@ -424,7 +424,7 @@ class MarketViewModel(
                                 isMock = doc.getBoolean("isMock") ?: false,
                                 isOnnuri = doc.getBoolean("isOnnuri") ?: true,
                                 onnuriType = doc.getString("onnuriType") ?: "지류·카드·모바일",
-                                onnuriConfirmedCount = doc.getLong("onnuriConfirmedCount")?.toInt() ?: 0
+                                onnuriConfirmedCount = 0
                             )
                         }
                         
@@ -577,7 +577,7 @@ class MarketViewModel(
                 isMock = false,
                 isOnnuri = true,
                 onnuriType = "지류·카드·모바일",
-                onnuriConfirmedCount = 1
+                onnuriConfirmedCount = 0
             )
             repository.insertShop(newShop)
             com.jangnal.gaja.util.VoteTracker.recordMyCreatedShop(context, marketId, sanitizedName)
@@ -597,7 +597,7 @@ class MarketViewModel(
                     "isMock" to false,
                     "isOnnuri" to true,
                     "onnuriType" to "지류·카드·모바일",
-                    "onnuriConfirmedCount" to 1,
+                    "onnuriConfirmedCount" to 0,
                     "createdAt" to System.currentTimeMillis()
                 )
                 firestore.collection("markets").document(marketId.toString())

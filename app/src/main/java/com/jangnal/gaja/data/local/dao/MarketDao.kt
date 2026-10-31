@@ -173,7 +173,7 @@ interface MarketDao {
     @Query("UPDATE shops SET onnuriConfirmedCount = onnuriConfirmedCount + 1 WHERE id = :shopId")
     suspend fun incrementShopOnnuriConfirm(shopId: Long)
 
-    @Query("UPDATE shops SET onnuriConfirmedCount = 0 WHERE isVerifiedReport = 0")
+    @Query("UPDATE shops SET onnuriConfirmedCount = 0")
     suspend fun resetFakeOnnuriConfirmedCounts()
 
     @Query("UPDATE markets SET hasToilet = :value WHERE id = :marketId")

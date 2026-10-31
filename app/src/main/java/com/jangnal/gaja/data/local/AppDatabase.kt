@@ -18,7 +18,7 @@ import com.jangnal.gaja.data.local.entity.MerchantVerification
  * The Room Database for the application.
  * Defines the entities and version.
  */
-@Database(entities = [Market::class, Shop::class, Festival::class, CommunityPost::class, CommunityComment::class, MarketStamp::class, MarketFlashSale::class, MerchantVerification::class], version = 18, exportSchema = false)
+@Database(entities = [Market::class, Shop::class, Festival::class, CommunityPost::class, CommunityComment::class, MarketStamp::class, MarketFlashSale::class, MerchantVerification::class], version = 19, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun marketDao(): MarketDao

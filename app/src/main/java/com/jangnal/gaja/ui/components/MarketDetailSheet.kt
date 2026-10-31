@@ -2042,7 +2042,7 @@ fun ShopQueueSection(
                     val avgRating = if (hasReviews) shopReviews.map { it.rating }.average() else 0.0
                     val avgStr = String.format(Locale.US, "%.1f", avgRating)
                     val isConfirmedByUser = VoteTracker.hasConfirmedPayment(context, shop.id) || confirmedShopIds.contains(shop.id)
-                    val displayConfirmCount = shop.onnuriConfirmedCount + (if (isConfirmedByUser && !confirmedShopIds.contains(shop.id) && shop.onnuriConfirmedCount == 0) 1 else 0)
+                    val realReviewCount = shopReviews.size
 
                     val shopVerif = verifications.firstOrNull { it.marketId == market.id && it.shopName.trim() == shop.shopName.trim() }
                     val isVerifiedShop = shopVerif?.isApproved() == true || VoteTracker.isVerifiedMerchant(context, market.id, shop.shopName)
@@ -2233,14 +2233,14 @@ fun ShopQueueSection(
                                     )
                                 }
 
-                                if (displayConfirmCount > 0 || isConfirmedByUser) {
+                                if (isConfirmedByUser || realReviewCount > 0) {
                                     Surface(
                                         shape = RoundedCornerShape(6.dp),
                                         color = if (isConfirmedByUser) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
                                         border = BorderStroke(0.5.dp, if (isConfirmedByUser) Color(0xFFA5D6A7) else Color(0xFFFFCC80))
                                     ) {
                                         Text(
-                                            text = if (isConfirmedByUser) "🟢 내 결제인증 완료" else "🟢 결제인증됨 (${displayConfirmCount}명)",
+                                            text = if (isConfirmedByUser) "🟢 내 결제인증 완료" else "🟢 방문자리뷰 (${realReviewCount}건)",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = if (isConfirmedByUser) Color(0xFF2E7D32) else Color(0xFFE65100),
@@ -2255,24 +2255,22 @@ fun ShopQueueSection(
                             // 3. 대기줄 상태 요약 라인 (영업시간 및 개장일 가드)
                             val currentCal = Calendar.getInstance()
                             val currentHour = currentCal.get(Calendar.HOUR_OF_DAY)
-                            val isPeakHour = (currentHour in 11..13) || (currentHour in 17..19)
                             val isOperatingHours = currentHour in 7..20 // 07:00 ~ 20:59
                             val isMarketOpenToday = market.isPermanent() || market.isOpenOn(System.currentTimeMillis())
 
                             val statusText = if (!isMarketOpenToday) {
                                 "비개장일 📅 (다음 장날: ${market.getNextMarketText()})"
                             } else if (!isOperatingHours) {
-                                "영업 종료 🌙 (내일 09:00 개장)"
+                                "영업 종료 🌙 (내일 아침 개장)"
                             } else if (hasRecentReport) {
                                 when (shop.queueStatus) {
-                                    0 -> if (isPeakHour) "한산함 🟢 (AI 피크: 5~10분)" else "한산함 🟢 (AI 예상: 즉시 입장)"
-                                    1 -> if (isPeakHour) "보통 🟡 (AI 피크: 20~30분)" else "보통 🟡 (AI 예상: 10~15분)"
-                                    2 -> if (isPeakHour) "혼잡함 🔴 (AI 피크: 40분 이상)" else "혼잡함 🔴 (AI 예상: 25~35분)"
-                                    else -> "제보 없음 ⚪ (AI 평시 분석)"
+                                    0 -> "실시간 제보: 한산함 🟢 (바로 이용 가능)"
+                                    1 -> "실시간 제보: 보통 🟡 (약 10~15분 대기)"
+                                    2 -> "실시간 제보: 혼잡함 🔴 (대기줄 있음)"
+                                    else -> "현재 실시간 대기줄 제보 없음 ⚪"
                                 }
                             } else {
-                                if (isPeakHour) "대기제보 없음 ⚪ (AI 장날 피크: 15~25분 예상)"
-                                else "대기제보 없음 ⚪ (AI 평시: 5~10분 예상)"
+                                "현재 실시간 대기줄 제보 없음 ⚪"
                             }
                             val statusColor = if (!isMarketOpenToday || !isOperatingHours) {
                                 MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
